@@ -10,7 +10,37 @@ obj/
 # Angular / Node
 node_modules/
 dist/
+.angular/
+
+# IDE
+.claude
+.idea/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Environment & Secrets
+.env
+.env.*
+*.local
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build outputs
+out/
+build/
+
+# Test
+coverage/
+TestResults/
+
