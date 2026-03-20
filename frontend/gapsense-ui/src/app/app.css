@@ -1,0 +1,5 @@
+/* root component styles - keep this minimal, global styles are in styles.css */
+:host {
+  display: block;
+  min-height: 100dvh;
+}
