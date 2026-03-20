@@ -1,0 +1,21 @@
+<!-- main layout with sidebar on left and content on right -->
+
+<!-- sidebar - fixed left -->
+<app-sidebar />
+
+<!-- main content area - pushed right by sidebar width -->
+<div class="ml-[264px] min-h-screen bg-background">
+  <!-- top bar - sticky at top -->
+  <app-top-bar
+    [pageTitle]="pageTitle()"
+    [breadcrumb]="breadcrumb()"
+    [searchPlaceholder]="searchPlaceholder()"
+    [showSearch]="showSearch()"
+    (searchChange)="onSearch($event)"
+  />
+
+  <!-- page content goes here -->
+  <main class="p-6 page-transition">
+    <ng-content />
+  </main>
+</div>

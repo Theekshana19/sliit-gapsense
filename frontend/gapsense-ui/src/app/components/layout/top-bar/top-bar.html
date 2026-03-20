@@ -1,0 +1,56 @@
+<!-- top bar - sticky header with glassmorphic effect -->
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl shadow-sm shadow-blue-900/5">
+  <div class="flex items-center justify-between px-6 py-3">
+    <!-- left side - title and breadcrumb -->
+    <div>
+      @if (breadcrumb()) {
+        <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-0.5">
+          {{ breadcrumb() }}
+        </p>
+      }
+      <h1 class="font-headline text-xl font-extrabold text-on-surface">
+        {{ pageTitle() }}
+      </h1>
+    </div>
+
+    <!-- right side - search, notifications, profile -->
+    <div class="flex items-center gap-4">
+      <!-- search bar -->
+      @if (showSearch()) {
+        <div class="w-64">
+          <app-search-bar
+            [placeholder]="searchPlaceholder()"
+            (searchChange)="onSearch($event)"
+          />
+        </div>
+      }
+
+      <!-- notification bell -->
+      <button class="relative w-9 h-9 rounded-lg flex items-center justify-center
+                     hover:bg-surface-container-low transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+        <!-- red dot badge -->
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+      </button>
+
+      <!-- help button -->
+      <button class="w-9 h-9 rounded-lg flex items-center justify-center
+                     hover:bg-surface-container-low transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+      </button>
+
+      <!-- user profile -->
+      <div class="flex items-center gap-2.5 pl-3 border-l border-outline-variant/30">
+        <!-- avatar -->
+        <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center">
+          <span class="text-xs font-bold text-on-primary-fixed-variant">{{ userInitials }}</span>
+        </div>
+        <!-- name and role -->
+        <div class="hidden md:block">
+          <p class="text-xs font-semibold text-on-surface">{{ userName }}</p>
+          <p class="text-[10px] text-on-surface-variant">{{ userRole }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

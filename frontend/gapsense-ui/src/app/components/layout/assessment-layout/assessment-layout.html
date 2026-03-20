@@ -1,0 +1,51 @@
+<!-- assessment layout - no sidebar, minimal header for quiz taking -->
+<div class="min-h-screen bg-background">
+  <!-- simple top header -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl shadow-sm shadow-blue-900/5">
+    <div class="flex items-center justify-between px-6 py-3">
+      <!-- left - logo and quiz title -->
+      <div class="flex items-center gap-4">
+        <!-- logo -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span class="text-white font-headline font-bold text-sm">G</span>
+          </div>
+          <span class="font-headline text-sm font-bold text-on-surface">SLIIT GapSense</span>
+        </div>
+
+        <!-- separator -->
+        <div class="w-px h-6 bg-outline-variant/30"></div>
+
+        <!-- quiz title -->
+        <p class="text-sm text-on-surface-variant">
+          Attempting: <span class="font-semibold text-on-surface">{{ quizTitle() }}</span>
+        </p>
+      </div>
+
+      <!-- right - timer, help, student -->
+      <div class="flex items-center gap-4">
+        <!-- countdown timer -->
+        <div class="flex items-center gap-2 bg-primary/5 px-4 py-1.5 rounded-full">
+          <span class="material-symbols-outlined text-primary" style="font-size: 18px;">schedule</span>
+          <span class="font-headline text-lg font-bold text-primary">{{ timerDisplay() }}</span>
+        </div>
+
+        <!-- help -->
+        <button class="w-8 h-8 rounded-lg flex items-center justify-center
+                       hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+        </button>
+
+        <!-- student avatar -->
+        <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center">
+          <span class="text-xs font-bold text-on-primary-fixed-variant">{{ studentInitials() }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- quiz content goes here -->
+  <main class="p-6 page-transition">
+    <ng-content />
+  </main>
+</div>
