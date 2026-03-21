@@ -37,5 +37,12 @@ export const routes: Routes = [
         (m) => m.ReadinessResultComponent
       ),
   },
+  {
+    path: 'weak-topic-analysis',
+    loadComponent: () =>
+      import('./pages/risk-analysis/weak-topic-analysis/weak-topic-analysis.component').then(
+        (m) => m.WeakTopicAnalysisComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];

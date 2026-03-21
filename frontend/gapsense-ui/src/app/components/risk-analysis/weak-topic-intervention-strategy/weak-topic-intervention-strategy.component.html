@@ -1,0 +1,27 @@
+<div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200/80 relative overflow-hidden group h-full flex flex-col">
+  <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-15 transition-opacity pointer-events-none">
+    <span class="material-symbols-outlined text-8xl text-blue-800">psychology</span>
+  </div>
+  <h4 class="text-xl font-bold text-slate-900 mb-4 relative z-10">Intervention Strategy</h4>
+  <div class="space-y-4 relative z-10 flex-1">
+    @for (item of intervention().items; track item.title) {
+      <div class="flex gap-4">
+        <div
+          class="min-w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+          [class]="iconWrapClass(item.tone)">
+          <span class="material-symbols-outlined" [class]="iconClass(item.tone)">{{ item.icon }}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-slate-900">{{ item.title }}</p>
+          <p class="text-xs text-slate-600 leading-relaxed mt-0.5">{{ item.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+  <button
+    type="button"
+    class="mt-8 w-full bg-gradient-to-r from-blue-800 to-blue-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-900/20 hover:scale-[1.01] transition-transform active:scale-[0.99] relative z-10"
+    (click)="deployRecommendations.emit()">
+    Deploy Recommendations
+  </button>
+</div>
