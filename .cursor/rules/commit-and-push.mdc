@@ -1,0 +1,28 @@
+---
+description: Always commit and push after making changes, with valid commit messages in simple English
+alwaysApply: true
+---
+
+# Commit and Push After Changes
+
+After making any code changes to the project:
+
+1. **Stage the changed files** (only source code and config, not bin/obj/.vs)
+2. **Commit** with a clear message in simple English
+3. **Push** to the remote branch
+
+## Commit Message Format
+
+- Use simple, clear English
+- Start with a verb (add, fix, update, remove)
+- Keep it short but descriptive
+
+**Examples:**
+- "Add risk threshold validation"
+- "Fix port conflict in launch settings"
+- "Update API controller response format"
+
+## When to Skip
+
+- Do not commit if the user explicitly asks not to
+- Do not commit work-in-progress or broken state without user approval
