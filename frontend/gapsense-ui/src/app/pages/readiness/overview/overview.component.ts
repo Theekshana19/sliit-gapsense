@@ -74,7 +74,7 @@ interface LedgerRow {
               <select
                 formControlName="semester"
                 class="rounded-xl border-0 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 focus:outline-none focus:ring-2 focus:ring-[#003f87]/25"
-                [class.ring-rose-400]="showErr('semester')"
+                [class.ring-rose-400]="invalid(filterForm.get('semester'))"
               >
                 <option value="" disabled>Select semester</option>
                 <option value="s01">Semester 01</option>

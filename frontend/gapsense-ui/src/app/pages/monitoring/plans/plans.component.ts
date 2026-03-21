@@ -5,6 +5,7 @@ import { ConfirmService } from '../../../components/ui/confirm-dialog/confirm.se
 import { ToastService } from '../../../components/ui/toast/toast.service';
 import { InterventionPlan } from '../../../models/monitoring/monitoring.model';
 import { MonitoringService } from '../../../services/monitoring.service';
+import { TABLE_FILTER_MAX_LENGTH } from '../../../validators/form-utils';
 import { StatusPillComponent } from '../../../components/ui/status-pill/status-pill.component';
 
 @Component({
