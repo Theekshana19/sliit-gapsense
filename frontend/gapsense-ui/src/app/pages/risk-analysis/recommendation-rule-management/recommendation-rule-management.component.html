@@ -1,0 +1,69 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">Recommendation Rule Management</h1>
+      <p class="text-slate-600 font-medium text-sm max-w-2xl">
+        Define and manage automated logic for student interventions.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-700 to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-blue-900/20 transition-all active:scale-95"
+      (click)="addRule()">
+      <span class="material-symbols-outlined">add</span>
+      Add Rule
+    </button>
+  </div>
+
+  <app-recommendation-rule-summary-cards
+    [activeImpact]="service.activeImpactCount()"
+    [efficiencyRate]="service.efficiencyRate()"
+    [criticalGaps]="service.criticalGapsCount()"
+  />
+
+  @if (filterPanelOpen()) {
+    <div class="mb-4 p-4 bg-white rounded-xl border border-slate-200 text-sm text-slate-600">
+      Filter options will be available in a future update.
+    </div>
+  }
+
+  <div class="mt-8">
+    <app-recommendation-rule-table
+      [rows]="paginatedRows()"
+      [page]="currentPage()"
+      [pageSize]="pageSize"
+      [total]="totalFiltered()"
+      [searchQuery]="searchQuery()"
+      (searchChange)="onSearchChange($event)"
+      (filterClick)="toggleFilter()"
+      (edit)="editRule($event)"
+      (delete)="requestDelete($event)"
+      (pageChange)="onPageChange($event)"
+    />
+  </div>
+
+  <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-xl p-6 flex gap-4 items-start">
+    <span class="material-symbols-outlined text-blue-700">info</span>
+    <div>
+      <p class="text-sm font-bold text-blue-800 mb-1">Impact of Rule Changes</p>
+      <p class="text-xs text-blue-900/80 leading-relaxed">
+        Adjusting recommendation rules updates how interventions are assigned during the readiness cycle. Changes are logged for audit.
+      </p>
+    </div>
+  </div>
+</main>
+
+<app-recommendation-rule-help-fab />
+
+@if (confirmDeleteRule()) {
+  <app-modal
+    title="Delete Recommendation Rule"
+    [message]="deleteConfirmMessage()"
+    confirmText="Delete"
+    confirmVariant="error"
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()">
+  </app-modal>
+}

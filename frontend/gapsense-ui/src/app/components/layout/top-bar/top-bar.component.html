@@ -4,8 +4,13 @@
     <nav class="hidden md:flex items-center gap-6">
       <a routerLink="/dashboard" routerLinkActive="text-blue-700 border-b-2 border-blue-700 font-bold" [routerLinkActiveOptions]="{exact: true}"
          class="text-slate-500 hover:text-blue-600 text-sm font-medium">Dashboard</a>
-      <a routerLink="/risk-thresholds" routerLinkActive="text-blue-700 border-b-2 border-blue-700 font-bold"
-         class="text-slate-500 hover:text-blue-600 text-sm font-medium">Analysis</a>
+      <a routerLink="/risk-thresholds"
+         class="text-sm font-medium pb-1 border-b-2 transition-colors hover:text-blue-600"
+         [class.text-blue-700]="isAnalysisRoute()"
+         [class.border-blue-700]="isAnalysisRoute()"
+         [class.font-bold]="isAnalysisRoute()"
+         [class.text-slate-500]="!isAnalysisRoute()"
+         [class.border-transparent]="!isAnalysisRoute()">Analysis</a>
       <a routerLink="/reports" routerLinkActive="text-blue-700 border-b-2 border-blue-700 font-bold"
          class="text-slate-500 hover:text-blue-600 text-sm font-medium">Reports</a>
     </nav>

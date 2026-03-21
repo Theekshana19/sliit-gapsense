@@ -9,5 +9,26 @@ export const routes: Routes = [
         (m) => m.RiskThresholdManagementComponent
       ),
   },
+  {
+    path: 'recommendation-rules/add',
+    loadComponent: () =>
+      import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
+        (m) => m.AddRecommendationRuleComponent
+      ),
+  },
+  {
+    path: 'recommendation-rules/:id/edit',
+    loadComponent: () =>
+      import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
+        (m) => m.AddRecommendationRuleComponent
+      ),
+  },
+  {
+    path: 'recommendation-rules',
+    loadComponent: () =>
+      import('./pages/risk-analysis/recommendation-rule-management/recommendation-rule-management.component').then(
+        (m) => m.RecommendationRuleManagementComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];

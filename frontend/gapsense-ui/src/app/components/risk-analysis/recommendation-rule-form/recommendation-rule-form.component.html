@@ -1,0 +1,203 @@
+<div [formGroup]="form" class="space-y-10">
+  <section class="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-200/80">
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-900">
+        <span class="material-symbols-outlined">settings_suggest</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900">Core Rule Definition</h3>
+    </div>
+    <div class="space-y-8">
+      <div>
+        <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+          Rule Name <span class="text-red-600 font-bold">*</span>
+        </label>
+        <input
+          class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold placeholder:text-slate-400"
+          formControlName="ruleName"
+          placeholder="e.g. Critical Failure Recovery - Risk"
+          type="text"
+        />
+        @if (showError('ruleName')) {
+          <p class="text-[10px] text-red-600 mt-2 font-bold flex items-center gap-1.5 px-1">
+            <span class="material-symbols-outlined text-xs">info</span>
+            {{ fieldError('ruleName') }}
+          </p>
+        }
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+            Module <span class="text-red-600 font-bold">*</span>
+          </label>
+          <select
+            class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold cursor-pointer"
+            formControlName="moduleId">
+            @for (opt of MODULE_OPTIONS; track opt.id) {
+              <option [value]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+          @if (showError('moduleId')) {
+            <p class="text-[10px] text-red-600 mt-2 font-bold">{{ fieldError('moduleId') }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+            Topic <span class="text-red-600 font-bold">*</span>
+          </label>
+          <select
+            class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold cursor-pointer"
+            formControlName="topic">
+            @for (t of topicsForSelectedModule(); track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+          @if (showError('topic')) {
+            <p class="text-[10px] text-red-600 mt-2 font-bold">{{ fieldError('topic') }}</p>
+          }
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-slate-50 rounded-2xl border border-slate-100">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-5">Trigger Condition</label>
+          <div class="space-y-4">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input
+                class="w-5 h-5 text-blue-800 border-slate-300"
+                formControlName="conditionType"
+                type="radio"
+                value="scoreUnderThreshold"
+              />
+              <span class="text-sm font-bold text-slate-900 group-hover:text-blue-800 transition-colors">
+                {{ conditionLabels.scoreUnderThreshold }}
+              </span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input
+                class="w-5 h-5 text-blue-800 border-slate-300"
+                formControlName="conditionType"
+                type="radio"
+                value="scoreOverThreshold"
+              />
+              <span class="text-sm font-bold text-slate-900 group-hover:text-blue-800 transition-colors">
+                {{ conditionLabels.scoreOverThreshold }}
+              </span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+            Score Threshold (%) <span class="text-red-600 font-bold">*</span>
+          </label>
+          <div class="relative">
+            <input
+              class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-extrabold pr-16"
+              formControlName="scoreThreshold"
+              type="number"
+              min="0"
+              max="100"
+            />
+            <span class="absolute right-5 top-1/2 -translate-y-1/2 font-extrabold text-slate-500">%</span>
+          </div>
+          @if (showError('scoreThreshold')) {
+            <p class="text-[10px] text-red-600 mt-2 font-bold flex items-center gap-1.5 px-1">
+              <span class="material-symbols-outlined text-xs">info</span>
+              {{ fieldError('scoreThreshold') }}
+            </p>
+          } @else {
+            <p class="text-[10px] text-blue-800 mt-2 font-bold flex items-center gap-1.5 px-1">
+              <span class="material-symbols-outlined text-xs">info</span>
+              Valid range 0-100%
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-200/80">
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-900">
+        <span class="material-symbols-outlined">auto_stories</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900">Recommendation Payload</h3>
+    </div>
+    <div class="space-y-8">
+      <div>
+        <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+          Recommendation Title <span class="text-red-600 font-bold">*</span>
+        </label>
+        <input
+          class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold placeholder:text-slate-400"
+          formControlName="recommendationTitle"
+          placeholder="e.g. Master Quantitative Risk Assessment"
+          type="text"
+        />
+        @if (showError('recommendationTitle')) {
+          <p class="text-[10px] text-red-600 mt-2 font-bold">{{ fieldError('recommendationTitle') }}</p>
+        }
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">Resource Type</label>
+          <select
+            class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold cursor-pointer"
+            formControlName="resourceType">
+            @for (rt of resourceTypes; track rt) {
+              <option [value]="rt">{{ rt }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+            Priority Level <span class="text-red-600 font-bold">*</span>
+          </label>
+          <select
+            class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-semibold cursor-pointer"
+            formControlName="priorityLevel">
+            <option value="high">{{ priorityLabels.high }}</option>
+            <option value="medium">{{ priorityLabels.medium }}</option>
+            <option value="low">{{ priorityLabels.low }}</option>
+          </select>
+          @if (showError('priorityLevel')) {
+            <p class="text-[10px] text-red-600 mt-2 font-bold">{{ fieldError('priorityLevel') }}</p>
+          }
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">Resource URL / Link</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">link</span>
+            <input
+              class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all pl-12 pr-5 py-4 rounded-t-xl outline-none text-slate-900 font-medium placeholder:text-slate-400"
+              formControlName="resourceUrl"
+              placeholder="https://sliit.academy.edu/res/..."
+              type="url"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">Attachment (Optional)</label>
+          <div class="relative group">
+            <input class="hidden" id="rec-rule-file-upload" type="file" accept=".pdf,.doc,.docx" />
+            <label
+              class="flex items-center justify-between w-full bg-slate-100 border-b-2 border-dashed border-slate-300 group-hover:border-blue-800 transition-all px-5 py-4 rounded-t-xl cursor-pointer"
+              for="rec-rule-file-upload">
+              <span class="text-sm font-semibold text-slate-500 group-hover:text-blue-800">Click to upload PDF/Doc</span>
+              <span class="material-symbols-outlined text-slate-400 group-hover:text-blue-800">cloud_upload</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">Administrative Rationale</label>
+        <textarea
+          class="w-full bg-slate-100 border-b-2 border-slate-200 focus:border-blue-800 focus:ring-0 transition-all px-5 py-4 rounded-t-xl outline-none text-slate-900 font-medium placeholder:text-slate-400 resize-none"
+          formControlName="administrativeRationale"
+          placeholder="Briefly describe the rationale for this rule..."
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+  </section>
+</div>

@@ -12,7 +12,8 @@
        class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
       <span class="material-symbols-outlined text-xl">tune</span> Risk Thresholds
     </a>
-    <a routerLink="/recommendation-rules" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+    <a routerLink="/recommendation-rules" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+       [routerLinkActiveOptions]="{ exact: false }"
        class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
       <span class="material-symbols-outlined text-xl">rule</span> Recommendation Rules
     </a>
