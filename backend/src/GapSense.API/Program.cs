@@ -39,6 +39,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IRiskThresholdService, RiskThresholdService>();
 builder.Services.AddScoped<IRecommendationRuleService, RecommendationRuleService>();
+builder.Services.AddScoped<IReadinessResultService, GapSense.Infrastructure.Services.ReadinessResultService>();
 
 builder.Services.AddCors(options =>
 {
@@ -54,6 +55,12 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+    }
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }

@@ -37,6 +37,8 @@ export interface ReadinessInterpretation {
  * with API mapping when backend is available.
  */
 export interface ReadinessResultViewModel {
+  /** Server id used for PDF export and future GET-by-id APIs. */
+  id: string;
   student: StudentReadinessSummary;
   interpretation: ReadinessInterpretation;
   score: ReadinessScoreSummary;

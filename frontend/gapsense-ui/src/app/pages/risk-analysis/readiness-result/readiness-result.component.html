@@ -8,6 +8,16 @@
     </div>
   }
 
+  @if (readiness.exportError()) {
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-red-600 shrink-0">error</span>
+      <p class="text-sm font-bold text-red-800 flex-1">{{ readiness.exportError() }}</p>
+      <button type="button" class="p-1 hover:bg-red-100 rounded shrink-0" (click)="readiness.clearExportError()">
+        <span class="material-symbols-outlined text-red-600 text-sm">close</span>
+      </button>
+    </div>
+  }
+
   <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
       <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Readiness Result</h1>
@@ -16,6 +26,7 @@
       </p>
     </div>
     <app-readiness-export-actions
+      [exportPdfLoading]="readiness.exportPdfLoading()"
       (exportPdf)="onExportPdf()"
       (shareReport)="onShareReport()" />
   </div>

@@ -41,8 +41,8 @@ export class ReadinessResultComponent implements OnInit {
     this.readiness.loadMock();
   }
 
-  protected onExportPdf(): void {
-    this.readiness.exportPdfPlaceholder();
+  protected async onExportPdf(): Promise<void> {
+    await this.readiness.exportPdf();
   }
 
   protected onShareReport(): void {

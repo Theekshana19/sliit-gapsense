@@ -14,6 +14,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<RecommendationRule> RecommendationRules => Set<RecommendationRule>();
 
+    public DbSet<ReadinessResult> ReadinessResults => Set<ReadinessResult>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

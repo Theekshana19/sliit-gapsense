@@ -1,9 +1,14 @@
 <div class="flex flex-wrap gap-3">
   <button
     type="button"
-    class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-200/90 text-slate-900 font-semibold rounded-xl hover:bg-slate-300/90 transition-colors"
+    class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-200/90 text-slate-900 font-semibold rounded-xl hover:bg-slate-300/90 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+    [disabled]="exportPdfLoading()"
     (click)="onExportPdf()">
-    <span class="material-symbols-outlined text-[20px]">download</span>
+    @if (exportPdfLoading()) {
+      <span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+    } @else {
+      <span class="material-symbols-outlined text-[20px]">download</span>
+    }
     Export PDF
   </button>
   <button
