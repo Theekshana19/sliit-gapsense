@@ -1,0 +1,11 @@
+/* quiz attempt page specific styles */
+
+/* make sure the question grid buttons are evenly spaced */
+:host {
+  display: block;
+}
+
+/* smooth transition when switching between questions */
+:host ::ng-deep .page-transition {
+  animation: fadeIn 0.2s ease-in-out;
+}

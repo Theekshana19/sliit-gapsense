@@ -1,0 +1,13 @@
+<!-- add/edit question page -->
+<app-main-layout
+  [pageTitle]="pageTitle()"
+  breadcrumb="Question Bank > Question Editor"
+  [showSearch]="false"
+>
+  <!-- question form component handles all the form logic -->
+  <app-question-form
+    [question]="question()"
+    (formSubmit)="onFormSubmit($event)"
+    (formCancel)="onFormCancel()"
+  />
+</app-main-layout>
