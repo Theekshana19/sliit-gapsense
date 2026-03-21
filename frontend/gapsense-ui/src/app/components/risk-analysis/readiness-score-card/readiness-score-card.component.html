@@ -1,0 +1,19 @@
+<div
+  class="bg-white rounded-xl p-8 flex flex-col justify-between min-h-[220px] border border-slate-200/80 shadow-sm">
+  <div class="flex justify-between items-start">
+    <span class="text-slate-600 font-semibold text-sm uppercase tracking-wider">Total Score</span>
+    <span class="material-symbols-outlined text-slate-400 text-lg">analytics</span>
+  </div>
+  <div class="mt-4">
+    <div class="flex items-baseline gap-2">
+      <span class="text-6xl font-extrabold text-slate-900 tabular-nums">{{ score().percent }}</span>
+      <span class="text-2xl font-bold text-slate-600">%</span>
+    </div>
+    <div class="w-full bg-slate-200 h-2 rounded-full mt-4 overflow-hidden">
+      <div
+        class="h-full rounded-full transition-[width] duration-300"
+        [class]="barClass()"
+        [style.width.%]="score().percent"></div>
+    </div>
+  </div>
+</div>

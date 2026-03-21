@@ -30,5 +30,12 @@ export const routes: Routes = [
         (m) => m.RecommendationRuleManagementComponent
       ),
   },
+  {
+    path: 'readiness-results',
+    loadComponent: () =>
+      import('./pages/risk-analysis/readiness-result/readiness-result.component').then(
+        (m) => m.ReadinessResultComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];

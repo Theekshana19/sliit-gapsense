@@ -1,0 +1,40 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  @if (readiness.loading()) {
+    <div class="mb-6 flex items-center gap-2 text-slate-600">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      <span class="text-sm font-medium">Loading readiness result…</span>
+    </div>
+  }
+
+  <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Readiness Result</h1>
+      <p class="text-slate-600 font-medium max-w-2xl">
+        Detailed diagnostic breakdown of academic preparedness.
+      </p>
+    </div>
+    <app-readiness-export-actions
+      (exportPdf)="onExportPdf()"
+      (shareReport)="onShareReport()" />
+  </div>
+
+  @if (readiness.data(); as vm) {
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div class="xl:col-span-4 flex flex-col gap-6">
+        <app-readiness-student-card [summary]="vm.student" />
+        <app-readiness-interpretation-alert
+          [message]="vm.interpretation.message"
+          [tone]="vm.interpretation.tone" />
+      </div>
+      <div class="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <app-readiness-score-card [score]="vm.score" />
+        <app-readiness-risk-card [risk]="vm.risk" />
+        <app-readiness-weak-topics-card [summary]="vm.weakTopics" />
+        <app-readiness-action-plan-card [summary]="vm.actionPlan" />
+        <app-readiness-topic-performance [items]="vm.topicPerformance" />
+      </div>
+    </div>
+  }
+</main>
