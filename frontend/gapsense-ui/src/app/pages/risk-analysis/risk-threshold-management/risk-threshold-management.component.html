@@ -1,0 +1,65 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  <div class="flex justify-between items-start mb-10">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Risk Threshold Management</h1>
+      <p class="text-slate-600 max-w-2xl font-medium">Define and manage the logic for student readiness classifications across academic modules.</p>
+    </div>
+    <button type="button"
+            class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-semibold shadow-lg hover:shadow-blue-900/20 transition-all active:scale-95"
+            (click)="openAddPanel()">
+      <span class="material-symbols-outlined">add</span>
+      Add Threshold
+    </button>
+  </div>
+
+  <app-threshold-summary-cards
+    [activeCount]="activeCount()"
+    [totalCount]="thresholds().length"
+    [highRiskLabel]="summaryHighLabel()"
+    [lowRiskLabel]="summaryLowLabel()"
+    [highRiskPercent]="summaryHighPercent()"
+    [lowRiskPercent]="summaryLowPercent()"
+    [lastUpdated]="lastUpdatedLabel()"
+  />
+
+  <div class="mt-10">
+    <app-threshold-table
+      [rows]="paginatedRows()"
+      [page]="currentPage()"
+      [pageSize]="pageSize"
+      [total]="thresholds().length"
+      (edit)="openEditPanel($event)"
+      (delete)="requestDelete($event)"
+      (pageChange)="onPageChange($event)"
+    />
+  </div>
+
+  <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-xl p-6 flex gap-4 items-start">
+    <span class="material-symbols-outlined text-blue-700">info</span>
+    <div>
+      <p class="text-sm font-bold text-blue-800 mb-1">Impact of Threshold Changes</p>
+      <p class="text-xs text-blue-900/80 leading-relaxed">Adjusting these ranges will immediately recalculate readiness results for all active students across modules mapped to these rules. Changes are logged for academic compliance auditing.</p>
+    </div>
+  </div>
+</main>
+
+<app-threshold-form-panel
+  [open]="panelOpen()"
+  [mode]="panelMode()"
+  [initialValue]="editingThreshold()"
+  (close)="closePanel()"
+  (save)="onSave($event)"
+/>
+
+@if (confirmDeleteThreshold()) {
+  <app-modal
+    title="Delete Threshold"
+    [message]="deleteConfirmMessage()"
+    confirmText="Delete"
+    confirmVariant="error"
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()">
+  </app-modal>
+}

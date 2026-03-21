@@ -1,0 +1,21 @@
+<div class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" (click)="cancel.emit()"></div>
+  <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200" role="dialog" aria-modal="true">
+    <div class="mb-4">
+      <h3 class="text-lg font-bold text-slate-900 font-manrope">{{ title() }}</h3>
+      <p class="text-sm text-slate-600 mt-2">{{ message() }}</p>
+    </div>
+    <div class="flex gap-4 justify-end">
+      <button type="button" class="px-6 py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
+              (click)="cancel.emit()">
+        Cancel
+      </button>
+      <button type="button"
+              [class]="confirmVariant() === 'error' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-blue-700 text-white hover:bg-blue-800'"
+              class="px-6 py-3 rounded-xl font-bold transition-colors"
+              (click)="confirm.emit()">
+        {{ confirmText() }}
+      </button>
+    </div>
+  </div>
+</div>
