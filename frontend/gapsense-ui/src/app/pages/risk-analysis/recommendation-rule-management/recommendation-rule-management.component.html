@@ -23,6 +23,17 @@
     [criticalGaps]="service.criticalGapsCount()"
   />
 
+  @if (service.error()) {
+    <div class="mb-4 p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-800 font-medium">
+      {{ service.error() }}
+      <button type="button" class="ml-2 underline font-bold" (click)="service.clearError()">Dismiss</button>
+    </div>
+  }
+
+  @if (service.loading()) {
+    <p class="text-sm text-slate-600 mb-4">Loading rules…</p>
+  }
+
   @if (filterPanelOpen()) {
     <div class="mb-4 p-4 bg-white rounded-xl border border-slate-200 text-sm text-slate-600">
       Filter options will be available in a future update.

@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -30,9 +31,13 @@ import { RecommendationRuleService } from '../../../services/recommendation-rule
   styleUrl: './recommendation-rule-management.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RecommendationRuleManagementComponent {
+export class RecommendationRuleManagementComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly service = inject(RecommendationRuleService);
+
+  ngOnInit(): void {
+    void this.service.loadAll();
+  }
 
   protected readonly pageSize = 10;
   protected readonly searchQuery = signal('');
@@ -97,11 +102,13 @@ export class RecommendationRuleManagementComponent {
     this.confirmDeleteRule.set(null);
   }
 
-  protected confirmDelete(): void {
+  protected async confirmDelete(): Promise<void> {
     const r = this.confirmDeleteRule();
     if (r) {
-      this.service.delete(r.id);
-      this.confirmDeleteRule.set(null);
+      const ok = await this.service.delete(r.id);
+      if (ok) {
+        this.confirmDeleteRule.set(null);
+      }
     }
   }
 }

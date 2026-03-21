@@ -4,6 +4,7 @@ import {
   actionIconForResourceType,
   formatConditionDisplay,
   relativeTimeLabel,
+  truncateText,
 } from '../../../models/risk-analysis/recommendation-rule.model';
 import { STATUS_LABELS } from '../../../models/risk-analysis/recommendation-status.model';
 import { PRIORITY_LABELS } from '../../../models/risk-analysis/recommendation-priority.model';
@@ -34,6 +35,7 @@ export class RecommendationRuleTableComponent {
   protected readonly formatCondition = formatConditionDisplay;
   protected readonly actionIcon = actionIconForResourceType;
   protected readonly relativeTime = relativeTimeLabel;
+  protected readonly truncateTitle = (t: string) => truncateText(t, 52);
 
   protected startIndex = computed(() => {
     const p = this.page() ?? 1;

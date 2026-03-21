@@ -1,4 +1,11 @@
-import { afterNextRender, Component, effect, input, output } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import type { RecommendationRule } from '../../../models/risk-analysis/recommendation-rule.model';
@@ -13,6 +20,7 @@ import {
   MODULE_OPTIONS,
   topicsForModule,
 } from '../../../models/risk-analysis/module-topic.constants';
+import { fileNameFromAttachmentPath } from '../../../models/risk-analysis/recommendation-rule.model';
 import { CONDITION_TYPE_LABELS } from '../../../models/risk-analysis/recommendation-condition-type.model';
 import { PRIORITY_LABELS } from '../../../models/risk-analysis/recommendation-priority.model';
 
@@ -36,6 +44,11 @@ export class RecommendationRuleFormComponent {
   protected readonly MODULE_OPTIONS = MODULE_OPTIONS;
 
   private patchedRuleId: string | null = null;
+
+  /** New file chosen for upload (parent uploads before save). */
+  protected readonly pendingFile = signal<File | null>(null);
+  /** User removed an existing server-side attachment. */
+  protected readonly attachmentCleared = signal(false);
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -140,5 +153,53 @@ export class RecommendationRuleFormComponent {
 
   get invalid(): boolean {
     return this.form.invalid;
+  }
+
+  getPendingFile(): File | null {
+    return this.pendingFile();
+  }
+
+  getAttachmentCleared(): boolean {
+    return this.attachmentCleared();
+  }
+
+  protected onAttachmentSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.pendingFile.set(file);
+      this.attachmentCleared.set(false);
+    }
+  }
+
+  protected clearAttachment(): void {
+    if (this.pendingFile()) {
+      this.pendingFile.set(null);
+      this.resetFileInput();
+      return;
+    }
+    if (this.initialRule()?.attachmentPath) {
+      this.attachmentCleared.set(true);
+    }
+  }
+
+  private resetFileInput(): void {
+    const el = document.getElementById(
+      'rec-rule-file-upload'
+    ) as HTMLInputElement | null;
+    if (el) el.value = '';
+  }
+
+  protected attachmentDisplayName(rule: RecommendationRule | null): string {
+    if (!rule?.attachmentPath) return '';
+    return fileNameFromAttachmentPath(rule.attachmentPath);
+  }
+
+  protected showExistingAttachment(rule: RecommendationRule | null): boolean {
+    return !!(
+      rule?.attachmentPath &&
+      !this.pendingFile() &&
+      !this.attachmentCleared()
+    );
   }
 }

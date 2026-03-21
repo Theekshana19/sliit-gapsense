@@ -1,94 +1,119 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { API_BASE_URL } from '../config/api.config';
 import { MODULE_OPTIONS } from '../models/risk-analysis/module-topic.constants';
+import type { RecommendationConditionType } from '../models/risk-analysis/recommendation-condition-type.model';
 import type { RecommendationRule } from '../models/risk-analysis/recommendation-rule.model';
 import type { RecommendationRuleFormValue } from '../models/risk-analysis/recommendation-rule-form.model';
+import type { RecommendationRuleStatus } from '../models/risk-analysis/recommendation-status.model';
 
-function moduleLabel(moduleId: string): string {
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+interface RecommendationRuleApiDto {
+  id: string;
+  ruleName: string;
+  moduleCode: string;
+  moduleName: string;
+  topicName: string;
+  conditionType: RecommendationConditionType;
+  scoreThreshold: number;
+  recommendationTitle: string;
+  resourceType: string;
+  priorityLevel: 'high' | 'medium' | 'low';
+  resourceUrl: string | null;
+  attachmentPath: string | null;
+  administrativeRationale: string | null;
+  status: RecommendationRuleStatus;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function moduleLabelFromId(moduleId: string): string {
   return MODULE_OPTIONS.find((m) => m.id === moduleId)?.label ?? moduleId;
 }
 
-function seedRules(): RecommendationRule[] {
-  return [
-    {
-      id: 'a1b2c3d4-e5f6-4a5b-8c9d-012345678901',
-      ruleName: 'Risk Analysis Under-50',
-      moduleId: 'IT3040',
-      moduleLabel: moduleLabel('IT3040'),
-      topic: 'Risk Analysis',
-      conditionType: 'scoreUnderThreshold',
-      scoreThreshold: 50,
-      priority: 'high',
-      recommendedActionSummary: 'Assign support material...',
-      recommendationTitle: 'Master Quantitative Risk Assessment',
-      resourceType: 'Reading Material',
-      status: 'active',
-      isActive: true,
-      updatedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-    },
-    {
-      id: 'b2c3d4e5-f6a7-5b6c-9d0e-123456789012',
-      ruleName: 'Advanced Logic Mastery',
-      moduleId: 'CS2010',
-      moduleLabel: moduleLabel('CS2010'),
-      topic: 'Algorithmic Logic',
-      conditionType: 'scoreOverThreshold',
-      scoreThreshold: 85,
-      priority: 'low',
-      recommendedActionSummary: 'Advanced certification path',
-      recommendationTitle: 'Advanced Logic Track',
-      resourceType: 'External Workshop',
-      status: 'paused',
-      isActive: false,
-      updatedAt: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: 'c3d4e5f6-a7b8-6c7d-0e1f-234567890123',
-      ruleName: 'Mid-Tier Performance',
-      moduleId: 'SE4020',
-      moduleLabel: moduleLabel('SE4020'),
-      topic: 'System Arch',
-      conditionType: 'scoreUnderThreshold',
-      scoreThreshold: 70,
-      priority: 'medium',
-      recommendedActionSummary: 'Architecture webinar link',
-      recommendationTitle: 'Architecture Webinar',
-      resourceType: 'Video Tutorial',
-      status: 'active',
-      isActive: true,
-      updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-      conditionDisplayOverride: 'Score 50-70%',
-    },
-  ];
+function mapFromApi(d: RecommendationRuleApiDto): RecommendationRule {
+  const title = d.recommendationTitle?.trim() ?? '';
+  return {
+    id: d.id,
+    ruleName: d.ruleName,
+    moduleId: d.moduleCode,
+    moduleLabel: d.moduleName,
+    topic: d.topicName,
+    conditionType: d.conditionType,
+    scoreThreshold: d.scoreThreshold,
+    priority: d.priorityLevel,
+    recommendedActionSummary:
+      title.length > 80 ? `${title.slice(0, 77)}…` : title,
+    recommendationTitle: title,
+    resourceType: d.resourceType,
+    resourceUrl: d.resourceUrl ?? undefined,
+    attachmentPath: d.attachmentPath ?? undefined,
+    administrativeRationale: d.administrativeRationale ?? undefined,
+    status: d.status,
+    isActive: d.isActive,
+    updatedAt: d.updatedAt,
+  };
 }
 
-function formToRule(id: string, v: RecommendationRuleFormValue): RecommendationRule {
+function formToApiBody(
+  v: RecommendationRuleFormValue,
+  attachmentPath: string | null | undefined
+): Record<string, unknown> {
+  const moduleName = moduleLabelFromId(v.moduleId);
+  const status: RecommendationRuleStatus = v.isActive ? 'active' : 'paused';
   return {
-    id,
     ruleName: v.ruleName.trim(),
-    moduleId: v.moduleId,
-    moduleLabel: moduleLabel(v.moduleId),
-    topic: v.topic,
+    moduleCode: v.moduleId.trim(),
+    moduleName: moduleName,
+    topicName: v.topic.trim(),
     conditionType: v.conditionType,
     scoreThreshold: Number(v.scoreThreshold),
-    priority: v.priorityLevel,
-    recommendedActionSummary: v.recommendationTitle.slice(0, 80),
     recommendationTitle: v.recommendationTitle.trim(),
-    resourceType: v.resourceType,
-    resourceUrl: v.resourceUrl?.trim() || undefined,
-    administrativeRationale: v.administrativeRationale?.trim() || undefined,
-    status: v.isActive ? 'active' : 'paused',
-    isActive: v.isActive,
-    updatedAt: new Date().toISOString(),
+    resourceType: v.resourceType.trim(),
+    priorityLevel: v.priorityLevel,
+    resourceUrl: v.resourceUrl?.trim() || null,
+    attachmentPath: attachmentPath?.trim() || null,
+    administrativeRationale: v.administrativeRationale?.trim() || null,
+    status,
   };
+}
+
+function getApiErrorMessage(err: unknown): string {
+  if (err instanceof HttpErrorResponse) {
+    const body = err.error;
+    if (
+      body &&
+      typeof body === 'object' &&
+      'message' in body &&
+      typeof (body as ApiResponse<unknown>).message === 'string'
+    ) {
+      return (body as ApiResponse<unknown>).message;
+    }
+    return err.message || 'Request failed';
+  }
+  if (err instanceof Error) return err.message;
+  return 'Request failed';
 }
 
 @Injectable({ providedIn: 'root' })
 export class RecommendationRuleService {
-  private readonly _rules = signal<RecommendationRule[]>(seedRules());
+  private readonly http = inject(HttpClient);
+
+  private readonly _rules = signal<RecommendationRule[]>([]);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
 
   readonly rules = this._rules.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
 
-  /** Mock metric: scales lightly with rule count */
   readonly activeImpactCount = computed(() => {
     const base = 1200;
     const n = this._rules().filter((r) => r.status === 'active').length;
@@ -103,48 +128,180 @@ export class RecommendationRuleService {
   });
 
   readonly criticalGapsCount = computed(() => {
-    const topicsCovered = new Set(this._rules().map((r) => `${r.moduleId}:${r.topic}`));
+    const topicsCovered = new Set(
+      this._rules().map((r) => `${r.moduleId}:${r.topic}`)
+    );
     const mockTotalTopics = 24;
     return Math.max(0, mockTotalTopics - topicsCovered.size);
   });
 
-  getAll(): RecommendationRule[] {
-    return this._rules();
+  private get baseUrl(): string {
+    return `${API_BASE_URL}/api/recommendation-rules`;
+  }
+
+  clearError(): void {
+    this._error.set(null);
+  }
+
+  async loadAll(): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ApiResponse<RecommendationRuleApiDto[]>>(this.baseUrl)
+      );
+      if (res.success && Array.isArray(res.data)) {
+        this._rules.set(res.data.map(mapFromApi));
+      } else {
+        this._error.set(res.message || 'Failed to load recommendation rules');
+        this._rules.set([]);
+      }
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      this._rules.set([]);
+    } finally {
+      this._loading.set(false);
+    }
   }
 
   getById(id: string): RecommendationRule | undefined {
     return this._rules().find((r) => r.id === id);
   }
 
-  /** Returns true if another rule (excluding excludeId) uses same module+topic */
-  hasConflict(moduleId: string, topic: string, excludeId?: string): boolean {
+  async loadById(id: string): Promise<RecommendationRule | null> {
+    this._error.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ApiResponse<RecommendationRuleApiDto>>(
+          `${this.baseUrl}/${id}`
+        )
+      );
+      if (res.success && res.data) {
+        return mapFromApi(res.data);
+      }
+      this._error.set(res.message || 'Rule not found');
+      return null;
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      return null;
+    }
+  }
+
+  /**
+   * Duplicate detection aligned with backend unique index:
+   * moduleCode + topicName + conditionType + scoreThreshold
+   */
+  hasDuplicateComposite(
+    moduleId: string,
+    topic: string,
+    conditionType: RecommendationConditionType,
+    scoreThreshold: number,
+    excludeId?: string
+  ): boolean {
     return this._rules().some(
       (r) =>
         r.moduleId === moduleId &&
         r.topic === topic &&
+        r.conditionType === conditionType &&
+        r.scoreThreshold === scoreThreshold &&
         r.id !== excludeId
     );
   }
 
-  create(value: RecommendationRuleFormValue): RecommendationRule {
-    const id = crypto.randomUUID();
-    const rule = formToRule(id, value);
-    this._rules.update((list) => [...list, rule]);
-    return rule;
+  /** @deprecated Prefer hasDuplicateComposite */
+  hasConflict(
+    moduleId: string,
+    topic: string,
+    excludeId?: string
+  ): boolean {
+    return this._rules().some(
+      (r) => r.moduleId === moduleId && r.topic === topic && r.id !== excludeId
+    );
   }
 
-  update(id: string, value: RecommendationRuleFormValue): RecommendationRule | undefined {
-    const existing = this.getById(id);
-    if (!existing) return undefined;
-    const rule = formToRule(id, value);
-    this._rules.update((list) => list.map((r) => (r.id === id ? rule : r)));
-    return rule;
+  async uploadAttachment(file: File): Promise<string | null> {
+    this._error.set(null);
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    try {
+      const res = await firstValueFrom(
+        this.http.post<ApiResponse<{ attachmentPath: string }>>(
+          `${this.baseUrl}/attachments`,
+          fd
+        )
+      );
+      if (res.success && res.data?.attachmentPath) {
+        return res.data.attachmentPath;
+      }
+      this._error.set(res.message || 'Upload failed');
+      return null;
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      return null;
+    }
   }
 
-  delete(id: string): boolean {
-    const next = this._rules().filter((r) => r.id !== id);
-    if (next.length === this._rules().length) return false;
-    this._rules.set(next);
-    return true;
+  async create(
+    value: RecommendationRuleFormValue,
+    attachmentPath?: string | null
+  ): Promise<RecommendationRule | null> {
+    this._error.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.post<ApiResponse<RecommendationRuleApiDto>>(this.baseUrl, {
+          ...formToApiBody(value, attachmentPath ?? null),
+        })
+      );
+      if (res.success && res.data) {
+        const mapped = mapFromApi(res.data);
+        this._rules.update((list) => [...list, mapped]);
+        return mapped;
+      }
+      this._error.set(res.message || 'Create failed');
+      return null;
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      return null;
+    }
+  }
+
+  async update(
+    id: string,
+    value: RecommendationRuleFormValue,
+    attachmentPath?: string | null
+  ): Promise<RecommendationRule | null> {
+    this._error.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.put<ApiResponse<RecommendationRuleApiDto>>(
+          `${this.baseUrl}/${id}`,
+          { ...formToApiBody(value, attachmentPath ?? null) }
+        )
+      );
+      if (res.success && res.data) {
+        const mapped = mapFromApi(res.data);
+        this._rules.update((list) =>
+          list.map((r) => (r.id === id ? mapped : r))
+        );
+        return mapped;
+      }
+      this._error.set(res.message || 'Update failed');
+      return null;
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      return null;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    this._error.set(null);
+    try {
+      await firstValueFrom(this.http.delete(`${this.baseUrl}/${id}`));
+      this._rules.update((list) => list.filter((r) => r.id !== id));
+      return true;
+    } catch (err) {
+      this._error.set(getApiErrorMessage(err));
+      return false;
+    }
   }
 }

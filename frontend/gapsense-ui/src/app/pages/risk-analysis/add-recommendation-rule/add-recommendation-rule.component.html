@@ -24,16 +24,26 @@
           class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-slate-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-800"></div>
       </label>
       <span class="text-xs font-bold text-blue-900">
-        {{ headerForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+        {{ headerForm.get('isActive')?.value ? 'Active' : 'Paused' }}
       </span>
     </div>
   </div>
+
+  @if (service.error()) {
+    <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-900 font-medium">
+      {{ service.error() }}
+    </div>
+  }
 
   <app-recommendation-conflict-alert
     [message]="conflictMessage()"
     [visible]="showConflict()"
     (dismiss)="dismissConflict()"
   />
+
+  @if (editLoading()) {
+    <p class="text-sm text-slate-600 mb-6">Loading rule…</p>
+  }
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
     <app-recommendation-rule-form

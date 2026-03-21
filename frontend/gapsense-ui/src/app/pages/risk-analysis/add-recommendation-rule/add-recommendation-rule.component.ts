@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -22,9 +23,8 @@ import {
   mergeRecommendationForm,
   type RecommendationRuleFormBody,
 } from '../../../models/risk-analysis/recommendation-rule-form.model';
-import {
-  formatTriggerPreview,
-} from '../../../models/risk-analysis/recommendation-rule.model';
+import { formatTriggerPreview } from '../../../models/risk-analysis/recommendation-rule.model';
+import type { RecommendationRule } from '../../../models/risk-analysis/recommendation-rule.model';
 import { PRIORITY_LABELS } from '../../../models/risk-analysis/recommendation-priority.model';
 import { RecommendationRuleService } from '../../../services/recommendation-rule.service';
 
@@ -45,7 +45,7 @@ import { RecommendationRuleService } from '../../../services/recommendation-rule
   styleUrl: './add-recommendation-rule.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AddRecommendationRuleComponent {
+export class AddRecommendationRuleComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
@@ -62,11 +62,11 @@ export class AddRecommendationRuleComponent {
     { initialValue: null as string | null }
   );
 
-  protected readonly initialRule = computed(() => {
-    const id = this.editId();
-    if (!id) return null;
-    return this.service.getById(id) ?? null;
-  });
+  protected readonly loadedRule = signal<RecommendationRule | null>(null);
+  protected readonly editLoading = signal(false);
+  protected readonly saveInProgress = signal(false);
+
+  protected readonly initialRule = computed(() => this.loadedRule());
 
   protected readonly pageTitle = computed(() =>
     this.editId() ? 'Edit Recommendation Rule' : 'Add Recommendation Rule'
@@ -84,9 +84,11 @@ export class AddRecommendationRuleComponent {
     if (this.conflictDismissed()) return false;
     const v = this.previewBody();
     if (!v) return false;
-    return this.service.hasConflict(
+    return this.service.hasDuplicateComposite(
       v.moduleId,
       v.topic,
+      v.conditionType,
+      v.scoreThreshold,
       this.editId() ?? undefined
     );
   });
@@ -94,8 +96,9 @@ export class AddRecommendationRuleComponent {
   protected readonly conflictMessage = computed(() => {
     const v = this.previewBody();
     if (!v) return '';
-    const mod = MODULE_OPTIONS.find((m) => m.id === v.moduleId)?.label ?? v.moduleId;
-    return `A rule with similar logic (Module: ${mod}, Topic: ${v.topic}) already exists. Saving this will create Version 2 of the intervention logic for this topic.`;
+    const mod =
+      MODULE_OPTIONS.find((m) => m.id === v.moduleId)?.label ?? v.moduleId;
+    return `A rule already exists for this module, topic, trigger condition, and score threshold (${mod}, ${v.topic}). Change one of these fields or edit the existing rule.`;
   });
 
   protected readonly triggerLabel = computed(() => {
@@ -112,14 +115,39 @@ export class AddRecommendationRuleComponent {
 
   constructor() {
     effect(() => {
-      const rule = this.initialRule();
+      const rule = this.loadedRule();
       if (rule) {
         this.headerForm.patchValue({ isActive: rule.isActive });
-      } else {
+      } else if (!this.editId()) {
         this.headerForm.patchValue({ isActive: true });
       }
       this.conflictDismissed.set(false);
     });
+  }
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      void this.loadRuleForEdit(id);
+    } else {
+      this.loadedRule.set(null);
+    }
+  }
+
+  private async loadRuleForEdit(id: string): Promise<void> {
+    this.editLoading.set(true);
+    this.loadedRule.set(null);
+    let rule: RecommendationRule | undefined = this.service.getById(id);
+    if (!rule) {
+      const loaded = await this.service.loadById(id);
+      if (loaded) rule = loaded;
+    }
+    this.editLoading.set(false);
+    if (rule) {
+      this.loadedRule.set(rule);
+    } else {
+      void this.router.navigate(['/recommendation-rules']);
+    }
   }
 
   protected onFormValue(v: RecommendationRuleFormBody): void {
@@ -131,27 +159,60 @@ export class AddRecommendationRuleComponent {
   }
 
   protected discard(): void {
-    this.router.navigate(['/recommendation-rules']);
+    void this.router.navigate(['/recommendation-rules']);
   }
 
-  protected save(): void {
+  protected async save(): Promise<void> {
     const cmp = this.ruleForm();
     if (!cmp) return;
     cmp.markAllTouched();
     if (cmp.invalid) return;
+
+    this.saveInProgress.set(true);
+    this.service.clearError();
+
     const body = cmp.getValue();
     const isActive = this.headerForm.get('isActive')?.value ?? true;
     const full = mergeRecommendationForm(body, !!isActive);
+
     const id = this.editId();
-    if (id) {
-      this.service.update(id, full);
-    } else {
-      this.service.create(full);
+    const pending = cmp.getPendingFile();
+    const cleared = cmp.getAttachmentCleared();
+
+    let attachmentPath: string | null = this.loadedRule()?.attachmentPath ?? null;
+    if (cleared) {
+      attachmentPath = null;
     }
-    this.router.navigate(['/recommendation-rules']);
+    if (pending) {
+      const uploaded = await this.service.uploadAttachment(pending);
+      if (!uploaded) {
+        this.saveInProgress.set(false);
+        return;
+      }
+      attachmentPath = uploaded;
+    }
+
+    let ok: boolean;
+    if (id) {
+      const result = await this.service.update(id, full, attachmentPath);
+      ok = result !== null;
+    } else {
+      const result = await this.service.create(full, attachmentPath);
+      ok = result !== null;
+    }
+
+    this.saveInProgress.set(false);
+    if (!ok) return;
+
+    await this.service.loadAll();
+    void this.router.navigate(['/recommendation-rules']);
   }
 
   protected saveDisabled(): boolean {
-    return this.ruleForm()?.invalid ?? true;
+    return (
+      (this.ruleForm()?.invalid ?? true) ||
+      this.saveInProgress() ||
+      this.editLoading()
+    );
   }
 }

@@ -16,6 +16,8 @@ export interface RecommendationRule {
   recommendationTitle: string;
   resourceType: string;
   resourceUrl?: string;
+  /** Server-relative path e.g. /uploads/recommendation-rules/... */
+  attachmentPath?: string;
   administrativeRationale?: string;
   status: RecommendationRuleStatus;
   isActive: boolean;
@@ -87,4 +89,15 @@ export function actionIconForResourceType(resourceType: string): string {
   if (r.includes('workshop')) return 'groups';
   if (r.includes('reading')) return 'menu_book';
   return 'description';
+}
+
+export function fileNameFromAttachmentPath(path: string): string {
+  const seg = path.split(/[/\\]/).pop();
+  return seg ?? path;
+}
+
+export function truncateText(text: string, maxLen: number): string {
+  const t = text.trim();
+  if (t.length <= maxLen) return t;
+  return `${t.slice(0, Math.max(0, maxLen - 1))}…`;
 }

@@ -12,6 +12,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<RiskThreshold> RiskThresholds => Set<RiskThreshold>();
 
+    public DbSet<RecommendationRule> RecommendationRules => Set<RecommendationRule>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
