@@ -1,0 +1,174 @@
+<!-- topic form - two column layout -->
+<div class="grid grid-cols-12 gap-6">
+
+  <!-- LEFT COLUMN - topic details (8 cols) -->
+  <div class="col-span-12 lg:col-span-8">
+    <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+      <div class="mb-6">
+        <h2 class="font-headline text-lg font-bold text-on-surface">Topic Details</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Define topic information and its weight within the module</p>
+      </div>
+
+      <!-- module select -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Academic Module *
+        </label>
+        <select
+          [value]="moduleId()"
+          (change)="onModuleChange($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="">Select module</option>
+          @for (mod of modules; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- topic title -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Topic Title *
+        </label>
+        <input
+          type="text"
+          [value]="topicName()"
+          (input)="topicName.set($any($event.target).value)"
+          placeholder="Enter topic title..."
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
+                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40 transition-colors"
+        />
+      </div>
+
+      <!-- description -->
+      <div class="mb-6">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Description
+        </label>
+        <textarea
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+          placeholder="Describe what this topic covers..."
+          rows="3"
+          class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 focus:ring-primary/20 resize-none transition-all"
+        ></textarea>
+      </div>
+
+      <!-- weights and relevance section -->
+      <div class="bg-surface-container-low/50 p-5 rounded-xl">
+        <h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-4">
+          Weights & Relevance
+        </h3>
+
+        <div class="grid grid-cols-2 gap-5">
+          <!-- importance level -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Importance Level
+            </label>
+            <select
+              [value]="importanceLevel()"
+              (change)="importanceLevel.set($any($event.target).value)"
+              class="w-full py-2.5 px-3 bg-surface-container-lowest rounded-lg text-sm text-on-surface
+                     focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            >
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
+          <!-- topic weight -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Topic Weight (%)
+            </label>
+            <input
+              type="number"
+              [value]="weight()"
+              (input)="weight.set(+$any($event.target).value)"
+              min="0"
+              max="100"
+              class="w-full py-2.5 px-3 bg-surface-container-lowest rounded-lg text-sm text-on-surface
+                     focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN - status and actions (4 cols) -->
+  <div class="col-span-12 lg:col-span-4 space-y-5">
+
+    <!-- visibility & state card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Visibility & State</h3>
+
+      <!-- active toggle -->
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-medium text-on-surface-variant">Active Status</span>
+        <button
+          (click)="toggleActive()"
+          class="w-10 h-5 rounded-full transition-colors relative"
+          [class]="isActive() ? 'bg-primary' : 'bg-outline-variant'"
+        >
+          <span
+            class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+            [class]="isActive() ? 'left-5' : 'left-0.5'"
+          ></span>
+        </button>
+      </div>
+
+      <!-- weight allocation alert -->
+      @if (weight() === 0) {
+        <div class="bg-error-container/20 border border-error/10 p-3 rounded-xl">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-error" style="font-size: 16px;">warning</span>
+            <p class="text-[11px] text-on-error-container">
+              Weight is 0%. This topic won't count towards readiness scoring.
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- action buttons -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm sticky top-20">
+      <button
+        (click)="onSubmit()"
+        class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+      >
+        <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
+        Save Topic
+      </button>
+
+      <button
+        (click)="onCancel()"
+        class="w-full py-3 rounded-xl text-sm font-semibold bg-surface-container-high
+               text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+
+    <!-- editorial guide card -->
+    <div class="bg-blue-50/50 border border-blue-100/50 p-5 rounded-xl">
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-primary" style="font-size: 20px;">school</span>
+        <div>
+          <p class="text-xs font-bold text-on-surface mb-1">Editorial Guide</p>
+          <p class="text-[11px] text-on-surface-variant leading-relaxed">
+            Topic weights within a module should total 100%. Higher weights mean the topic has more importance in readiness evaluations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

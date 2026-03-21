@@ -1,0 +1,222 @@
+<!-- module form - two column layout: form left, info right -->
+<div class="grid grid-cols-12 gap-6">
+
+  <!-- LEFT COLUMN - module details (8 cols) -->
+  <div class="col-span-12 lg:col-span-8">
+    <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+      <!-- section title -->
+      <div class="mb-6">
+        <h2 class="font-headline text-lg font-bold text-on-surface">Module Details</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Define the academic module information</p>
+      </div>
+
+      <!-- module code -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Module Code *
+        </label>
+        <input
+          type="text"
+          [value]="moduleCode()"
+          (input)="moduleCode.set($any($event.target).value)"
+          placeholder="e.g. IT2040"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
+                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40 transition-colors"
+        />
+      </div>
+
+      <!-- module name -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Module Name *
+        </label>
+        <input
+          type="text"
+          [value]="moduleName()"
+          (input)="moduleName.set($any($event.target).value)"
+          placeholder="e.g. Data Structures & Algorithms"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
+                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40 transition-colors"
+        />
+      </div>
+
+      <!-- description -->
+      <div class="mb-6">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Description
+        </label>
+        <textarea
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+          placeholder="Describe the module content and objectives..."
+          rows="4"
+          class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 focus:ring-primary/20 resize-none transition-all"
+        ></textarea>
+      </div>
+
+      <!-- program and semester dropdowns -->
+      <div class="grid grid-cols-2 gap-5 mb-5">
+        <div>
+          <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+            Program
+          </label>
+          <select
+            [value]="program()"
+            (change)="program.set($any($event.target).value)"
+            class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                   focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          >
+            @for (p of programs; track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+            Semester
+          </label>
+          <select
+            [value]="semester()"
+            (change)="semester.set($any($event.target).value)"
+            class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                   focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          >
+            @for (s of semesters; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- credits -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Credits *
+        </label>
+        <input
+          type="number"
+          [value]="credits()"
+          (input)="credits.set(+$any($event.target).value)"
+          min="1"
+          max="6"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
+                 focus:border-primary focus:ring-0 text-on-surface text-lg font-bold
+                 transition-colors max-w-[100px]"
+        />
+      </div>
+
+      <!-- status radio buttons -->
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-3">
+          Status
+        </label>
+        <div class="flex gap-4">
+          @for (s of ['Active', 'Draft', 'Archived']; track s) {
+            <label
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer transition-all border-2"
+              [class]="status() === s
+                ? 'border-primary/30 bg-primary/5'
+                : 'border-transparent bg-surface-container-low hover:bg-surface-container-high'"
+            >
+              <div
+                class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
+                [class]="status() === s ? 'border-primary bg-primary' : 'border-outline-variant'"
+              >
+                @if (status() === s) {
+                  <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                }
+              </div>
+              <input
+                type="radio"
+                name="status"
+                [value]="s"
+                [checked]="status() === s"
+                (change)="status.set($any($event.target).value)"
+                class="hidden"
+              />
+              <span class="text-sm font-medium" [class]="status() === s ? 'text-primary' : 'text-on-surface-variant'">
+                {{ s }}
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN - actions and info (4 cols) -->
+  <div class="col-span-12 lg:col-span-4 space-y-5">
+
+    <!-- action buttons card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <!-- save button -->
+      <button
+        (click)="onSubmit()"
+        class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+      >
+        <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
+        Save Module
+      </button>
+
+      <!-- save & continue button -->
+      <button
+        (click)="onSubmit()"
+        class="w-full py-3 rounded-xl text-sm font-semibold bg-surface-container-high
+               text-on-surface-variant hover:bg-surface-container-highest transition-colors mb-3"
+      >
+        Save & Continue
+      </button>
+
+      <!-- cancel button -->
+      <button
+        (click)="onCancel()"
+        class="w-full py-2.5 rounded-xl text-sm font-medium text-on-surface-variant
+               hover:text-on-surface transition-colors text-center"
+      >
+        Cancel Changes
+      </button>
+
+      <p class="text-[10px] text-on-surface-variant text-center mt-3">
+        Last saved: just now
+      </p>
+    </div>
+
+    <!-- curriculum alignment card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Curriculum Alignment</h3>
+      <p class="text-xs text-on-surface-variant leading-relaxed mb-3">
+        Ensure this module aligns with the SLIIT curriculum framework and prerequisite chains.
+      </p>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary" style="font-size: 18px;">verified</span>
+        <span class="text-xs font-medium text-primary">Aligned with SLQF Level 6</span>
+      </div>
+    </div>
+
+    <!-- audit trail card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Audit Trail</h3>
+      <div class="space-y-3">
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">Module created</p>
+            <p class="text-[10px] text-on-surface-variant">Dr. Aruna Perera · 2 days ago</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">Description updated</p>
+            <p class="text-[10px] text-on-surface-variant">Dr. Aruna Perera · 1 day ago</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
