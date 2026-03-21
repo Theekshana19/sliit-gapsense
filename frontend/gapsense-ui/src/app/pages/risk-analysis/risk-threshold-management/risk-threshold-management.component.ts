@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { RiskAnalysisService } from '../../../services/risk-analysis.service';
 import type { RiskThreshold } from '../../../models/risk-analysis/risk-threshold.model';
 import type { RiskThresholdFormValue } from '../../../models/risk-analysis/risk-threshold-form.model';
@@ -24,7 +31,7 @@ import { ModalComponent } from '../../../components/ui/modal/modal.component';
   styleUrl: './risk-threshold-management.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskThresholdManagementComponent {
+export class RiskThresholdManagementComponent implements OnInit {
   private readonly service = inject(RiskAnalysisService);
 
   protected readonly pageSize = 10;
@@ -38,6 +45,12 @@ export class RiskThresholdManagementComponent {
   readonly thresholds = this.service.thresholds;
   readonly activeCount = this.service.activeCount;
   readonly lastUpdatedAt = this.service.lastUpdatedAt;
+  readonly loading = this.service.loading;
+  readonly error = this.service.error;
+
+  ngOnInit(): void {
+    this.service.loadAll();
+  }
 
   readonly paginatedRows = computed(() => {
     const all = this.thresholds();
@@ -96,15 +109,14 @@ export class RiskThresholdManagementComponent {
     this.editingThreshold.set(null);
   }
 
-  onSave(value: RiskThresholdFormValue): void {
+  async onSave(value: RiskThresholdFormValue): Promise<void> {
     const mode = this.panelMode();
     const editing = this.editingThreshold();
-    if (mode === 'edit' && editing) {
-      this.service.update(editing.id, value);
-    } else {
-      this.service.add(value);
-    }
-    this.closePanel();
+    const result =
+      mode === 'edit' && editing
+        ? await this.service.update(editing.id, value)
+        : await this.service.add(value);
+    if (result) this.closePanel();
   }
 
   requestDelete(threshold: RiskThreshold): void {
@@ -115,15 +127,18 @@ export class RiskThresholdManagementComponent {
     this.confirmDeleteThreshold.set(null);
   }
 
-  confirmDelete(): void {
+  async confirmDelete(): Promise<void> {
     const t = this.confirmDeleteThreshold();
-    if (t) {
-      this.service.delete(t.id);
+    if (t && (await this.service.delete(t.id))) {
       this.confirmDeleteThreshold.set(null);
     }
   }
 
   onPageChange(page: number): void {
     this.currentPage.set(page);
+  }
+
+  clearError(): void {
+    this.service.clearError();
   }
 }

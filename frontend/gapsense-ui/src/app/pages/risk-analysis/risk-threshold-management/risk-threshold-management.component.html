@@ -1,6 +1,24 @@
 <app-top-bar />
 <app-sidebar />
 <main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  @if (error()) {
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-red-600">error</span>
+      <div class="flex-1">
+        <p class="text-sm font-bold text-red-800">{{ error() }}</p>
+        <p class="text-xs text-red-700 mt-1">Ensure the backend API is running at https://localhost:7277</p>
+      </div>
+      <button type="button" class="p-1 hover:bg-red-100 rounded" (click)="clearError()">
+        <span class="material-symbols-outlined text-red-600">close</span>
+      </button>
+    </div>
+  }
+  @if (loading()) {
+    <div class="mb-6 flex items-center gap-2 text-slate-600">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      <span class="text-sm font-medium">Loading thresholds...</span>
+    </div>
+  }
   <div class="flex justify-between items-start mb-10">
     <div>
       <h1 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Risk Threshold Management</h1>
