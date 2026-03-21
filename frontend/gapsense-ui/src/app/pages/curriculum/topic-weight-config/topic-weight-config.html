@@ -1,0 +1,146 @@
+<!-- topic weight configuration page -->
+<app-main-layout pageTitle="Topic Weight Configuration" breadcrumb="Curriculum > Weight Config" [showSearch]="false">
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- LEFT SIDEBAR - module info and validation (4 cols) -->
+    <div class="col-span-12 lg:col-span-4 space-y-5">
+      <!-- selected module card -->
+      @if (module()) {
+        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+          <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Selected Module</h3>
+          <div class="bg-primary/5 p-4 rounded-xl border border-primary/10">
+            <p class="text-xs font-bold text-primary">{{ module()!.moduleCode }}</p>
+            <p class="text-sm font-semibold text-on-surface mt-1">{{ module()!.moduleName }}</p>
+            <p class="text-[11px] text-on-surface-variant mt-1">{{ module()!.program }} · {{ module()!.semester }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- validation alert -->
+      <div class="p-5 rounded-xl shadow-sm"
+        [class]="isValid() ? 'bg-primary-fixed/20 border border-primary/10' : 'bg-error-container/20 border border-error/10'">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined" [class]="isValid() ? 'text-primary' : 'text-error'" style="font-size: 22px;">
+            {{ isValid() ? 'check_circle' : 'warning' }}
+          </span>
+          <div>
+            <p class="text-xs font-bold" [class]="isValid() ? 'text-primary' : 'text-error'">
+              {{ isValid() ? 'Weights Valid' : 'Weight Error' }}
+            </p>
+            <p class="text-[11px] text-on-surface-variant mt-1">
+              Total: <strong [class]="isValid() ? 'text-primary' : 'text-error'">{{ totalWeight() }}%</strong>
+              @if (!isValid()) {
+                — must equal 100%
+              }
+            </p>
+            <!-- progress bar -->
+            <div class="w-full h-2 bg-surface-container-high rounded-full mt-2 overflow-hidden">
+              <div class="h-full rounded-full transition-all"
+                [class]="isValid() ? 'bg-primary' : 'bg-error'"
+                [style.width.%]="totalWeight() > 100 ? 100 : totalWeight()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- quick summary -->
+      <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Quick Summary</h3>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Total Topics</span>
+            <span class="font-bold text-on-surface">{{ weights().length }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Assigned Weight</span>
+            <span class="font-bold" [class]="isValid() ? 'text-primary' : 'text-error'">{{ totalWeight() }}%</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Remaining</span>
+            <span class="font-bold text-on-surface">{{ 100 - totalWeight() }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE - editable weights table (8 cols) -->
+    <div class="col-span-12 lg:col-span-8">
+      @if (isLoading()) {
+        <div class="py-20"><app-loading-spinner size="lg" /></div>
+      }
+
+      @if (!isLoading()) {
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+          <!-- header with actions -->
+          <div class="flex items-center justify-between px-5 py-4">
+            <h3 class="font-headline text-base font-bold text-on-surface">Weight Distribution</h3>
+            <div class="flex gap-2">
+              <button (click)="resetWeights()"
+                class="px-3 py-2 rounded-lg text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+                Reset to Default
+              </button>
+              <button (click)="distributeEvenly()"
+                class="px-3 py-2 rounded-lg text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+                Distribute Evenly
+              </button>
+            </div>
+          </div>
+
+          <table class="w-full">
+            <thead>
+              <tr class="text-left">
+                <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Topic Name</th>
+                <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Current Weight</th>
+                <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Importance Level</th>
+                <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Last Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of weights(); track entry.id) {
+                <tr class="hover:bg-surface-container-low transition-colors">
+                  <td class="py-4 px-5">
+                    <span class="text-sm font-semibold text-on-surface">{{ entry.topicName }}</span>
+                  </td>
+                  <td class="py-4 px-5">
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        [value]="entry.currentWeight"
+                        (input)="updateWeight(entry.id, +$any($event.target).value)"
+                        min="0"
+                        max="100"
+                        class="w-16 py-1.5 px-2 bg-surface-container-low rounded-lg text-sm font-bold text-on-surface
+                               text-center focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <span class="text-xs text-on-surface-variant">%</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-5">
+                    <app-status-badge [label]="entry.importanceLevel" [variant]="getImportanceVariant(entry.importanceLevel)" />
+                  </td>
+                  <td class="py-4 px-5">
+                    <span class="text-xs text-on-surface-variant">{{ entry.lastUpdated }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- footer with total and save -->
+          <div class="flex items-center justify-between px-5 py-4 border-t border-surface-container-low">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-on-surface">Total:</span>
+              <span class="text-lg font-black" [class]="isValid() ? 'text-primary' : 'text-error'">{{ totalWeight() }}%</span>
+            </div>
+            <button (click)="saveWeights()"
+              class="px-6 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
+              [class.opacity-50]="!isValid()"
+              [disabled]="!isValid()">
+              Save Weights
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</app-main-layout>

@@ -1,0 +1,4 @@
+<!-- add/edit module page -->
+<app-main-layout [pageTitle]="pageTitle()" breadcrumb="Curriculum > Module Editor" [showSearch]="false">
+  <app-module-form [module]="module()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+</app-main-layout>

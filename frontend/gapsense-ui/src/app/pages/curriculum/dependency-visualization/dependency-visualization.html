@@ -1,0 +1,127 @@
+<!-- dependency visualization page -->
+<app-main-layout pageTitle="Dependency Visualization" breadcrumb="Curriculum > Dependency Graph" [showSearch]="false">
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <!-- legend -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-6">
+      <div class="flex items-center gap-6">
+        <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Legend:</span>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-0.5 bg-primary"></div>
+          <span class="text-xs text-on-surface-variant">Mandatory</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-0.5 border-t-2 border-dashed border-outline-variant"></div>
+          <span class="text-xs text-on-surface-variant">Optional</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 rounded ring-2 ring-error"></div>
+          <span class="text-xs text-on-surface-variant">Missing Prerequisites</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 rounded ring-2 ring-amber-400"></div>
+          <span class="text-xs text-on-surface-variant">Review Required</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVG graph area -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 mb-6 overflow-x-auto">
+      <div class="relative" style="min-width: 900px; min-height: 580px;">
+        <!-- SVG for connection lines -->
+        <svg class="absolute inset-0 w-full h-full" style="min-width: 900px; min-height: 580px;">
+          @for (edge of edges(); track edge.from + edge.to) {
+            <path
+              [attr.d]="getEdgePath(edge)"
+              fill="none"
+              [attr.stroke]="edge.type === 'Mandatory' ? '#003f87' : '#c2c6d4'"
+              [attr.stroke-width]="edge.type === 'Mandatory' ? '2' : '1.5'"
+              [attr.stroke-dasharray]="edge.type === 'Optional' ? '6,4' : 'none'"
+            />
+          }
+        </svg>
+
+        <!-- module node cards -->
+        @for (node of nodes(); track node.id) {
+          <div
+            class="absolute bg-surface-container-lowest rounded-2xl shadow-sm p-4 border-l-4 cursor-pointer
+                   hover:shadow-md transition-all"
+            [class]="getLevelColor(node.level) + ' ' + getStatusRing(node.status)"
+            [style.left.px]="node.x"
+            [style.top.px]="node.y"
+            style="width: 160px;"
+          >
+            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+              {{ getLevelLabel(node.level) }}
+            </p>
+            <p class="text-xs font-bold text-primary mt-1">{{ node.moduleCode }}</p>
+            <p class="text-[11px] text-on-surface mt-0.5 leading-tight">{{ node.moduleName }}</p>
+
+            @if (node.status === 'error') {
+              <div class="flex items-center gap-1 mt-2">
+                <span class="material-symbols-outlined text-error" style="font-size: 14px;">warning</span>
+                <span class="text-[9px] text-error font-medium">Missing prereqs</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- bottom analytics cards -->
+    <div class="grid grid-cols-3 gap-4">
+      <!-- dependency insights -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Dependency Insights</h3>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Total Modules</span>
+            <span class="font-bold text-on-surface">{{ nodes().length }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Total Connections</span>
+            <span class="font-bold text-on-surface">{{ edges().length }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-on-surface-variant">Max Depth</span>
+            <span class="font-bold text-on-surface">4 levels</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- critical paths -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Critical Path</h3>
+        <div class="flex items-center gap-1 text-xs">
+          <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">IT1040</span>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 14px;">arrow_forward</span>
+          <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">IT2040</span>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 14px;">arrow_forward</span>
+          <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">IT3011</span>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 14px;">arrow_forward</span>
+          <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">IT4020</span>
+        </div>
+        <p class="text-[11px] text-on-surface-variant mt-2">Longest prerequisite chain in the system</p>
+      </div>
+
+      <!-- quick actions -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Quick Actions</h3>
+        <div class="space-y-2">
+          <button class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-on-surface hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined mr-1 text-on-surface-variant" style="font-size: 14px; vertical-align: middle;">download</span>
+            Export as PNG
+          </button>
+          <button class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-on-surface hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined mr-1 text-on-surface-variant" style="font-size: 14px; vertical-align: middle;">fullscreen</span>
+            Full Screen View
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</app-main-layout>

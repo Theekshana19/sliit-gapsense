@@ -1,0 +1,143 @@
+<!-- semester offerings page -->
+<app-main-layout pageTitle="Semester Module Offerings" breadcrumb="Curriculum > Offerings" searchPlaceholder="Search offerings...">
+
+  <!-- filter section -->
+  <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-6">
+    <div class="flex gap-3">
+      <select class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Academic Years</option>
+        <option>2024/2025</option>
+        <option>2025/2026</option>
+      </select>
+      <select class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Semesters</option>
+        <option>Semester 1</option>
+        <option>Semester 2</option>
+      </select>
+      <select class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Programs</option>
+        <option>BSc IT</option>
+        <option>BSc CS</option>
+        <option>BSc SE</option>
+      </select>
+      <select class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Intakes</option>
+        <option>February 2024</option>
+        <option>June 2024</option>
+        <option>October 2024</option>
+      </select>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <!-- offerings table -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-6">
+      <div class="flex items-center justify-between px-5 py-4">
+        <h3 class="font-headline text-base font-bold text-on-surface">Module Offerings</h3>
+        <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold btn-primary-gradient">
+          <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+          Add Offering
+        </button>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Module Code</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Module Name</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Program</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Intake</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Lecturer</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (offering of offerings(); track offering.id) {
+            <tr class="hover:bg-surface-container-low transition-colors group">
+              <td class="py-4 px-5">
+                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-secondary-container text-on-secondary-container">
+                  {{ offering.moduleCode }}
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <span class="text-sm font-semibold text-on-surface">{{ offering.moduleName }}</span>
+              </td>
+              <td class="py-4 px-5">
+                <span class="text-xs text-on-surface">{{ offering.program }}</span>
+              </td>
+              <td class="py-4 px-5">
+                <span class="text-xs text-on-surface-variant">{{ offering.intake }}</span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-bold" [class]="offering.avatarColor">
+                    {{ offering.lecturerAvatar }}
+                  </div>
+                  <span class="text-xs text-on-surface">{{ offering.lecturerName }}</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <app-status-badge [label]="offering.status" [variant]="getStatusVariant(offering.status)" />
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
+                  </button>
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors">
+                    <span class="material-symbols-outlined text-error" style="font-size: 18px;">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- bottom stats -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-size: 20px;">check_circle</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Status Check</p>
+            <p class="font-headline text-xl font-black text-primary">{{ stats().completionPercentage }}%</p>
+            <p class="text-[10px] text-on-surface-variant">Complete</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-error" style="font-size: 20px;">warning</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Attention Needed</p>
+            <p class="font-headline text-xl font-black text-error">{{ stats().attentionNeeded }}</p>
+            <p class="text-[10px] text-on-surface-variant">Modules</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-tertiary" style="font-size: 20px;">trending_up</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Efficiency</p>
+            <p class="font-headline text-xl font-black text-tertiary">+{{ stats().efficiencyGrowth }}%</p>
+            <p class="text-[10px] text-on-surface-variant">Growth</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</app-main-layout>

@@ -1,0 +1,3 @@
+<app-main-layout [pageTitle]="pageTitle()" breadcrumb="Curriculum > Topic Editor" [showSearch]="false">
+  <app-topic-form [topic]="topic()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+</app-main-layout>
