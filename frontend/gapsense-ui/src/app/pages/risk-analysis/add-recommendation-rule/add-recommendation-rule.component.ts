@@ -20,6 +20,7 @@ import { RecommendationLivePreviewComponent } from '../../../components/risk-ana
 import { RecommendationRuleFormComponent } from '../../../components/risk-analysis/recommendation-rule-form/recommendation-rule-form.component';
 import { MODULE_OPTIONS } from '../../../models/risk-analysis/module-topic.constants';
 import {
+  isLinkResourceType,
   mergeRecommendationForm,
   type RecommendationRuleFormBody,
 } from '../../../models/risk-analysis/recommendation-rule-form.model';
@@ -180,16 +181,20 @@ export class AddRecommendationRuleComponent implements OnInit {
     const cleared = cmp.getAttachmentCleared();
 
     let attachmentPath: string | null = this.loadedRule()?.attachmentPath ?? null;
-    if (cleared) {
+    if (isLinkResourceType(body.resourceType)) {
       attachmentPath = null;
-    }
-    if (pending) {
-      const uploaded = await this.service.uploadAttachment(pending);
-      if (!uploaded) {
-        this.saveInProgress.set(false);
-        return;
+    } else {
+      if (cleared) {
+        attachmentPath = null;
       }
-      attachmentPath = uploaded;
+      if (pending) {
+        const uploaded = await this.service.uploadAttachment(pending);
+        if (!uploaded) {
+          this.saveInProgress.set(false);
+          return;
+        }
+        attachmentPath = uploaded;
+      }
     }
 
     let ok: boolean;

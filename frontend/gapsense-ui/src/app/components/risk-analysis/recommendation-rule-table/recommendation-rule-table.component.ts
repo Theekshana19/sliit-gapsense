@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { API_BASE_URL } from '../../../config/api.config';
 import type { RecommendationRule } from '../../../models/risk-analysis/recommendation-rule.model';
 import {
   actionIconForResourceType,
@@ -95,5 +96,11 @@ export class RecommendationRuleTableComponent {
 
   onSearchInput(value: string): void {
     this.searchChange.emit(value);
+  }
+
+  protected attachmentHref(path: string): string {
+    const p = path.trim();
+    if (p.startsWith('/')) return `${API_BASE_URL}${p}`;
+    return p;
   }
 }

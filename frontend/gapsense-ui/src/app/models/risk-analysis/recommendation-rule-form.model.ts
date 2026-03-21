@@ -44,6 +44,28 @@ export const RESOURCE_TYPE_OPTIONS = [
   'External Workshop',
 ] as const;
 
+/** Must match `RESOURCE_TYPE_OPTIONS` entry exactly. */
+export const READING_MATERIAL_RESOURCE_TYPE = 'Reading Material' as const;
+
+export function isReadingMaterialResourceType(type: string): boolean {
+  return type === READING_MATERIAL_RESOURCE_TYPE;
+}
+
+export function isLinkResourceType(type: string): boolean {
+  return !isReadingMaterialResourceType(type);
+}
+
+/** Non-empty trimmed string for link-type Resource URL. */
+export function linkResourceUrlValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const v = control.value;
+    if (v === null || v === undefined || String(v).trim() === '') {
+      return { linkUrlRequired: true };
+    }
+    return null;
+  };
+}
+
 function scoreThresholdValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const v = control.value;
@@ -72,6 +94,9 @@ export function getRecommendationFieldError(
   if (!errors) return null;
   if (errors['required']) return 'Field is required';
   if (errors['scoreRange']) return 'Must be between 0 and 100%';
+  if (errors['linkUrlRequired']) return 'Enter a valid URL for this resource type';
+  if (errors['readingAttachmentRequired'])
+    return 'Upload a PDF or document, or keep the existing file';
   return null;
 }
 

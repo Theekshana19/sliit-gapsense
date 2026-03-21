@@ -7,11 +7,21 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  type ValidationErrors,
+  type ValidatorFn,
+} from '@angular/forms';
+import { startWith } from 'rxjs';
 import type { RecommendationRule } from '../../../models/risk-analysis/recommendation-rule.model';
 import {
   DEFAULT_RECOMMENDATION_FORM,
   getRecommendationFieldError,
+  isLinkResourceType as isLinkResourceTypeModel,
+  isReadingMaterialResourceType,
+  linkResourceUrlValidator,
   RECOMMENDATION_FORM_VALIDATORS,
   RESOURCE_TYPE_OPTIONS,
   type RecommendationRuleFormBody,
@@ -50,6 +60,18 @@ export class RecommendationRuleFormComponent {
   /** User removed an existing server-side attachment. */
   protected readonly attachmentCleared = signal(false);
 
+  private readonly readingAttachmentValidatorFn: ValidatorFn =
+    (): ValidationErrors | null => {
+      const rt = this.form?.get('resourceType')?.value as string;
+      if (!isReadingMaterialResourceType(rt ?? '')) return null;
+      const hasPending = !!this.pendingFile();
+      const hasExisting = !!(
+        this.initialRule()?.attachmentPath && !this.attachmentCleared()
+      );
+      if (hasPending || hasExisting) return null;
+      return { readingAttachmentRequired: true };
+    };
+
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
       ruleName: ['', RECOMMENDATION_FORM_VALIDATORS.ruleName],
@@ -67,6 +89,22 @@ export class RecommendationRuleFormComponent {
       administrativeRationale: [''],
     });
 
+    this.form.addValidators(this.readingAttachmentValidatorFn);
+
+    this.form
+      .get('resourceType')!
+      .valueChanges.pipe(
+        startWith(this.form.get('resourceType')!.value),
+        takeUntilDestroyed()
+      )
+      .subscribe((rt: string) => {
+        if (isLinkResourceTypeModel(rt)) {
+          this.pendingFile.set(null);
+          this.resetFileInput();
+        }
+        this.applyResourceTypeState(rt);
+      });
+
     this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
       this.valueChange.emit(this.getValue());
     });
@@ -78,6 +116,9 @@ export class RecommendationRuleFormComponent {
       if (rule) {
         if (this.patchedRuleId !== rule.id) {
           this.patchedRuleId = rule.id;
+          this.pendingFile.set(null);
+          this.attachmentCleared.set(false);
+          this.resetFileInput();
           this.form.patchValue(
             {
               ruleName: rule.ruleName,
@@ -93,13 +134,29 @@ export class RecommendationRuleFormComponent {
             },
             { emitEvent: false }
           );
+          this.applyResourceTypeState(rule.resourceType);
+          this.form.updateValueAndValidity({ emitEvent: false });
           this.valueChange.emit(this.getValue());
         }
       } else if (this.patchedRuleId !== null) {
         this.patchedRuleId = null;
+        this.pendingFile.set(null);
+        this.attachmentCleared.set(false);
+        this.resetFileInput();
         this.form.reset(DEFAULT_RECOMMENDATION_FORM);
+        this.applyResourceTypeState(DEFAULT_RECOMMENDATION_FORM.resourceType);
+        this.form.updateValueAndValidity({ emitEvent: false });
         this.valueChange.emit(this.getValue());
       }
+    });
+
+    effect(() => {
+      this.pendingFile();
+      this.attachmentCleared();
+      this.initialRule();
+      queueMicrotask(() =>
+        this.form.updateValueAndValidity({ emitEvent: false })
+      );
     });
 
     this.form
@@ -117,6 +174,7 @@ export class RecommendationRuleFormComponent {
 
   getValue(): RecommendationRuleFormBody {
     const v = this.form.getRawValue();
+    const rt = v.resourceType ?? '';
     return {
       ruleName: v.ruleName ?? '',
       moduleId: v.moduleId ?? '',
@@ -124,15 +182,44 @@ export class RecommendationRuleFormComponent {
       conditionType: v.conditionType,
       scoreThreshold: Number(v.scoreThreshold),
       recommendationTitle: v.recommendationTitle ?? '',
-      resourceType: v.resourceType ?? '',
+      resourceType: rt,
       priorityLevel: v.priorityLevel,
-      resourceUrl: v.resourceUrl ?? '',
+      resourceUrl: isReadingMaterialResourceType(rt) ? '' : (v.resourceUrl ?? ''),
       administrativeRationale: v.administrativeRationale ?? '',
     };
   }
 
   markAllTouched(): void {
     this.form.markAllAsTouched();
+    this.form.markAsTouched();
+  }
+
+  private applyResourceTypeState(rt: string): void {
+    const urlCtrl = this.form.get('resourceUrl');
+    if (!urlCtrl) return;
+    if (isReadingMaterialResourceType(rt)) {
+      urlCtrl.disable({ emitEvent: false });
+      urlCtrl.setValue('', { emitEvent: false });
+      urlCtrl.clearValidators();
+      urlCtrl.setErrors(null);
+    } else {
+      urlCtrl.enable({ emitEvent: false });
+      urlCtrl.setValidators([linkResourceUrlValidator()]);
+    }
+    urlCtrl.updateValueAndValidity({ emitEvent: false });
+    this.form.updateValueAndValidity({ emitEvent: false });
+  }
+
+  protected isReadingMaterial(): boolean {
+    return isReadingMaterialResourceType(
+      (this.form.get('resourceType')?.value as string) ?? ''
+    );
+  }
+
+  protected isLinkResourceType(): boolean {
+    return isLinkResourceTypeModel(
+      (this.form.get('resourceType')?.value as string) ?? ''
+    );
   }
 
   protected topicsForSelectedModule(): string[] {
@@ -149,6 +236,18 @@ export class RecommendationRuleFormComponent {
   protected showError(controlName: string): boolean {
     const c = this.form.get(controlName);
     return !!(c && c.invalid && c.touched);
+  }
+
+  protected showReadingAttachmentError(): boolean {
+    return !!(
+      this.form.touched &&
+      this.form.errors?.['readingAttachmentRequired']
+    );
+  }
+
+  protected readingAttachmentError(): string | null {
+    if (!this.form.touched) return null;
+    return getRecommendationFieldError('form', this.form.errors);
   }
 
   get invalid(): boolean {

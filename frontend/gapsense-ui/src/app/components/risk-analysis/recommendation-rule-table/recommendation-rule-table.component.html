@@ -87,12 +87,16 @@
                       </a>
                     }
                     @if (row.attachmentPath) {
-                      <span
-                        class="text-[10px] font-bold text-slate-500 inline-flex items-center gap-0.5"
-                        [title]="row.attachmentPath">
+                      <a
+                        class="text-[10px] font-bold text-blue-800 hover:underline inline-flex items-center gap-0.5"
+                        [href]="attachmentHref(row.attachmentPath)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [title]="row.attachmentPath"
+                        (click)="$event.stopPropagation()">
                         <span class="material-symbols-outlined text-xs">attach_file</span>
-                        Attachment
-                      </span>
+                        Open file
+                      </a>
                     }
                   </div>
                 </div>
