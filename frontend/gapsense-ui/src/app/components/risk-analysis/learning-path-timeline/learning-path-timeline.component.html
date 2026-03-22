@@ -1,0 +1,32 @@
+<div class="space-y-0 relative">
+  <div class="absolute left-8 top-0 bottom-0 w-1 bg-slate-200 rounded-full"></div>
+  @for (step of steps(); track step.id; let last = $last) {
+    <div class="relative flex items-start gap-12" [class.pb-16]="!last">
+      <div class="relative z-10 flex flex-col items-center shrink-0">
+        @switch (step.status) {
+          @case ('completed') {
+            <div class="w-16 h-16 rounded-full bg-blue-800 flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1">check_circle</span>
+            </div>
+          }
+          @case ('in_progress') {
+            <div class="w-16 h-16 rounded-full bg-white border-4 border-blue-800 flex items-center justify-center text-blue-800 shadow-md">
+              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1">play_circle</span>
+            </div>
+          }
+          @default {
+            <div class="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 shadow-inner">
+              <span class="material-symbols-outlined text-3xl">lock</span>
+            </div>
+          }
+        }
+      </div>
+      <div class="flex-1 min-w-0">
+        <app-learning-path-step-card
+          [step]="step"
+          (viewPerformanceSummary)="viewPerformanceSummary.emit($event)"
+          (resumeResource)="resumeResource.emit($event)" />
+      </div>
+    </div>
+  }
+</div>

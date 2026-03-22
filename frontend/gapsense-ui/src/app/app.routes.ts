@@ -58,5 +58,12 @@ export const routes: Routes = [
         (m) => m.StudentReadinessProfileComponent
       ),
   },
+  {
+    path: 'learning-path',
+    loadComponent: () =>
+      import('./pages/risk-analysis/personalized-learning-path/personalized-learning-path.component').then(
+        (m) => m.PersonalizedLearningPathComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];
