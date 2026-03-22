@@ -3,6 +3,31 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   { path: '', redirectTo: 'risk-thresholds', pathMatch: 'full' },
   {
+    path: 'auth/login',
+    loadComponent: () =>
+      import('./pages/auth/login/login-page.component').then((m) => m.LoginPageComponent),
+  },
+  {
+    path: 'auth/signup/student',
+    loadComponent: () =>
+      import('./pages/auth/signup-student/signup-student-page.component').then((m) => m.SignupStudentPageComponent),
+  },
+  {
+    path: 'auth/signup/lecturer',
+    loadComponent: () =>
+      import('./pages/auth/signup-lecturer/signup-lecturer-page.component').then((m) => m.SignupLecturerPageComponent),
+  },
+  {
+    path: 'auth/signup/admin',
+    loadComponent: () =>
+      import('./pages/auth/signup-admin/signup-admin-page.component').then((m) => m.SignupAdminPageComponent),
+  },
+  {
+    path: 'auth/signup',
+    loadComponent: () =>
+      import('./pages/auth/signup-role/signup-role-page.component').then((m) => m.SignupRolePageComponent),
+  },
+  {
     path: 'risk-thresholds',
     loadComponent: () =>
       import('./pages/risk-analysis/risk-threshold-management/risk-threshold-management.component').then(

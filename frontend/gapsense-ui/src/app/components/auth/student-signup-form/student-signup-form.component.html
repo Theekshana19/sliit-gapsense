@@ -1,0 +1,99 @@
+<form class="space-y-6 max-w-xl" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <a routerLink="/auth/signup" class="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline mb-2">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+    Step 02 of 02
+  </a>
+
+  <app-auth-step-badge stepText="Step 2 of 2" contextLabel="Student profile" />
+
+  <div>
+    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Create Student Account</h1>
+    <p class="text-slate-600 font-medium mt-2 text-sm md:text-base">
+      Please provide your institutional details to finalize your profile.
+    </p>
+  </div>
+
+  <app-auth-input
+    inputId="stu-fullname"
+    label="Full Name"
+    placeholder="John Doe"
+    icon="person"
+    autocomplete="name"
+    [control]="form.controls.fullName" />
+
+  <app-auth-input
+    inputId="stu-email"
+    label="Email Address"
+    placeholder="student@my.sliit.lk"
+    type="email"
+    icon="mail"
+    autocomplete="email"
+    [control]="form.controls.email" />
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <app-auth-input
+      inputId="stu-id"
+      label="Student ID"
+      placeholder="IT12345678"
+      icon="badge"
+      autocomplete="off"
+      [control]="form.controls.studentId" />
+    <app-auth-select
+      selectId="stu-batch"
+      label="Batch"
+      placeholder="Select batch"
+      icon="calendar_month"
+      [options]="authUi.batchOptions"
+      [control]="form.controls.batch" />
+  </div>
+
+  <app-auth-select
+    selectId="stu-degree"
+    label="Degree Program"
+    placeholder="Select program"
+    icon="school"
+    [options]="authUi.degreeProgramOptions"
+    [control]="form.controls.degreeProgram" />
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-3">
+      <app-auth-password-input
+        inputId="stu-pass"
+        label="Password"
+        icon="lock"
+        autocomplete="new-password"
+        [control]="form.controls.password" />
+      <app-password-strength-bar
+        [segmentsFilled]="strengthSegments()"
+        label="Security level"
+        [statusText]="strengthLabel().toUpperCase() + ' SECURITY LEVEL'"
+        hint="Add symbols for extra security." />
+    </div>
+    <app-auth-password-input
+      inputId="stu-pass2"
+      label="Confirm Password"
+      icon="lock_reset"
+      autocomplete="new-password"
+      [control]="form.controls.confirmPassword" />
+  </div>
+
+  @if (passwordMismatch()) {
+    <p class="text-xs font-semibold text-red-600">Passwords do not match.</p>
+  }
+
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
+    <div class="sm:flex-1 w-full">
+      <app-auth-button type="submit" label="Complete Registration" [disabled]="form.invalid" />
+    </div>
+    <a
+      routerLink="/auth/signup"
+      class="inline-flex items-center justify-center rounded-xl bg-slate-200 text-slate-800 font-semibold text-sm py-3.5 px-8 hover:bg-slate-300 transition-colors text-center">
+      Back
+    </a>
+  </div>
+</form>
+
+<p class="text-xs text-slate-500 mt-6 max-w-xl">
+  By registering, you agree to our
+  <a href="#" class="font-bold text-blue-800 hover:underline">Academic Integrity Policy</a>.
+</p>

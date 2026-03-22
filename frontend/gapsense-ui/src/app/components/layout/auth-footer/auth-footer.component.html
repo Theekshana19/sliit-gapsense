@@ -1,0 +1,31 @@
+<footer class="shrink-0 border-t border-slate-200/80 bg-white/80 px-6 md:px-10 py-6 text-xs text-slate-500">
+  @if (variant() === 'extended') {
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
+      <div>
+        <p class="font-bold text-slate-800 text-sm mb-1">SLIIT GapSense</p>
+        <p class="max-w-sm leading-relaxed">
+          Enhancing educational oversight and gap analysis for modern institutions.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-4 text-sm font-semibold text-blue-800">
+        <a class="hover:underline" href="#">Privacy Policy</a>
+        <a class="hover:underline" href="#">Terms of Service</a>
+        <a class="hover:underline" href="#">Academic Integrity</a>
+        <a class="hover:underline" href="#">Contact</a>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto pt-4 border-t border-slate-200/60 flex flex-col sm:flex-row sm:justify-between gap-2">
+      <span>© 2024 SLIIT GapSense. All institutional rights reserved.</span>
+    </div>
+  } @else {
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <span>© 2024 SLIIT Academic Sentinel. All institutional rights reserved.</span>
+      <div class="flex flex-wrap gap-4 font-medium text-slate-600">
+        <a class="hover:text-blue-800 transition-colors" href="#">Privacy Policy</a>
+        <a class="hover:text-blue-800 transition-colors" href="#">Terms of Service</a>
+        <a class="hover:text-blue-800 transition-colors" href="#">Security</a>
+        <a class="hover:text-blue-800 transition-colors" href="#">Help Center</a>
+      </div>
+    </div>
+  }
+</footer>

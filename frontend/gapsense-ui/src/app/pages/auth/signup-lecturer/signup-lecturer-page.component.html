@@ -1,0 +1,28 @@
+<app-auth-shell headerLayout="portal" footerVariant="extended">
+  <div class="flex-1 grid lg:grid-cols-[minmax(280px,2fr)_minmax(320px,3fr)] min-h-0">
+    <app-auth-hero-panel tone="deep" class="hidden lg:flex">
+      <div class="flex items-center gap-2 mb-8">
+        <span class="material-symbols-outlined text-2xl">school</span>
+        <span class="font-bold text-lg">SLIIT GapSense</span>
+      </div>
+      <h2 class="text-3xl md:text-4xl font-extrabold leading-tight mb-6">Empowering the Future of Academic Excellence.</h2>
+      <p class="text-blue-100/90 text-sm leading-relaxed max-w-sm mb-12">
+        Join our distinguished faculty and help bridge the gap between theoretical knowledge and practical innovation.
+      </p>
+      <div class="mt-auto flex items-center gap-3">
+        <div class="flex -space-x-2">
+          @for (i of [1, 2, 3]; track i) {
+            <div
+              class="w-10 h-10 rounded-full bg-slate-300 border-2 border-blue-900 ring-2 ring-blue-900/50 flex items-center justify-center text-xs font-bold text-slate-600">
+              {{ i }}
+            </div>
+          }
+        </div>
+        <span class="text-sm font-semibold text-blue-100">Joined by 200+ Educators</span>
+      </div>
+    </app-auth-hero-panel>
+    <div class="bg-white flex flex-col justify-center px-6 py-10 md:px-12 md:py-14 border-t lg:border-t-0 lg:border-l border-slate-200/80">
+      <app-lecturer-signup-form />
+    </div>
+  </div>
+</app-auth-shell>

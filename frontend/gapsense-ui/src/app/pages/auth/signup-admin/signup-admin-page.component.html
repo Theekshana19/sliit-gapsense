@@ -1,0 +1,24 @@
+<app-auth-shell headerLayout="slim" stepLabel="Step 2 of 2" footerVariant="simple">
+  <div class="flex-1 grid lg:grid-cols-[minmax(260px,2fr)_minmax(320px,3fr)] min-h-0">
+    <app-auth-hero-panel tone="mid" class="hidden lg:flex">
+      <span class="material-symbols-outlined text-6xl text-white/20 mb-8">shield_person</span>
+      <h2 class="text-3xl font-extrabold leading-tight mb-6">Empowering the Future…</h2>
+      <p class="text-blue-100/90 text-sm leading-relaxed max-w-sm mb-12">
+        Join the administrative core of SLIIT GapSense. Orchestrate academic journeys, manage institutional data, and drive
+        excellence through integrated oversight.
+      </p>
+      <div class="mt-auto rounded-2xl bg-black/20 border border-white/10 p-4 backdrop-blur-sm max-w-sm">
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-white shrink-0">verified_user</span>
+          <div>
+            <p class="font-bold text-sm">Institutional Security</p>
+            <p class="text-xs text-blue-100/80 mt-0.5">Enterprise-grade encryption for all administrative actions</p>
+          </div>
+        </div>
+      </div>
+    </app-auth-hero-panel>
+    <div class="bg-white flex flex-col justify-center px-6 py-10 md:px-12 md:py-14 border-t lg:border-t-0 lg:border-l border-slate-200/80">
+      <app-admin-signup-form />
+    </div>
+  </div>
+</app-auth-shell>

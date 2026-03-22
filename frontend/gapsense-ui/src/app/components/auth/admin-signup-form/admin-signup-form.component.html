@@ -1,0 +1,85 @@
+<form class="space-y-6 max-w-xl" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Create Admin Account</h1>
+    <p class="text-slate-600 font-medium mt-2 text-sm md:text-base">
+      Please provide your institutional credentials to secure your administrative portal.
+    </p>
+  </div>
+
+  <app-auth-input
+    inputId="adm-fullname"
+    label="Full Name"
+    placeholder="Dr. Jane Doe"
+    icon="person"
+    autocomplete="name"
+    [control]="form.controls.fullName" />
+
+  <app-auth-input
+    inputId="adm-email"
+    label="Institutional Email"
+    placeholder="jane.d@sliit.lk"
+    type="email"
+    icon="mail"
+    autocomplete="email"
+    [control]="form.controls.institutionalEmail" />
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-3">
+      <app-auth-password-input
+        inputId="adm-pass"
+        label="Password"
+        icon="lock"
+        autocomplete="new-password"
+        [control]="form.controls.password" />
+      <app-password-strength-bar
+        [segmentsFilled]="strengthSegments()"
+        label="Security strength"
+        [statusText]="strengthLabel()"
+        hint="Use a mix of letters, numbers, and symbols." />
+    </div>
+    <app-auth-password-input
+      inputId="adm-pass2"
+      label="Confirm Password"
+      icon="lock_reset"
+      autocomplete="new-password"
+      [control]="form.controls.confirmPassword" />
+  </div>
+
+  <div class="space-y-1.5">
+    <div class="flex items-center gap-1.5">
+      <label for="adm-code" class="text-xs font-bold uppercase tracking-wide text-slate-600">Admin Code / Access Key</label>
+      <span
+        class="material-symbols-outlined text-slate-400 text-base cursor-help"
+        title="Provided by the Registrar's Office"
+        >info</span
+      >
+    </div>
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"
+        >vpn_key</span
+      >
+      <input
+        id="adm-code"
+        type="text"
+        placeholder="GS - XXXX - XXXX"
+        autocomplete="off"
+        formControlName="adminCode"
+        class="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-800 focus:ring-2 focus:ring-blue-800/20 outline-none" />
+    </div>
+    @if (form.controls.adminCode.invalid && form.controls.adminCode.touched) {
+      <p class="text-xs font-semibold text-red-600">Access key is required.</p>
+    }
+    <p class="text-xs text-slate-500">Unique institutional key provided by the Registrar&apos;s Office.</p>
+  </div>
+
+  @if (passwordMismatch()) {
+    <p class="text-xs font-semibold text-red-600">Passwords do not match.</p>
+  }
+
+  <app-auth-button type="submit" label="Initialize Admin Account" [showArrow]="true" [disabled]="form.invalid" />
+
+  <p class="text-center text-sm text-slate-600">
+    Already have an administrative account?
+    <a routerLink="/auth/login" class="font-bold text-blue-800 hover:underline">Sign In</a>
+  </p>
+</form>
