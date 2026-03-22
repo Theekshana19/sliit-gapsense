@@ -33,13 +33,17 @@
           [value]="mainModuleId()"
           (change)="mainModuleId.set($any($event.target).value); onModuleSelectionChange()"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
-                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="mainModuleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select the module that requires a prerequisite</option>
           @for (mod of modules; track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
+        @if (mainModuleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ mainModuleError() }}</p>
+        }
       </div>
 
       <!-- prerequisite module select -->
@@ -51,13 +55,17 @@
           [value]="prerequisiteModuleId()"
           (change)="prerequisiteModuleId.set($any($event.target).value); onModuleSelectionChange()"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
-                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="prereqModuleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select the module that must be completed first</option>
           @for (mod of modules; track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
+        @if (prereqModuleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ prereqModuleError() }}</p>
+        }
       </div>
 
       <!-- relationship type toggle -->
@@ -138,7 +146,7 @@
         <button
           (click)="onSubmit()"
           class="px-6 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
-          [class.opacity-50]="showCircularWarning()"
+          [class.opacity-50]="showCircularWarning() || (submitted() && !isFormValid())"
           [disabled]="showCircularWarning()"
         >
           <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>

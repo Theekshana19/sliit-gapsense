@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Topic, ImportanceLevel, TopicStatus } from '../../../models/curriculum/topic.model';
 import { CurriculumService } from '../../../services/curriculum.service';
@@ -34,8 +34,46 @@ export class TopicFormComponent implements OnInit {
   status = signal<TopicStatus>('Draft');
   isActive = signal(true);
 
+  // track if user tried to submit
+  submitted = signal(false);
+
   // available modules for dropdown
   modules: Module[] = [];
+
+  // --- validation rules ---
+
+  // module must be selected
+  moduleError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.moduleId()) return 'Please select a module';
+    return '';
+  });
+
+  // topic name is required
+  nameError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.topicName().trim()) return 'Topic name is required';
+    if (this.topicName().trim().length < 3) return 'Topic name must be at least 3 characters';
+    return '';
+  });
+
+  // weight must be between 0 and 100
+  weightError = computed(() => {
+    if (!this.submitted()) return '';
+    if (this.weight() < 0) return 'Weight cannot be negative';
+    if (this.weight() > 100) return 'Weight cannot exceed 100%';
+    return '';
+  });
+
+  // check if the whole form is valid
+  isFormValid = computed(() => {
+    return (
+      this.moduleId() !== '' &&
+      this.topicName().trim().length >= 3 &&
+      this.weight() >= 0 &&
+      this.weight() <= 100
+    );
+  });
 
   ngOnInit() {
     // load modules for dropdown
@@ -71,8 +109,11 @@ export class TopicFormComponent implements OnInit {
     this.isActive.update((v) => !v);
   }
 
-  // submit the form
+  // submit the form - only if valid
   onSubmit() {
+    this.submitted.set(true);
+    if (!this.isFormValid()) return;
+
     const mod = this.modules.find((m) => m.id === this.moduleId());
     const data: Partial<Topic> = {
       moduleId: this.moduleId(),

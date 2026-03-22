@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Prerequisite, RelationshipType } from '../../../models/curriculum/prerequisite.model';
 import { Module } from '../../../models/curriculum/module.model';
@@ -37,6 +37,34 @@ export class PrerequisiteFormComponent implements OnInit {
   // circular dependency warning
   showCircularWarning = signal(false);
 
+  // track if user tried to submit
+  submitted = signal(false);
+
+  // --- validation rules ---
+
+  // main module must be selected
+  mainModuleError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.mainModuleId()) return 'Please select the main module';
+    return '';
+  });
+
+  // prerequisite module must be selected
+  prereqModuleError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.prerequisiteModuleId()) return 'Please select the prerequisite module';
+    return '';
+  });
+
+  // check if the whole form is valid
+  isFormValid = computed(() => {
+    return (
+      this.mainModuleId() !== '' &&
+      this.prerequisiteModuleId() !== '' &&
+      !this.showCircularWarning()
+    );
+  });
+
   ngOnInit() {
     // load modules for dropdowns
     this.curriculumService.getModules().subscribe((mods) => {
@@ -69,10 +97,12 @@ export class PrerequisiteFormComponent implements OnInit {
     return mod ? `${mod.moduleCode} - ${mod.moduleName}` : '';
   }
 
-  // submit the form
+  // submit the form - only if valid
   onSubmit() {
-    // don't submit if there's a circular dependency
-    if (this.showCircularWarning()) return;
+    this.submitted.set(true);
+
+    // don't submit if form has errors
+    if (!this.isFormValid()) return;
 
     const mainMod = this.modules.find((m) => m.id === this.mainModuleId());
     const prereqMod = this.modules.find((m) => m.id === this.prerequisiteModuleId());

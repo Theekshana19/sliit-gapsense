@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Module, ModuleStatus, Program, Semester } from '../../../models/curriculum/module.model';
 import { CurriculumService } from '../../../services/curriculum.service';
@@ -32,9 +32,48 @@ export class ModuleFormComponent implements OnInit {
   credits = signal(3);
   status = signal<ModuleStatus>('Draft');
 
+  // track if user tried to submit (shows errors only after first attempt)
+  submitted = signal(false);
+
   // dropdown options
   programs: string[] = ['BSc IT', 'BSc CS', 'BSc SE', 'BSc DS'];
   semesters: string[] = ['Y1S1', 'Y1S2', 'Y2S1', 'Y2S2', 'Y3S1', 'Y3S2', 'Y4S1', 'Y4S2'];
+
+  // --- validation rules ---
+
+  // module code must not be empty and should look like "IT2040"
+  codeError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.moduleCode().trim()) return 'Module code is required';
+    if (this.moduleCode().trim().length < 4) return 'Module code must be at least 4 characters';
+    return '';
+  });
+
+  // module name must not be empty
+  nameError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.moduleName().trim()) return 'Module name is required';
+    if (this.moduleName().trim().length < 3) return 'Module name must be at least 3 characters';
+    return '';
+  });
+
+  // credits must be between 1 and 6
+  creditsError = computed(() => {
+    if (!this.submitted()) return '';
+    if (this.credits() < 1) return 'Credits must be at least 1';
+    if (this.credits() > 6) return 'Credits cannot exceed 6';
+    return '';
+  });
+
+  // check if the whole form is valid
+  isFormValid = computed(() => {
+    return (
+      this.moduleCode().trim().length >= 4 &&
+      this.moduleName().trim().length >= 3 &&
+      this.credits() >= 1 &&
+      this.credits() <= 6
+    );
+  });
 
   ngOnInit() {
     // if editing, fill form with existing data
@@ -50,8 +89,13 @@ export class ModuleFormComponent implements OnInit {
     }
   }
 
-  // submit the form
+  // submit the form - only if valid
   onSubmit() {
+    this.submitted.set(true);
+
+    // don't submit if form has errors
+    if (!this.isFormValid()) return;
+
     const data: Partial<Module> = {
       moduleCode: this.moduleCode(),
       moduleName: this.moduleName(),

@@ -20,10 +20,14 @@
           [value]="moduleCode()"
           (input)="moduleCode.set($any($event.target).value)"
           placeholder="e.g. IT2040"
-          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
-                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
-                 placeholder:text-on-surface-variant/40 transition-colors"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40"
+          [class]="codeError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
         />
+        @if (codeError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ codeError() }}</p>
+        }
       </div>
 
       <!-- module name -->
@@ -36,10 +40,14 @@
           [value]="moduleName()"
           (input)="moduleName.set($any($event.target).value)"
           placeholder="e.g. Data Structures & Algorithms"
-          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
-                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
-                 placeholder:text-on-surface-variant/40 transition-colors"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40"
+          [class]="nameError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
         />
+        @if (nameError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ nameError() }}</p>
+        }
       </div>
 
       <!-- description -->
@@ -104,10 +112,13 @@
           (input)="credits.set(+$any($event.target).value)"
           min="1"
           max="6"
-          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
-                 focus:border-primary focus:ring-0 text-on-surface text-lg font-bold
-                 transition-colors max-w-[100px]"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface text-lg font-bold max-w-[100px]"
+          [class]="creditsError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
         />
+        @if (creditsError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ creditsError() }}</p>
+        }
       </div>
 
       <!-- status radio buttons -->
@@ -158,6 +169,7 @@
       <button
         (click)="onSubmit()"
         class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+        [class.opacity-50]="submitted() && !isFormValid()"
       >
         <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
         Save Module
@@ -168,6 +180,7 @@
         (click)="onSubmit()"
         class="w-full py-3 rounded-xl text-sm font-semibold bg-surface-container-high
                text-on-surface-variant hover:bg-surface-container-highest transition-colors mb-3"
+        [class.opacity-50]="submitted() && !isFormValid()"
       >
         Save & Continue
       </button>

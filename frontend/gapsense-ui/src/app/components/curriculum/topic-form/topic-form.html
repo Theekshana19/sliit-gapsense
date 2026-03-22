@@ -18,13 +18,17 @@
           [value]="moduleId()"
           (change)="onModuleChange($any($event.target).value)"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
-                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="moduleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select module</option>
           @for (mod of modules; track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
+        @if (moduleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ moduleError() }}</p>
+        }
       </div>
 
       <!-- topic title -->
@@ -37,10 +41,14 @@
           [value]="topicName()"
           (input)="topicName.set($any($event.target).value)"
           placeholder="Enter topic title..."
-          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
-                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
-                 placeholder:text-on-surface-variant/40 transition-colors"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40"
+          [class]="nameError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
         />
+        @if (nameError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ nameError() }}</p>
+        }
       </div>
 
       <!-- description -->
@@ -96,8 +104,12 @@
               min="0"
               max="100"
               class="w-full py-2.5 px-3 bg-surface-container-lowest rounded-lg text-sm text-on-surface
-                     focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                     focus:outline-none focus:ring-2 transition-all"
+              [class]="weightError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
             />
+            @if (weightError()) {
+              <p class="text-[11px] text-error font-medium mt-1">{{ weightError() }}</p>
+            }
           </div>
         </div>
       </div>
@@ -144,6 +156,7 @@
       <button
         (click)="onSubmit()"
         class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+        [class.opacity-50]="submitted() && !isFormValid()"
       >
         <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
         Save Topic
