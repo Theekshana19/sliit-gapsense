@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ReadinessService } from '../../../services/readiness.service';
 import { Question } from '../../../models/readiness/question.model';
@@ -44,6 +44,54 @@ export class QuizFormComponent implements OnInit {
 
   // dropdown options
   modules: string[] = [];
+
+  // track if user tried to go next or submit (shows errors)
+  stepSubmitted = signal(false);
+
+  // --- step 1 validations ---
+  titleError = computed(() => {
+    if (!this.stepSubmitted()) return '';
+    if (!this.title().trim()) return 'Quiz title is required';
+    return '';
+  });
+
+  moduleError = computed(() => {
+    if (!this.stepSubmitted()) return '';
+    if (!this.module()) return 'Please select a module';
+    return '';
+  });
+
+  isStep1Valid = computed(() => {
+    return this.title().trim() !== '' && this.module() !== '';
+  });
+
+  // --- step 2 validations ---
+  questionsError = computed(() => {
+    if (!this.stepSubmitted()) return '';
+    if (this.selectedQuestionIds().size === 0) return 'Please select at least 1 question';
+    return '';
+  });
+
+  isStep2Valid = computed(() => {
+    return this.selectedQuestionIds().size > 0;
+  });
+
+  // --- step 3 validations ---
+  timeLimitError = computed(() => {
+    if (!this.stepSubmitted()) return '';
+    if (this.timeLimit() < 5) return 'Time limit must be at least 5 minutes';
+    return '';
+  });
+
+  passThresholdError = computed(() => {
+    if (!this.stepSubmitted()) return '';
+    if (this.passThreshold() < 0 || this.passThreshold() > 100) return 'Pass threshold must be between 0-100%';
+    return '';
+  });
+
+  isStep3Valid = computed(() => {
+    return this.timeLimit() >= 5 && this.passThreshold() >= 0 && this.passThreshold() <= 100;
+  });
 
   ngOnInit() {
     this.modules = this.readinessService.getModules();
@@ -111,9 +159,17 @@ export class QuizFormComponent implements OnInit {
     }
   }
 
-  // navigate to next step
+  // navigate to next step - validate current step first
   nextStep() {
+    this.stepSubmitted.set(true);
+
+    // check if current step is valid before moving
+    if (this.currentStep() === 1 && !this.isStep1Valid()) return;
+    if (this.currentStep() === 2 && !this.isStep2Valid()) return;
+
+    // valid — move to next step and reset submitted flag
     if (this.currentStep() < 3) {
+      this.stepSubmitted.set(false);
       this.currentStep.update((s) => s + 1);
     }
   }
@@ -130,8 +186,10 @@ export class QuizFormComponent implements OnInit {
     this.currentStep.set(step);
   }
 
-  // submit the quiz
+  // submit the quiz - validate step 3 first
   onSubmit() {
+    this.stepSubmitted.set(true);
+    if (!this.isStep3Valid()) return;
     // build the questions array with order and marks
     const questions = Array.from(this.selectedQuestionIds()).map((id, index) => {
       const q = this.availableQuestions().find((aq) => aq.id === id);

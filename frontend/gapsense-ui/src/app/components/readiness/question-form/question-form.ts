@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Question, QuestionOption, QuestionType, DifficultyLevel, QuestionStatus } from '../../../models/readiness/question.model';
 import { ReadinessService } from '../../../services/readiness.service';
@@ -53,6 +53,65 @@ export class QuestionFormComponent implements OnInit {
 
   // status toggle - true means Active, false means Draft
   isActive = signal(false);
+
+  // track if user tried to submit (errors show only after first attempt)
+  submitted = signal(false);
+
+  // --- validation rules ---
+
+  // title is required
+  titleError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.title().trim()) return 'Question title is required';
+    if (this.title().trim().length < 5) return 'Title must be at least 5 characters';
+    return '';
+  });
+
+  // question text is required
+  questionTextError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.questionText().trim()) return 'Question text is required';
+    return '';
+  });
+
+  // at least 2 options must have text
+  optionsError = computed(() => {
+    if (!this.submitted()) return '';
+    const filled = this.options().filter((o) => o.optionText.trim() !== '');
+    if (filled.length < 2) return 'At least 2 options must be filled in';
+    return '';
+  });
+
+  // correct answer must be selected
+  correctAnswerError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.correctOptionId()) return 'Please select the correct answer';
+    // also check that the selected option actually has text
+    const selected = this.options().find((o) => o.id === this.correctOptionId());
+    if (selected && !selected.optionText.trim()) return 'The correct answer option cannot be empty';
+    return '';
+  });
+
+  // marks must be greater than 0
+  marksError = computed(() => {
+    if (!this.submitted()) return '';
+    if (this.marks() <= 0) return 'Marks must be greater than 0';
+    if (this.marks() > 100) return 'Marks cannot exceed 100';
+    return '';
+  });
+
+  // check if the whole form is valid
+  isFormValid = computed(() => {
+    const filledOptions = this.options().filter((o) => o.optionText.trim() !== '');
+    return (
+      this.title().trim().length >= 5 &&
+      this.questionText().trim() !== '' &&
+      filledOptions.length >= 2 &&
+      this.correctOptionId() !== '' &&
+      this.marks() > 0 &&
+      this.marks() <= 100
+    );
+  });
 
   ngOnInit() {
     // load dropdown options
@@ -129,8 +188,11 @@ export class QuestionFormComponent implements OnInit {
     this.status.set(this.isActive() ? 'Active' : 'Draft');
   }
 
-  // submit the form
+  // submit the form - only if valid
   onSubmit() {
+    this.submitted.set(true);
+    if (!this.isFormValid()) return;
+
     const data: Partial<Question> = {
       title: this.title(),
       questionText: this.questionText(),

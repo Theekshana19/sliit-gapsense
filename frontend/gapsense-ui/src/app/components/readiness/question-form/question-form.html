@@ -20,10 +20,14 @@
           [value]="title()"
           (input)="title.set($any($event.target).value)"
           placeholder="Enter question title..."
-          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
-                 focus:border-primary focus:ring-0 text-on-surface font-headline font-semibold
-                 placeholder:text-on-surface-variant/40 transition-colors"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40"
+          [class]="titleError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
         />
+        @if (titleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ titleError() }}</p>
+        }
       </div>
 
       <!-- question text -->
@@ -53,8 +57,12 @@
           rows="4"
           class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
                  placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
-                 focus:ring-primary/20 resize-none transition-all"
+                 resize-none transition-all"
+          [class]="questionTextError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         ></textarea>
+        @if (questionTextError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ questionTextError() }}</p>
+        }
       </div>
 
       <!-- MCQ options section -->
@@ -70,6 +78,14 @@
             + Add Option
           </button>
         </div>
+
+        <!-- validation errors for options -->
+        @if (optionsError()) {
+          <p class="text-[11px] text-error font-medium mb-2">{{ optionsError() }}</p>
+        }
+        @if (correctAnswerError()) {
+          <p class="text-[11px] text-error font-medium mb-2">{{ correctAnswerError() }}</p>
+        }
 
         <!-- option list -->
         <div class="space-y-3">
@@ -218,8 +234,12 @@
           min="1"
           max="100"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
-                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="marksError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         />
+        @if (marksError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ marksError() }}</p>
+        }
       </div>
 
       <!-- status toggle -->
@@ -251,6 +271,7 @@
       <button
         (click)="onSubmit()"
         class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+        [class.opacity-50]="submitted() && !isFormValid()"
       >
         <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
         Save Question
