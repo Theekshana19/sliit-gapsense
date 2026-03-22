@@ -65,5 +65,12 @@ export const routes: Routes = [
         (m) => m.PersonalizedLearningPathComponent
       ),
   },
+  {
+    path: 'reassessment-comparison',
+    loadComponent: () =>
+      import('./pages/risk-analysis/reassessment-comparison/reassessment-comparison.component').then(
+        (m) => m.ReassessmentComparisonComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];

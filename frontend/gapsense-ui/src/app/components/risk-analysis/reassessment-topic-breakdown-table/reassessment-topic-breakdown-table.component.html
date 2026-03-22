@@ -1,0 +1,32 @@
+<div class="bg-white p-8 rounded-xl overflow-hidden border border-slate-200/80 shadow-sm">
+  <h3 class="text-xl font-bold text-slate-900 mb-6">Topic Breakdown</h3>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse min-w-[400px]">
+      <thead>
+        <tr class="border-b border-slate-200">
+          <th class="pb-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Topic</th>
+          <th class="pb-4 text-xs font-bold text-slate-600 uppercase tracking-widest text-right">Before</th>
+          <th class="pb-4 text-xs font-bold text-slate-600 uppercase tracking-widest text-right">After</th>
+          <th class="pb-4 text-xs font-bold text-slate-600 uppercase tracking-widest text-right">Impr.</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        @for (row of items(); track row.topicName) {
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-4 text-sm font-semibold text-slate-900">{{ row.topicName }}</td>
+            <td class="py-4 text-sm font-medium text-slate-600 text-right">{{ row.beforePercent }}%</td>
+            <td class="py-4 text-sm font-bold text-blue-800 text-right">{{ row.afterPercent }}%</td>
+            <td class="py-4 text-right">
+              <span class="flex items-center justify-end text-sm font-bold text-blue-800">
+                {{ row.improvementPercent }}% <span class="material-symbols-outlined text-sm ml-1">arrow_upward</span>
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-8">
+    <app-reassessment-observation-card [observation]="observation()" />
+  </div>
+</div>

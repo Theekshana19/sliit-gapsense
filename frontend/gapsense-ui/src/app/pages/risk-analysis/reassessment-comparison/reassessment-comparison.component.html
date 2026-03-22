@@ -1,0 +1,48 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  @if (compSvc.certificateNotice()) {
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-emerald-800 shrink-0">workspace_premium</span>
+      <p class="text-sm font-semibold text-emerald-900 flex-1">{{ compSvc.certificateNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-emerald-100 rounded shrink-0" (click)="dismissCertificateNotice()">
+        <span class="material-symbols-outlined text-emerald-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Reassessment Comparison</h1>
+        <p class="text-slate-600 font-medium max-w-2xl">
+          Comparative audit of academic progression: Attempt 1 vs. Latest Reassessment lifecycle.
+        </p>
+      </div>
+      <app-reassessment-header-delta [summary]="compSvc.viewModel().improvementDelta" />
+    </header>
+
+    @let vm = compSvc.viewModel();
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <app-reassessment-score-card [summary]="vm.attempt1Score" />
+      <app-reassessment-score-card [summary]="vm.reassessmentScore" />
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-8">
+      <div class="xl:col-span-3">
+        <app-reassessment-topic-comparison-chart [items]="vm.topicComparisons" />
+      </div>
+      <div class="xl:col-span-2">
+        <app-reassessment-topic-breakdown-table
+          [items]="vm.topicBreakdown"
+          [observation]="vm.observation" />
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <app-reassessment-certificate-banner
+        [config]="vm.certificateAction"
+        (generate)="onGenerateCertificate()" />
+    </div>
+  </div>
+</main>
