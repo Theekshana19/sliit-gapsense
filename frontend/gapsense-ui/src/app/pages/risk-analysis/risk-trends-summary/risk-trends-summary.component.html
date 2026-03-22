@@ -1,0 +1,60 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-24 min-h-screen bg-slate-50/50">
+  @if (svc.exportNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">download</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ svc.exportNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissExportNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (svc.shareNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">share</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ svc.shareNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissShareNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <header class="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-8">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Risk Trends & Summary</h1>
+      <p class="text-slate-600 font-medium max-w-2xl">
+        Comprehensive intelligence on student academic readiness and intervention triggers across institutional clusters.
+      </p>
+    </div>
+    <app-risk-trends-header-actions
+      (exportPdf)="onExportPdf()"
+      (shareInsight)="onShareInsight()" />
+  </header>
+
+  <section class="mb-8">
+    <app-risk-trends-filter-bar (advancedFilters)="onAdvancedFilters()" />
+  </section>
+
+  @if (svc.viewModel(); as vm) {
+    <app-risk-summary-metrics-grid [metrics]="vm.summaryMetrics" />
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <app-risk-distribution-card [distribution]="vm.riskDistribution" />
+      <app-weak-topic-frequency-card
+        [items]="vm.weakTopicFrequency.items"
+        [selectedPeriod]="vm.weakTopicFrequency.selectedPeriod"
+        [insight]="vm.insight"
+        (periodChange)="onPeriodChange($event)" />
+    </section>
+    <section class="mt-8">
+      <app-risk-progression-trend-card
+        [title]="vm.riskProgression.title"
+        [subtitle]="vm.riskProgression.subtitle"
+        [currentCohortPoints]="vm.riskProgression.currentCohortPoints"
+        [previousCohortPoints]="vm.riskProgression.previousCohortPoints"
+        [peakMarker]="vm.riskProgression.peakMarker" />
+    </section>
+  }
+
+  <app-risk-trends-fab (click)="onFabClick()" />
+</main>

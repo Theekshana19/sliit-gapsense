@@ -72,5 +72,12 @@ export const routes: Routes = [
         (m) => m.ReassessmentComparisonComponent
       ),
   },
+  {
+    path: 'risk-trends',
+    loadComponent: () =>
+      import('./pages/risk-analysis/risk-trends-summary/risk-trends-summary.component').then(
+        (m) => m.RiskTrendsSummaryComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];
