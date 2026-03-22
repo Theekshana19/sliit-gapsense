@@ -1,0 +1,43 @@
+<div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200/80">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+    <h3 class="text-xl font-bold text-slate-900">Topic Mastery Overview</h3>
+    <span class="text-sm font-semibold text-slate-600">Last assessment: {{ lastAssessmentText() }}</span>
+  </div>
+  <div class="flex flex-col md:flex-row items-center gap-12">
+    <div class="relative w-48 h-48 shrink-0">
+      <svg class="w-full h-full -rotate-90" viewBox="0 0 192 192">
+        <circle cx="96" cy="96" r="80" fill="none" stroke="#e2e8f0" stroke-width="24" />
+        <circle
+          cx="96"
+          cy="96"
+          r="80"
+          fill="none"
+          stroke="#1e3a8a"
+          stroke-width="24"
+          stroke-linecap="round"
+          stroke-dasharray="502.4"
+          [attr.stroke-dashoffset]="dashOffset(overallPercent())" />
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="text-4xl font-extrabold text-blue-800">{{ overallPercent() }}%</span>
+        <span class="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">{{ proficientLabel() }}</span>
+      </div>
+    </div>
+    <div class="flex-1 w-full space-y-6">
+      @for (item of items(); track item.topicName) {
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm font-semibold">
+            <span class="text-slate-900">{{ item.topicName }}</span>
+            <span [class]="textColorClass(item.barColor)">{{ item.percent }}%</span>
+          </div>
+          <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full"
+              [class]="barColorClass(item.barColor)"
+              [style.width.%]="item.percent"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

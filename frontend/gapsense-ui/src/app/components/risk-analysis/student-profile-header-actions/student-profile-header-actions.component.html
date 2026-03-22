@@ -1,0 +1,16 @@
+<div class="flex gap-3">
+  <button
+    type="button"
+    class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-200/90 text-slate-900 font-semibold rounded-xl hover:bg-slate-300/90 transition-colors text-sm"
+    (click)="exportPdf.emit()">
+    <span class="material-symbols-outlined text-lg">download</span>
+    Export PDF
+  </button>
+  <button
+    type="button"
+    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold rounded-xl shadow-lg hover:opacity-90 transition-all text-sm"
+    (click)="notifyStudent.emit()">
+    <span class="material-symbols-outlined text-lg">mail</span>
+    Notify Student
+  </button>
+</div>

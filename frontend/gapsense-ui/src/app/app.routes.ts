@@ -51,5 +51,12 @@ export const routes: Routes = [
         (m) => m.PersonalizedRecommendationsComponent
       ),
   },
+  {
+    path: 'student-profile',
+    loadComponent: () =>
+      import('./pages/risk-analysis/student-readiness-profile/student-readiness-profile.component').then(
+        (m) => m.StudentReadinessProfileComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];
