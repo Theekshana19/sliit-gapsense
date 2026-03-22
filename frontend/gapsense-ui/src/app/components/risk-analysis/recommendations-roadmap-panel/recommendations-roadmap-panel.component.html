@@ -1,0 +1,23 @@
+<div class="lg:w-1/3 w-full">
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+    <h4 class="font-bold text-sm text-slate-900 mb-4">{{ roadmap().title }}</h4>
+    <ul class="space-y-4">
+      @for (item of roadmap().items; track item.stepNumber) {
+        <li class="flex gap-3">
+          <div
+            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+            [class]="stepClass(item.status)">
+            {{ item.stepNumber }}
+          </div>
+          <span class="text-xs font-semibold text-slate-800">{{ item.label }}</span>
+        </li>
+      }
+    </ul>
+    <button
+      type="button"
+      class="w-full mt-6 py-3 bg-blue-800 text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all"
+      (click)="updateRoadmap.emit()">
+      {{ roadmap().updateButtonLabel }}
+    </button>
+  </div>
+</div>

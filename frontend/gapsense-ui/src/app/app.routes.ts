@@ -44,5 +44,12 @@ export const routes: Routes = [
         (m) => m.WeakTopicAnalysisComponent
       ),
   },
+  {
+    path: 'recommendations',
+    loadComponent: () =>
+      import('./pages/risk-analysis/personalized-recommendations/personalized-recommendations.component').then(
+        (m) => m.PersonalizedRecommendationsComponent
+      ),
+  },
   { path: '**', redirectTo: 'risk-thresholds' },
 ];

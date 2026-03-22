@@ -1,0 +1,79 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  @if (recSvc.filterNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">filter_list</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ recSvc.filterNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissFilterNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (recSvc.generateNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">refresh</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ recSvc.generateNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissGenerateNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (recSvc.roadmapNotice()) {
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-emerald-800 shrink-0">route</span>
+      <p class="text-sm font-semibold text-emerald-900 flex-1">{{ recSvc.roadmapNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-emerald-100 rounded shrink-0" (click)="dismissRoadmapNotice()">
+        <span class="material-symbols-outlined text-emerald-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="max-w-7xl mx-auto">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Personalized Recommendations</h1>
+        <p class="text-slate-600 font-medium max-w-2xl">
+          Tailored learning resources and actions generated based on your latest readiness results and risk assessment trends.
+        </p>
+      </div>
+      <app-recommendations-header-actions
+        (filter)="onFilter()"
+        (generateNew)="onGenerateNew()" />
+    </header>
+
+    @let vm = recSvc.viewModel();
+    <div class="space-y-12">
+      <section>
+        <app-recommendations-priority-section [config]="vm.highPriority.config">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (rec of vm.highPriority.items; track rec.id) {
+              <app-recommendation-card
+                [recommendation]="rec"
+                (viewResource)="onViewResource()" />
+            }
+          </div>
+        </app-recommendations-priority-section>
+      </section>
+
+      <section>
+        <app-recommendations-priority-section [config]="vm.mediumPriority.config">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            @for (rec of vm.mediumPriority.items; track rec.id) {
+              <app-recommendation-medium-card
+                [recommendation]="rec"
+                (openResource)="onOpenResource()" />
+            }
+          </div>
+        </app-recommendations-priority-section>
+      </section>
+
+      <section class="bg-blue-50/60 rounded-2xl p-8 flex flex-col lg:flex-row gap-8 items-start border border-blue-100/60">
+        <app-recommendations-insight-panel [insight]="vm.insight" />
+        <app-recommendations-roadmap-panel
+          [roadmap]="vm.roadmap"
+          (updateRoadmap)="onUpdateRoadmap()" />
+      </section>
+    </div>
+  </div>
+</main>
