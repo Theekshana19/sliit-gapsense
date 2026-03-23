@@ -16,6 +16,14 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ReadinessResult> ReadinessResults => Set<ReadinessResult>();
 
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
+
+    public DbSet<LecturerProfile> LecturerProfiles => Set<LecturerProfile>();
+
+    public DbSet<AdminProfile> AdminProfiles => Set<AdminProfile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
