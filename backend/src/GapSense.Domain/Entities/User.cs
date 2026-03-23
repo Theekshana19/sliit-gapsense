@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using GapSense.Domain.Enums;
 
 namespace GapSense.Domain.Entities;
@@ -21,6 +20,8 @@ public class User
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public string? ProfileImagePath { get; set; }
 
     public StudentProfile? StudentProfile { get; set; }
     public LecturerProfile? LecturerProfile { get; set; }

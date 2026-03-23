@@ -1,34 +1,48 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
+import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'risk-thresholds', pathMatch: 'full' },
+  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
   {
     path: 'auth/login',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/login/login-page.component').then((m) => m.LoginPageComponent),
   },
   {
     path: 'auth/signup/student',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/signup-student/signup-student-page.component').then((m) => m.SignupStudentPageComponent),
   },
   {
     path: 'auth/signup/lecturer',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/signup-lecturer/signup-lecturer-page.component').then((m) => m.SignupLecturerPageComponent),
   },
   {
     path: 'auth/signup/admin',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/signup-admin/signup-admin-page.component').then((m) => m.SignupAdminPageComponent),
   },
   {
     path: 'auth/signup',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./pages/auth/signup-role/signup-role-page.component').then((m) => m.SignupRolePageComponent),
   },
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/auth/profile-management/profile-management-page.component').then((m) => m.ProfileManagementPageComponent),
+  },
+  {
     path: 'risk-thresholds',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/risk-threshold-management/risk-threshold-management.component').then(
         (m) => m.RiskThresholdManagementComponent
@@ -36,6 +50,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules/add',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
         (m) => m.AddRecommendationRuleComponent
@@ -43,6 +58,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules/:id/edit',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
         (m) => m.AddRecommendationRuleComponent
@@ -50,6 +66,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/recommendation-rule-management/recommendation-rule-management.component').then(
         (m) => m.RecommendationRuleManagementComponent
@@ -57,6 +74,7 @@ export const routes: Routes = [
   },
   {
     path: 'readiness-results',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/readiness-result/readiness-result.component').then(
         (m) => m.ReadinessResultComponent
@@ -64,6 +82,7 @@ export const routes: Routes = [
   },
   {
     path: 'weak-topic-analysis',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/weak-topic-analysis/weak-topic-analysis.component').then(
         (m) => m.WeakTopicAnalysisComponent
@@ -71,6 +90,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendations',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/personalized-recommendations/personalized-recommendations.component').then(
         (m) => m.PersonalizedRecommendationsComponent
@@ -78,6 +98,7 @@ export const routes: Routes = [
   },
   {
     path: 'student-profile',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/student-readiness-profile/student-readiness-profile.component').then(
         (m) => m.StudentReadinessProfileComponent
@@ -85,6 +106,7 @@ export const routes: Routes = [
   },
   {
     path: 'learning-path',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/personalized-learning-path/personalized-learning-path.component').then(
         (m) => m.PersonalizedLearningPathComponent
@@ -92,6 +114,7 @@ export const routes: Routes = [
   },
   {
     path: 'reassessment-comparison',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/reassessment-comparison/reassessment-comparison.component').then(
         (m) => m.ReassessmentComparisonComponent
@@ -99,10 +122,11 @@ export const routes: Routes = [
   },
   {
     path: 'risk-trends',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/risk-analysis/risk-trends-summary/risk-trends-summary.component').then(
         (m) => m.RiskTrendsSummaryComponent
       ),
   },
-  { path: '**', redirectTo: 'risk-thresholds' },
+  { path: '**', redirectTo: 'auth/login' },
 ];

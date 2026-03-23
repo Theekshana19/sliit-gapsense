@@ -11,5 +11,8 @@ public interface IAuthService
     Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
     Task<UserProfileResponse> GetMeAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserProfileResponse> UpdateMeAsync(Guid userId, UpdateMyProfileRequest request, CancellationToken cancellationToken = default);
+    Task<UserProfileResponse> UpdateProfilePhotoAsync(Guid userId, string profileImagePath, CancellationToken cancellationToken = default);
+    Task<UserProfileResponse> RemoveProfilePhotoAsync(Guid userId, CancellationToken cancellationToken = default);
 }
 

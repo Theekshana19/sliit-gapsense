@@ -38,6 +38,15 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
+    public async Task<User?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.StudentProfile)
+            .Include(u => u.LecturerProfile)
+            .Include(u => u.AdminProfile)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
+
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Add(user);

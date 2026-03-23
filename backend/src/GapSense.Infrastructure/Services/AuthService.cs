@@ -229,6 +229,105 @@ public class AuthService : IAuthService
         return MapToProfileResponse(user);
     }
 
+    public async Task<UserProfileResponse> UpdateMeAsync(Guid userId, UpdateMyProfileRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.FullName))
+            throw new ArgumentException("Full name is required.");
+
+        var user = await _userRepository.GetByIdForUpdateAsync(userId, cancellationToken);
+        if (user is null)
+            throw new InvalidOperationException("User not found.");
+
+        user.FullName = request.FullName.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
+
+        switch (user.Role)
+        {
+            case UserRole.Student:
+                if (string.IsNullOrWhiteSpace(request.Batch))
+                    throw new ArgumentException("Batch is required.");
+                if (string.IsNullOrWhiteSpace(request.DegreeProgram))
+                    throw new ArgumentException("Degree program is required.");
+                if (user.StudentProfile is null)
+                    throw new InvalidOperationException("Student profile not found.");
+
+                user.StudentProfile.Batch = request.Batch.Trim();
+                user.StudentProfile.DegreeProgram = request.DegreeProgram.Trim();
+                break;
+            case UserRole.Lecturer:
+                if (string.IsNullOrWhiteSpace(request.Department))
+                    throw new ArgumentException("Department is required.");
+                if (string.IsNullOrWhiteSpace(request.Specialization))
+                    throw new ArgumentException("Specialization is required.");
+                if (user.LecturerProfile is null)
+                    throw new InvalidOperationException("Lecturer profile not found.");
+
+                user.LecturerProfile.Department = request.Department.Trim();
+                user.LecturerProfile.Specialization = request.Specialization.Trim();
+                break;
+            case UserRole.Admin:
+                if (string.IsNullOrWhiteSpace(request.AdminCode))
+                    throw new ArgumentException("Admin code is required.");
+                if (user.AdminProfile is null)
+                    throw new InvalidOperationException("Admin profile not found.");
+
+                var newCode = request.AdminCode.Trim();
+                if (!string.Equals(user.AdminProfile.AdminCode, newCode, StringComparison.Ordinal) &&
+                    await _adminProfileRepository.AdminCodeExistsAsync(newCode, cancellationToken))
+                {
+                    throw new InvalidOperationException("This admin code is already registered.");
+                }
+
+                user.AdminProfile.AdminCode = newCode;
+                break;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var updated = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (updated is null)
+            throw new InvalidOperationException("User not found.");
+
+        return MapToProfileResponse(updated);
+    }
+
+    public async Task<UserProfileResponse> UpdateProfilePhotoAsync(Guid userId, string profileImagePath, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(profileImagePath))
+            throw new ArgumentException("Profile image path is required.");
+
+        var user = await _userRepository.GetByIdForUpdateAsync(userId, cancellationToken);
+        if (user is null)
+            throw new InvalidOperationException("User not found.");
+
+        user.ProfileImagePath = profileImagePath.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var updated = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (updated is null)
+            throw new InvalidOperationException("User not found.");
+
+        return MapToProfileResponse(updated);
+    }
+
+    public async Task<UserProfileResponse> RemoveProfilePhotoAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdForUpdateAsync(userId, cancellationToken);
+        if (user is null)
+            throw new InvalidOperationException("User not found.");
+
+        user.ProfileImagePath = null;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var updated = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (updated is null)
+            throw new InvalidOperationException("User not found.");
+
+        return MapToProfileResponse(updated);
+    }
+
     private static string NormalizeEmail(string email) =>
         email.Trim().ToLowerInvariant();
 
@@ -241,6 +340,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Role = user.Role,
+                ProfileImagePath = user.ProfileImagePath,
                 StudentId = user.StudentProfile?.StudentId,
                 Batch = user.StudentProfile?.Batch,
                 DegreeProgram = user.StudentProfile?.DegreeProgram
@@ -251,6 +351,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Role = user.Role,
+                ProfileImagePath = user.ProfileImagePath,
                 StaffId = user.LecturerProfile?.StaffId,
                 Department = user.LecturerProfile?.Department,
                 Specialization = user.LecturerProfile?.Specialization
@@ -261,6 +362,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Role = user.Role,
+                ProfileImagePath = user.ProfileImagePath,
                 AdminCode = user.AdminProfile?.AdminCode
             },
             _ => new UserProfileResponse
@@ -268,7 +370,8 @@ public class AuthService : IAuthService
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role
+                Role = user.Role,
+                ProfileImagePath = user.ProfileImagePath
             }
         };
 
@@ -279,6 +382,7 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role,
+            ProfileImagePath = user.ProfileImagePath,
             StudentId = profile.StudentId,
             Batch = profile.Batch,
             DegreeProgram = profile.DegreeProgram
@@ -291,6 +395,7 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role,
+            ProfileImagePath = user.ProfileImagePath,
             StaffId = profile.StaffId,
             Department = profile.Department,
             Specialization = profile.Specialization
@@ -303,6 +408,7 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role,
+            ProfileImagePath = user.ProfileImagePath,
             AdminCode = profile.AdminCode
         };
 }

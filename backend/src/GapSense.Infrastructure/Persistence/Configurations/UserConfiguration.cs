@@ -38,6 +38,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.UpdatedAt)
             .IsRequired();
 
+        builder.Property(e => e.ProfileImagePath)
+            .HasMaxLength(500);
+
         builder.HasIndex(e => e.Email)
             .IsUnique()
             .HasDatabaseName("IX_Users_Email");

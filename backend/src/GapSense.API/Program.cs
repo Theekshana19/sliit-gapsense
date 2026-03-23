@@ -52,6 +52,9 @@ var jwtSecret = builder.Configuration["Jwt:Secret"];
 if (string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience) || string.IsNullOrWhiteSpace(jwtSecret))
     throw new InvalidOperationException("JWT is not configured. Please set Jwt:Issuer, Jwt:Audience, and Jwt:Secret in appsettings.json.");
 
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 16)
+    throw new InvalidOperationException("Jwt:Secret must be at least 16 bytes (128 bits) for HS256.");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

@@ -10,6 +10,7 @@ import type { StudentSignupPayload } from '../models/auth/student-signup.model';
 import type { LecturerSignupPayload } from '../models/auth/lecturer-signup.model';
 import type { AdminSignupPayload } from '../models/auth/admin-signup.model';
 import { API_BASE_URL } from '../config/api.config';
+import type { UpdateMyProfileRequest, UserProfile } from '../models/auth/user-profile.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -24,7 +25,7 @@ interface AuthResponseApi {
   fullName: string;
   email: string;
   role: string;
-  profile?: unknown;
+  profile?: UserProfile;
 }
 
 const BATCH_OPTIONS: AuthSelectOption[] = [
@@ -48,20 +49,41 @@ const DEPARTMENT_OPTIONS: AuthSelectOption[] = [
 
 @Injectable({ providedIn: 'root' })
 export class AuthUiService {
+  private static readonly TokenKey = 'gapSense.auth.token';
+
   readonly batchOptions: readonly AuthSelectOption[] = BATCH_OPTIONS;
   readonly degreeProgramOptions: readonly AuthSelectOption[] = DEGREE_OPTIONS;
   readonly departmentOptions: readonly AuthSelectOption[] = DEPARTMENT_OPTIONS;
 
   private readonly _flashMessage = signal<string | null>(null);
   readonly flashMessage = this._flashMessage.asReadonly();
+  private readonly _currentUser = signal<UserProfile | null>(null);
+  readonly currentUser = this._currentUser.asReadonly();
 
   constructor(
     private readonly router: Router,
     private readonly http: HttpClient
-  ) {}
+  ) {
+    // Keep auth state when browser refreshes.
+    if (this.hasToken()) {
+      void this.loadMe();
+    }
+  }
 
   clearFlash(): void {
     this._flashMessage.set(null);
+  }
+
+  hasToken(): boolean {
+    return !!this.getStoredToken();
+  }
+
+  logout(): void {
+    localStorage.removeItem(AuthUiService.TokenKey);
+    sessionStorage.removeItem(AuthUiService.TokenKey);
+    this._currentUser.set(null);
+    this._flashMessage.set('Signed out successfully.');
+    void this.router.navigateByUrl('/auth/login');
   }
 
   mockLogin(payload: LoginRequest): void {
@@ -96,6 +118,10 @@ export class AuthUiService {
       }
 
       this.storeToken(res.data.token, payload.rememberMe);
+      this._currentUser.set(res.data.profile ?? null);
+      if (!res.data.profile) {
+        await this.loadMe();
+      }
 
       this._flashMessage.set('Signed in successfully. Redirecting…');
       window.setTimeout(() => {
@@ -148,9 +174,104 @@ export class AuthUiService {
   }
 
   private storeToken(token: string, rememberMe: boolean): void {
-    // Keep token handling simple for now; later you can add an interceptor.
     const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('gapSense.auth.token', token);
+    storage.setItem(AuthUiService.TokenKey, token);
+    // Ensure only one active token source at a time.
+    if (rememberMe) {
+      sessionStorage.removeItem(AuthUiService.TokenKey);
+    } else {
+      localStorage.removeItem(AuthUiService.TokenKey);
+    }
+  }
+
+  getStoredToken(): string | null {
+    return localStorage.getItem(AuthUiService.TokenKey) ??
+      sessionStorage.getItem(AuthUiService.TokenKey);
+  }
+
+  async loadMe(): Promise<UserProfile | null> {
+    if (!this.hasToken()) {
+      this._currentUser.set(null);
+      return null;
+    }
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ApiResponse<UserProfile>>(`${API_BASE_URL}/api/auth/me`)
+      );
+      if (!res.success || !res.data) {
+        this._currentUser.set(null);
+        return null;
+      }
+
+      this._currentUser.set(res.data);
+      return res.data;
+    } catch {
+      // Token may be expired/invalid. Force re-login.
+      localStorage.removeItem(AuthUiService.TokenKey);
+      sessionStorage.removeItem(AuthUiService.TokenKey);
+      this._currentUser.set(null);
+      return null;
+    }
+  }
+
+  async updateMyProfile(payload: UpdateMyProfileRequest): Promise<boolean> {
+    this._flashMessage.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.put<ApiResponse<UserProfile>>(`${API_BASE_URL}/api/auth/me`, payload)
+      );
+      if (!res.success || !res.data) {
+        this._flashMessage.set(res.message || 'Profile update failed.');
+        return false;
+      }
+      this._currentUser.set(res.data);
+      this._flashMessage.set('Profile updated successfully.');
+      return true;
+    } catch (err) {
+      this._flashMessage.set(this.extractApiError(err) || 'Profile update failed.');
+      return false;
+    }
+  }
+
+  async uploadProfilePhoto(file: File): Promise<boolean> {
+    this._flashMessage.set(null);
+    const body = new FormData();
+    body.append('file', file);
+    try {
+      const res = await firstValueFrom(
+        this.http.post<ApiResponse<UserProfile>>(`${API_BASE_URL}/api/auth/me/photo`, body)
+      );
+      if (!res.success || !res.data) {
+        this._flashMessage.set(res.message || 'Photo upload failed.');
+        return false;
+      }
+      this._currentUser.set(res.data);
+      this._flashMessage.set('Profile photo updated.');
+      return true;
+    } catch (err) {
+      this._flashMessage.set(this.extractApiError(err) || 'Photo upload failed.');
+      return false;
+    }
+  }
+
+  async removeProfilePhoto(): Promise<boolean> {
+    this._flashMessage.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.delete<ApiResponse<UserProfile>>(`${API_BASE_URL}/api/auth/me/photo`)
+      );
+      if (!res.success || !res.data) {
+        this._flashMessage.set(res.message || 'Photo removal failed.');
+        return false;
+      }
+      this._currentUser.set(res.data);
+      this._flashMessage.set('Profile photo removed.');
+      return true;
+    } catch (err) {
+      this._flashMessage.set(this.extractApiError(err) || 'Photo removal failed.');
+      return false;
+    }
   }
 
   private extractApiError(err: unknown): string | null {

@@ -8,6 +8,7 @@ public record UserProfileResponse
     public string FullName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public UserRole Role { get; init; }
+    public string? ProfileImagePath { get; init; }
 
     // Role-specific fields
     public string? StudentId { get; init; }
