@@ -25,6 +25,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// apply pending migrations and seed data on startup
+// this way team members don't need to run 'dotnet ef database update' manually
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); // creates tables if they don't exist
+    SeedData.Initialize(db); // adds sample data if database is empty
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
