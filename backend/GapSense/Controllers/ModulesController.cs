@@ -50,7 +50,7 @@ public class ModulesController : ControllerBase
 
         // get the modules and convert to DTOs
         var modules = await query
-            .OrderBy(m => m.ModuleCode)
+            .OrderByDescending(m => m.CreatedAt)
             .Select(m => new ModuleDto
             {
                 Id = m.Id,

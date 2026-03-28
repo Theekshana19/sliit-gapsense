@@ -107,11 +107,11 @@ public static class SeedData
         // --- create validation alerts ---
         var alerts = new List<ValidationAlert>
         {
-            new() { Type = "Circular Dependency", ModuleCode = "IT3011", ModuleName = "Software Engineering", Severity = "Critical", Description = "Circular dependency detected between IT3011 and IT4020. Both modules list each other as prerequisites.", Status = "Unresolved" },
-            new() { Type = "Missing Topic Weight", ModuleCode = "CS2050", ModuleName = "Computer Architecture", Severity = "Warning", Description = "Topic weights for CS2050 do not total 100%. Current total is 85%.", Status = "Unresolved" },
-            new() { Type = "Duplicate Mapping", ModuleCode = "IT2080", ModuleName = "Web Application Development", Severity = "Warning", Description = "IT1040 is mapped as prerequisite twice with different relationship types.", Status = "In Progress" },
+            new() { Type = "Incomplete Setup", ModuleCode = "CS2050", ModuleName = "Computer Architecture", Severity = "Critical", Description = "Module CS2050 has no topics configured yet. Cannot calculate readiness without topics.", Status = "Unresolved" },
+            new() { Type = "Missing Topic Weight", ModuleCode = "IT2040", ModuleName = "Data Structures & Algorithms", Severity = "Warning", Description = "Topic 'Hashing' has only 4% weight. Very low weight may not contribute meaningfully to readiness scoring.", Status = "In Progress" },
+            new() { Type = "Duplicate Mapping", ModuleCode = "IT2080", ModuleName = "Web Application Development", Severity = "Warning", Description = "Review prerequisite mapping for IT2080 — check if IT1040 relationship type is correct.", Status = "In Progress" },
             new() { Type = "Incomplete Setup", ModuleCode = "DS1010", ModuleName = "Introduction to Data Science", Severity = "Info", Description = "Module DS1010 has no topics configured yet. Add topics to complete setup.", Status = "Unresolved" },
-            new() { Type = "Missing Topic Weight", ModuleCode = "IT2040", ModuleName = "Data Structures & Algorithms", Severity = "Warning", Description = "Topic 'Hashing' has 0% weight assigned. This may affect readiness calculations.", Status = "In Progress" },
+            new() { Type = "Missing Topic Weight", ModuleCode = "IT3040", ModuleName = "IT Project Management", Severity = "Warning", Description = "Module IT3040 has no topics configured. Topic weights cannot be calculated.", Status = "Unresolved" },
         };
 
         db.ValidationAlerts.AddRange(alerts);
