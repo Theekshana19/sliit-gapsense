@@ -77,8 +77,13 @@ export class TopicFormComponent implements OnInit {
 
   ngOnInit() {
     // load modules for dropdown
-    this.curriculumService.getModules().subscribe((mods) => {
-      this.modules = mods;
+    this.curriculumService.getModules().subscribe({
+      next: (mods) => {
+        this.modules = mods;
+      },
+      error: (err) => {
+        console.error('Failed to load modules for dropdown:', err);
+      },
     });
 
     // if editing, fill form

@@ -88,7 +88,7 @@
                 <app-status-badge [label]="topic.status" [variant]="getStatusVariant(topic.status)" />
               </td>
               <td class="py-4 px-5">
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex items-center gap-1">
                   <button (click)="goToEditTopic(topic.id)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
                     <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
                   </button>

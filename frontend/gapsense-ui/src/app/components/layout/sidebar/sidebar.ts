@@ -15,7 +15,7 @@ export class SidebarComponent {
   // curriculum section - Sewwandi's pages
   curriculumItems = [
     { label: 'Module Management', icon: 'inventory_2', route: '/curriculum/module-management' },
-    { label: 'Topic Management', icon: 'topic', route: '/curriculum/modules/2/topics' },
+    { label: 'Topic Management', icon: 'topic', route: '/curriculum/modules/11111111-1111-1111-1111-111111111102/topics' },
     { label: 'Prerequisite Mapping', icon: 'account_tree', route: '/curriculum/prerequisite-management' },
     { label: 'Dependency View', icon: 'hub', route: '/curriculum/dependency-visualization' },
     { label: 'Semester Offerings', icon: 'calendar_month', route: '/curriculum/semester-offerings' },

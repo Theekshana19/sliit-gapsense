@@ -26,7 +26,7 @@ export class TopicWeightConfigComponent implements OnInit {
   module = signal<Module | null>(null);
   weights = signal<TopicWeightEntry[]>([]);
 
-  moduleId = '2';
+  moduleId = '';
 
   // calculate total weight from all topics
   totalWeight = computed(() => {
@@ -37,7 +37,8 @@ export class TopicWeightConfigComponent implements OnInit {
   isValid = computed(() => this.totalWeight() === 100);
 
   ngOnInit() {
-    this.moduleId = this.route.snapshot.paramMap.get('moduleId') || '2';
+    // get module ID from the route URL
+    this.moduleId = this.route.snapshot.paramMap.get('moduleId') || '';
 
     this.curriculumService.getModuleById(this.moduleId).subscribe((m) => {
       if (m) this.module.set(m);

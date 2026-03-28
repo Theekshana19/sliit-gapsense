@@ -41,11 +41,11 @@ export class ModuleFormComponent implements OnInit {
 
   // --- validation rules ---
 
-  // module code must not be empty and should look like "IT2040"
+  // module code must be exactly 6 characters like "IT2040"
   codeError = computed(() => {
     if (!this.submitted()) return '';
     if (!this.moduleCode().trim()) return 'Module code is required';
-    if (this.moduleCode().trim().length < 4) return 'Module code must be at least 4 characters';
+    if (this.moduleCode().trim().length !== 6) return 'Module code must be exactly 6 characters (e.g. IT2040)';
     return '';
   });
 
@@ -68,7 +68,7 @@ export class ModuleFormComponent implements OnInit {
   // check if the whole form is valid
   isFormValid = computed(() => {
     return (
-      this.moduleCode().trim().length >= 4 &&
+      this.moduleCode().trim().length === 6 &&
       this.moduleName().trim().length >= 3 &&
       this.credits() >= 1 &&
       this.credits() <= 6
