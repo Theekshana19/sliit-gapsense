@@ -43,21 +43,40 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
   showSubmitDialog = signal(false);
 
   ngOnInit() {
-    const quizId = this.route.snapshot.paramMap.get('id') || '1';
+    const quizId = this.route.snapshot.paramMap.get('id') || '';
+
+    // if no quiz ID in the URL, show error
+    if (!quizId) {
+      this.isLoading.set(false);
+      this.toastService.error('No quiz ID provided');
+      return;
+    }
 
     // load quiz details
-    this.readinessService.getQuizById(quizId).subscribe((q) => {
-      if (q) {
-        this.quiz.set(q);
-        this.timeRemaining.set(q.timeLimitMinutes * 60);
-        this.startTimer();
-      }
+    this.readinessService.getQuizById(quizId).subscribe({
+      next: (q) => {
+        if (q) {
+          this.quiz.set(q);
+          this.timeRemaining.set(q.timeLimitMinutes * 60);
+          this.startTimer();
+        }
+      },
+      error: () => {
+        this.toastService.error('Failed to load quiz');
+        this.isLoading.set(false);
+      },
     });
 
     // load quiz questions
-    this.readinessService.getQuizQuestions(quizId).subscribe((questions) => {
-      this.questions.set(questions);
-      this.isLoading.set(false);
+    this.readinessService.getQuizQuestions(quizId).subscribe({
+      next: (questions) => {
+        this.questions.set(questions);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to load questions');
+        this.isLoading.set(false);
+      },
     });
   }
 

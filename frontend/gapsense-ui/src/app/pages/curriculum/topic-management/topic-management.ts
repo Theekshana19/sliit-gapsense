@@ -32,11 +32,11 @@ export class TopicManagementComponent implements OnInit {
   showDeleteDialog = signal(false);
   topicToDelete = signal<Topic | null>(null);
 
-  // default module id if none in route
-  moduleId = '2'; // IT2040 by default
+  // module id from the route URL
+  moduleId = '';
 
   ngOnInit() {
-    this.moduleId = this.route.snapshot.paramMap.get('moduleId') || '2';
+    this.moduleId = this.route.snapshot.paramMap.get('moduleId') || '';
     this.loadData();
   }
 

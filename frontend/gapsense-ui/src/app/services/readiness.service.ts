@@ -20,10 +20,23 @@ interface ApiResponse<T> {
   errors?: string[];
 }
 
+// module info from curriculum API - used for dropdowns
+interface ModuleInfo {
+  id: string;
+  moduleCode: string;
+  moduleName: string;
+}
+
+// topic info from curriculum API
+interface TopicInfo {
+  id: string;
+  topicName: string;
+  moduleId: string;
+}
+
 // ============================================
 // READINESS SERVICE
-// now connects to real .NET backend API
-// replaced all mock data with HTTP calls
+// connects to real .NET backend API
 // ============================================
 
 @Injectable({
@@ -58,15 +71,15 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // create a new question
-  createQuestion(question: Partial<Question>): Observable<Question> {
-    // map frontend format to backend CreateQuestionDto format
+  // create a new question - moduleId must be a GUID from getModuleList()
+  createQuestion(question: Partial<Question> & { moduleId?: string; topicId?: string }): Observable<Question> {
     const body = {
       title: question.title,
       questionText: question.questionText,
       questionType: question.questionType,
       difficulty: question.difficulty,
-      moduleId: question.moduleCode, // will need module GUID - see note below
+      moduleId: question.moduleId || '', // GUID from modules API
+      topicId: question.topicId || null,
       explanation: question.explanation,
       marks: question.marks,
       status: question.status,
@@ -83,13 +96,13 @@ export class ReadinessService {
   }
 
   // update a question
-  updateQuestion(id: string, updates: Partial<Question>): Observable<Question> {
+  updateQuestion(id: string, updates: Partial<Question> & { topicId?: string | null }): Observable<Question> {
     const body = {
       title: updates.title,
       questionText: updates.questionText,
       questionType: updates.questionType,
       difficulty: updates.difficulty,
-      topicId: null,
+      topicId: updates.topicId || null, // pass actual topic ID
       explanation: updates.explanation,
       marks: updates.marks,
       status: updates.status,
@@ -112,9 +125,25 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // get available modules for dropdowns (from curriculum API)
+  // get modules from curriculum API for dropdowns (returns real data from backend)
+  getModuleList(): Observable<ModuleInfo[]> {
+    return this.http
+      .get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`)
+      .pipe(map((res) => res.data));
+  }
+
+  // get topics from curriculum API for dropdowns
+  getTopicList(moduleId?: string): Observable<TopicInfo[]> {
+    let params = new HttpParams();
+    if (moduleId) params = params.set('moduleId', moduleId);
+
+    return this.http
+      .get<ApiResponse<TopicInfo[]>>(`${this.apiUrl}/topics`, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  // static module name list for simple dropdowns (backwards compatible)
   getModules(): string[] {
-    // for now return static list - will connect to modules API later
     return [
       'Data Structures & Algorithms',
       'Object Oriented Programming',
@@ -124,7 +153,7 @@ export class ReadinessService {
     ];
   }
 
-  // get available topics for dropdowns
+  // static topic name list for simple dropdowns (backwards compatible)
   getTopics(): string[] {
     return [
       'Asymptotic Analysis',
@@ -158,6 +187,7 @@ export class ReadinessService {
   }
 
   // get questions for a specific quiz (for the quiz attempt page)
+  // note: backend hides correct answers so students can't cheat
   getQuizQuestions(quizId: string): Observable<Question[]> {
     return this.http
       .get<ApiResponse<Question[]>>(`${this.apiUrl}/quizzes/${quizId}/questions`)
@@ -216,7 +246,8 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // submit a quiz (student answers)
+  // submit a quiz (student answers) - backend auto-calculates score
+  // TODO: replace hardcoded student info with auth service when login is integrated
   submitQuiz(
     quizId: string,
     answers: { questionId: string; selectedOptionId: string }[]
@@ -224,8 +255,8 @@ export class ReadinessService {
     const body = {
       quizId,
       studentId: 'IT23201996', // hardcoded for now - will come from auth later
-      studentName: 'Chamodi Dilshani',
-      studentAvatar: 'CD',
+      studentName: 'Test Student',
+      studentAvatar: 'TS',
       avatarColor: 'bg-primary-fixed',
       answers: answers.map((a) => ({
         questionId: a.questionId,
