@@ -12,8 +12,8 @@ services:
 
   backend:
     build:
-      context: ./backend/GapSense
-      dockerfile: Dockerfile
+      context: ./backend/src
+      dockerfile: GapSense.API/Dockerfile
     ports:
       - "5172:5172"
     environment:
