@@ -27,7 +27,7 @@
         </thead>
         <tbody class="divide-y divide-slate-100">
           @for (row of rows(); track row.id) {
-            <tr class="hover:bg-slate-50/50 transition-colors group">
+            <tr class="hover:bg-slate-50/50 transition-colors">
               <td class="px-6 py-5">
                 <div class="font-bold text-slate-900">{{ row.ruleName }}</div>
                 <div class="text-xs text-slate-500">{{ row.description ?? '—' }}</div>
@@ -45,7 +45,7 @@
                 <app-status-badge [status]="row.status" />
               </td>
               <td class="px-6 py-5 text-right">
-                <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex justify-end gap-1">
                   <button type="button" class="p-2 hover:bg-white rounded-lg transition-colors" (click)="edit.emit(row)">
                     <span class="material-symbols-outlined text-slate-400 hover:text-blue-600">edit</span>
                   </button>
