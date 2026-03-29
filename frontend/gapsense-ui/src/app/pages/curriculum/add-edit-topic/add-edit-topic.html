@@ -1,3 +1,10 @@
 <app-main-layout [pageTitle]="pageTitle()" breadcrumb="Curriculum > Topic Editor" [showSearch]="false">
-  <app-topic-form [topic]="topic()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+  @if (isLoading()) {
+    <div class="py-20 flex justify-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  }
+  @if (!isLoading()) {
+    <app-topic-form [topic]="topic()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+  }
 </app-main-layout>

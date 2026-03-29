@@ -37,8 +37,8 @@ export class TopicFormComponent implements OnInit {
   // track if user tried to submit
   submitted = signal(false);
 
-  // available modules for dropdown
-  modules: Module[] = [];
+  // available modules for dropdown (signal so template updates when loaded)
+  modules = signal<Module[]>([]);
 
   // --- validation rules ---
 
@@ -76,10 +76,10 @@ export class TopicFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    // load modules for dropdown
+    // load modules from API for dropdown
     this.curriculumService.getModules().subscribe({
       next: (mods) => {
-        this.modules = mods;
+        this.modules.set(mods);
       },
       error: (err) => {
         console.error('Failed to load modules for dropdown:', err);
@@ -103,7 +103,7 @@ export class TopicFormComponent implements OnInit {
   // when module dropdown changes, update moduleCode too
   onModuleChange(moduleId: string) {
     this.moduleId.set(moduleId);
-    const mod = this.modules.find((m) => m.id === moduleId);
+    const mod = this.modules().find((m) => m.id === moduleId);
     if (mod) {
       this.moduleCode.set(mod.moduleCode);
     }
@@ -119,7 +119,7 @@ export class TopicFormComponent implements OnInit {
     this.submitted.set(true);
     if (!this.isFormValid()) return;
 
-    const mod = this.modules.find((m) => m.id === this.moduleId());
+    const mod = this.modules().find((m) => m.id === this.moduleId());
     const data: Partial<Topic> = {
       moduleId: this.moduleId(),
       moduleCode: this.moduleCode(),

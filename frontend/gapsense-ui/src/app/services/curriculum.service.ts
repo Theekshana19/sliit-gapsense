@@ -257,6 +257,27 @@ export class CurriculumService {
       .pipe(map((res) => res.data));
   }
 
+  // create a new semester offering
+  createOffering(offering: any): Observable<SemesterOffering> {
+    return this.http
+      .post<ApiResponse<SemesterOffering>>(`${this.apiUrl}/semester-offerings`, offering)
+      .pipe(map((res) => res.data));
+  }
+
+  // update an existing semester offering
+  updateOffering(id: string, offering: any): Observable<SemesterOffering> {
+    return this.http
+      .put<ApiResponse<SemesterOffering>>(`${this.apiUrl}/semester-offerings/${id}`, offering)
+      .pipe(map((res) => res.data));
+  }
+
+  // delete a semester offering
+  deleteOffering(id: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.apiUrl}/semester-offerings/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
   // ---------- VALIDATION ALERT METHODS ----------
 
   // get all validation alerts

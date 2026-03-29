@@ -80,7 +80,7 @@
               </td>
               <td class="py-4 px-5">
                 <div class="flex gap-1">
-                  <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                  <button (click)="goToEditMapping(prereq)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors" title="Edit">
                     <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
                   </button>
                   <button (click)="confirmDelete(prereq)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors">
