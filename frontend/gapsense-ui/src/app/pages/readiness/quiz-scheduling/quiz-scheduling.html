@@ -122,6 +122,24 @@
           Quick Scheduler
         </h3>
 
+        <!-- select quiz dropdown -->
+        <div class="mb-4">
+          <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+            Select Quiz *
+          </label>
+          <select
+            [value]="selectedQuizId()"
+            (change)="selectedQuizId.set($any($event.target).value)"
+            class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                   focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Choose a quiz to schedule...</option>
+            @for (quiz of quizzes(); track quiz.id) {
+              <option [value]="quiz.id">{{ quiz.title }} ({{ quiz.moduleCode }})</option>
+            }
+          </select>
+        </div>
+
         <div class="grid grid-cols-2 gap-4 mb-4">
           <!-- start date -->
           <div>

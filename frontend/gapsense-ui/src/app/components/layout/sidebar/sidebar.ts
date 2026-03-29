@@ -22,12 +22,13 @@ export class SidebarComponent {
     { label: 'Validation Alerts', icon: 'report', route: '/curriculum/validation-alerts' },
   ];
 
-  // readiness section - Chamodi's pages
+  // readiness section - Chamodi's pages (lecturer side only)
+  // Student Assessment is NOT here because it has no sidebar (student page)
+  // Students access it via direct URL: /readiness/quiz-attempt/:quizId
   readinessItems = [
     { label: 'Question Bank', icon: 'database', route: '/readiness/question-bank' },
     { label: 'Quiz Builder', icon: 'quiz', route: '/readiness/quiz-builder' },
     { label: 'Quiz Scheduling', icon: 'event_note', route: '/readiness/quiz-scheduling' },
-    { label: 'Student Assessment', icon: 'assignment_ind', route: '/readiness/quiz-attempt/33333333-3333-3333-3333-333333333301' },
     { label: 'Submission Tracking', icon: 'troubleshoot', route: '/readiness/submission-tracking' },
     { label: 'Attempt History', icon: 'history', route: '/readiness/attempt-history' },
   ];

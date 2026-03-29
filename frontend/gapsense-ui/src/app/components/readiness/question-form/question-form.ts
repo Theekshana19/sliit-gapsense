@@ -32,6 +32,7 @@ export class QuestionFormComponent implements OnInit {
   topic = signal('');
   module = signal('');
   moduleCode = signal('');
+  moduleId = signal(''); // GUID - this is what the backend needs
   marks = signal(5);
   status = signal<QuestionStatus>('Draft');
   explanation = signal('');
@@ -47,8 +48,8 @@ export class QuestionFormComponent implements OnInit {
   // which option is the correct answer
   correctOptionId = signal('');
 
-  // available modules and topics for dropdowns
-  modules: string[] = [];
+  // available modules and topics for dropdowns (real data from API)
+  moduleList: { id: string; moduleCode: string; moduleName: string }[] = [];
   topics: string[] = [];
 
   // status toggle - true means Active, false means Draft
@@ -114,8 +115,17 @@ export class QuestionFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    // load dropdown options
-    this.modules = this.readinessService.getModules();
+    // load modules from the real API (not static list)
+    this.readinessService.getModuleList().subscribe({
+      next: (mods) => {
+        this.moduleList = mods;
+      },
+      error: () => {
+        console.error('Failed to load modules for dropdown');
+      },
+    });
+
+    // load topics
     this.topics = this.readinessService.getTopics();
 
     // if editing an existing question, fill the form with its data
@@ -134,10 +144,27 @@ export class QuestionFormComponent implements OnInit {
       this.correctOptionId.set(q.correctOptionId);
       this.isActive.set(q.status === 'Active');
 
+      // find the moduleId GUID from the module code (for editing)
+      // we set it after modules load
+      this.readinessService.getModuleList().subscribe((mods) => {
+        const found = mods.find((m) => m.moduleCode === q.moduleCode);
+        if (found) this.moduleId.set(found.id);
+      });
+
       // copy the options
       if (q.options.length > 0) {
         this.options.set([...q.options]);
       }
+    }
+  }
+
+  // when user selects a module from the dropdown, save the GUID
+  onModuleSelect(id: string) {
+    this.moduleId.set(id);
+    const mod = this.moduleList.find((m) => m.id === id);
+    if (mod) {
+      this.module.set(mod.moduleName);
+      this.moduleCode.set(mod.moduleCode);
     }
   }
 
@@ -193,7 +220,7 @@ export class QuestionFormComponent implements OnInit {
     this.submitted.set(true);
     if (!this.isFormValid()) return;
 
-    const data: Partial<Question> = {
+    const data: any = {
       title: this.title(),
       questionText: this.questionText(),
       questionType: this.questionType(),
@@ -201,6 +228,7 @@ export class QuestionFormComponent implements OnInit {
       topic: this.topic(),
       module: this.module(),
       moduleCode: this.moduleCode(),
+      moduleId: this.moduleId(), // GUID - backend needs this
       marks: this.marks(),
       status: this.status(),
       explanation: this.explanation(),

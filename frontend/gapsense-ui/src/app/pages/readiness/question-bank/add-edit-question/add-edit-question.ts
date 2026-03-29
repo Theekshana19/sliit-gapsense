@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MainLayoutComponent } from '../../../../components/layout/main-layout/main-layout';
 import { QuestionFormComponent } from '../../../../components/readiness/question-form/question-form';
+import { LoadingSpinnerComponent } from '../../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../../services/readiness.service';
 import { ToastService } from '../../../../services/toast.service';
 import { Question } from '../../../../models/readiness/question.model';
@@ -12,7 +13,7 @@ import { Question } from '../../../../models/readiness/question.model';
 @Component({
   selector: 'app-add-edit-question',
   standalone: true,
-  imports: [MainLayoutComponent, QuestionFormComponent],
+  imports: [MainLayoutComponent, QuestionFormComponent, LoadingSpinnerComponent],
   templateUrl: './add-edit-question.html',
 })
 export class AddEditQuestionComponent implements OnInit {
@@ -30,6 +31,9 @@ export class AddEditQuestionComponent implements OnInit {
   // page title changes based on mode
   pageTitle = signal('Add Question');
 
+  // loading state - don't show form until data is ready
+  isLoading = signal(false);
+
   ngOnInit() {
     // check if there's an id in the route - means we're editing
     const id = this.route.snapshot.paramMap.get('id');
@@ -37,16 +41,24 @@ export class AddEditQuestionComponent implements OnInit {
     if (id) {
       this.isEditMode.set(true);
       this.pageTitle.set('Edit Question');
+      this.isLoading.set(true);
 
-      // load the question data
-      this.readinessService.getQuestionById(id).subscribe((q) => {
-        if (q) {
-          this.question.set(q);
-        } else {
-          // question not found, go back
-          this.toastService.error('Question not found');
+      // load the question data first, then show the form
+      this.readinessService.getQuestionById(id).subscribe({
+        next: (q) => {
+          if (q) {
+            this.question.set(q);
+          } else {
+            this.toastService.error('Question not found');
+            this.router.navigate(['/readiness/question-bank']);
+          }
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.toastService.error('Failed to load question');
+          this.isLoading.set(false);
           this.router.navigate(['/readiness/question-bank']);
-        }
+        },
       });
     }
   }
@@ -56,9 +68,15 @@ export class AddEditQuestionComponent implements OnInit {
     if (this.isEditMode()) {
       // update existing question
       const id = this.route.snapshot.paramMap.get('id')!;
-      this.readinessService.updateQuestion(id, data).subscribe(() => {
-        this.toastService.success('Question updated successfully');
-        this.router.navigate(['/readiness/question-bank']);
+      this.readinessService.updateQuestion(id, data).subscribe({
+        next: () => {
+          this.toastService.success('Question updated successfully');
+          this.router.navigate(['/readiness/question-bank']);
+        },
+        error: (err: any) => {
+          const msg = err?.error?.message || 'Failed to update question';
+          this.toastService.error(msg);
+        },
       });
     } else {
       // create new question

@@ -5,7 +5,7 @@ import { StatusBadgeComponent } from '../../../components/ui/status-badge/status
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../services/readiness.service';
 import { ToastService } from '../../../services/toast.service';
-import { QuizSchedule, ResultVisibility } from '../../../models/readiness/quiz.model';
+import { Quiz, QuizSchedule, ResultVisibility } from '../../../models/readiness/quiz.model';
 
 // quiz scheduling page - manage when quizzes are available to students
 // lecturers can set start/end dates, attempt limits, and result visibility
@@ -21,29 +21,41 @@ export class QuizSchedulingComponent implements OnInit {
 
   isLoading = signal(true);
   schedules = signal<QuizSchedule[]>([]);
+  quizzes = signal<Quiz[]>([]); // available quizzes for the dropdown
 
   // quick scheduler form fields
-  selectedScheduleId = signal('');
+  selectedQuizId = signal('');
   startDate = signal('');
   endDate = signal('');
   attemptLimit = signal(1);
   resultVisibility = signal<ResultVisibility>('Immediate');
 
-  // stats
-  totalAssessments = 24;
-  publishedCount = 12;
-  scheduledCount = 8;
-  draftCount = 4;
+  // stats - calculated from real data
+  get totalAssessments() { return this.schedules().length; }
+  get publishedCount() { return this.schedules().filter(s => s.status === 'Published').length; }
+  get scheduledCount() { return this.schedules().filter(s => s.status === 'Scheduled').length; }
+  get draftCount() { return this.schedules().filter(s => s.status === 'Draft').length; }
 
   ngOnInit() {
     this.loadSchedules();
+    // load quizzes for the dropdown
+    this.readinessService.getQuizzes().subscribe({
+      next: (data) => this.quizzes.set(data),
+      error: () => console.error('Failed to load quizzes'),
+    });
   }
 
   loadSchedules() {
     this.isLoading.set(true);
-    this.readinessService.getSchedules().subscribe((data) => {
-      this.schedules.set(data);
-      this.isLoading.set(false);
+    this.readinessService.getSchedules().subscribe({
+      next: (data) => {
+        this.schedules.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to load schedules');
+        this.isLoading.set(false);
+      },
     });
   }
 
@@ -58,26 +70,39 @@ export class QuizSchedulingComponent implements OnInit {
 
   // publish a schedule with the quick scheduler form
   onPublish() {
-    if (!this.selectedScheduleId()) {
+    if (!this.selectedQuizId()) {
       this.toastService.error('Please select a quiz first');
       return;
     }
+    if (!this.startDate() || !this.endDate()) {
+      this.toastService.error('Please set start and end dates');
+      return;
+    }
 
-    this.readinessService.updateSchedule(this.selectedScheduleId(), {
+    // create a new schedule for the selected quiz
+    this.readinessService.createSchedule({
+      quizId: this.selectedQuizId(),
       startDate: this.startDate(),
       endDate: this.endDate(),
       maxAttempts: this.attemptLimit(),
       resultVisibility: this.resultVisibility(),
       status: 'Published',
-    }).subscribe(() => {
-      this.toastService.success('Quiz published successfully!');
-      this.loadSchedules();
+    } as any).subscribe({
+      next: () => {
+        this.toastService.success('Quiz scheduled and published!');
+        this.onDiscard();
+        this.loadSchedules();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message || 'Failed to publish schedule';
+        this.toastService.error(msg);
+      },
     });
   }
 
   // discard form changes
   onDiscard() {
-    this.selectedScheduleId.set('');
+    this.selectedQuizId.set('');
     this.startDate.set('');
     this.endDate.set('');
     this.attemptLimit.set(1);

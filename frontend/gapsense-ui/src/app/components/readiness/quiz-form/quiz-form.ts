@@ -31,6 +31,7 @@ export class QuizFormComponent implements OnInit {
   title = signal('');
   module = signal('');
   moduleCode = signal('');
+  moduleId = signal(''); // GUID - backend needs this
   intake = signal('');
 
   // step 2 - available questions and selected ones
@@ -42,8 +43,8 @@ export class QuizFormComponent implements OnInit {
   totalAttempts = signal(1);
   passThreshold = signal(40);
 
-  // dropdown options
-  modules: string[] = [];
+  // real module list from API (with GUIDs)
+  moduleList: { id: string; moduleCode: string; moduleName: string }[] = [];
 
   // track if user tried to go next or submit (shows errors)
   stepSubmitted = signal(false);
@@ -57,12 +58,12 @@ export class QuizFormComponent implements OnInit {
 
   moduleError = computed(() => {
     if (!this.stepSubmitted()) return '';
-    if (!this.module()) return 'Please select a module';
+    if (!this.moduleId()) return 'Please select a module';
     return '';
   });
 
   isStep1Valid = computed(() => {
-    return this.title().trim() !== '' && this.module() !== '';
+    return this.title().trim() !== '' && this.moduleId() !== '';
   });
 
   // --- step 2 validations ---
@@ -94,7 +95,11 @@ export class QuizFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.modules = this.readinessService.getModules();
+    // load real modules from API
+    this.readinessService.getModuleList().subscribe({
+      next: (mods) => { this.moduleList = mods; },
+      error: () => { console.error('Failed to load modules'); },
+    });
 
     // load available questions
     this.readinessService.getQuestions().subscribe((questions) => {
@@ -115,6 +120,16 @@ export class QuizFormComponent implements OnInit {
       // mark existing questions as selected
       const ids = new Set(q.questions.map((qq) => qq.questionId));
       this.selectedQuestionIds.set(ids);
+    }
+  }
+
+  // when user selects a module from the dropdown
+  onModuleSelect(id: string) {
+    this.moduleId.set(id);
+    const mod = this.moduleList.find((m) => m.id === id);
+    if (mod) {
+      this.module.set(mod.moduleName);
+      this.moduleCode.set(mod.moduleCode);
     }
   }
 
@@ -200,8 +215,9 @@ export class QuizFormComponent implements OnInit {
       };
     });
 
-    const data: Partial<Quiz> = {
+    const data: any = {
       title: this.title(),
+      moduleId: this.moduleId(), // GUID - backend needs this
       module: this.module(),
       moduleCode: this.moduleCode(),
       intake: this.intake(),

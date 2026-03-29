@@ -20,7 +20,7 @@
     <ul class="space-y-1 mb-4">
       @for (item of curriculumItems; track item.label) {
         <li>
-          <a [routerLink]="item.route" routerLinkActive="nav-active" class="nav-item">
+          <a [routerLink]="item.route" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
             <span class="material-symbols-outlined" style="font-size: 20px;">{{ item.icon }}</span>
             <span class="text-sm font-medium">{{ item.label }}</span>
           </a>
@@ -33,7 +33,7 @@
     <ul class="space-y-1">
       @for (item of readinessItems; track item.label) {
         <li>
-          <a [routerLink]="item.route" routerLinkActive="nav-active" class="nav-item">
+          <a [routerLink]="item.route" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
             <span class="material-symbols-outlined" style="font-size: 20px;">{{ item.icon }}</span>
             <span class="text-sm font-medium">{{ item.label }}</span>
           </a>

@@ -97,15 +97,15 @@
           Module *
         </label>
         <select
-          [value]="module()"
-          (change)="module.set($any($event.target).value)"
+          [value]="moduleId()"
+          (change)="onModuleSelect($any($event.target).value)"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
                  focus:outline-none focus:ring-2 transition-all"
           [class]="moduleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select module</option>
-          @for (mod of modules; track mod) {
-            <option [value]="mod">{{ mod }}</option>
+          @for (mod of moduleList; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
         @if (moduleError()) {

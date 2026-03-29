@@ -161,18 +161,24 @@ public class QuestionsController : ControllerBase
         question.Status = dto.Status;
         question.UpdatedAt = DateTime.UtcNow;
 
-        // replace all options (remove old ones and add new ones)
-        _db.QuestionOptions.RemoveRange(question.Options);
+        // replace all options — remove old ones first, save, then add new ones
+        var oldOptions = question.Options.ToList();
+        _db.QuestionOptions.RemoveRange(oldOptions);
+        question.Options.Clear();
+        await _db.SaveChangesAsync();
 
+        // now add the new options
         for (int i = 0; i < dto.Options.Count; i++)
         {
             var opt = dto.Options[i];
-            question.Options.Add(new QuestionOption
+            var newOption = new QuestionOption
             {
+                QuestionId = question.Id,
                 OptionText = opt.OptionText,
                 IsCorrect = opt.IsCorrect,
                 SortOrder = i,
-            });
+            };
+            _db.QuestionOptions.Add(newOption);
         }
 
         await _db.SaveChangesAsync();
