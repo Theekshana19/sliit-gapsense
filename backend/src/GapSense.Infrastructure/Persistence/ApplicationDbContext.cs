@@ -24,6 +24,16 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<AdminProfile> AdminProfiles => Set<AdminProfile>();
 
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+
+    public DbSet<CourseModule> CourseModules => Set<CourseModule>();
+
+    public DbSet<LecturerModuleAssignment> LecturerModuleAssignments => Set<LecturerModuleAssignment>();
+
+    public DbSet<StudentIntervention> StudentInterventions => Set<StudentIntervention>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

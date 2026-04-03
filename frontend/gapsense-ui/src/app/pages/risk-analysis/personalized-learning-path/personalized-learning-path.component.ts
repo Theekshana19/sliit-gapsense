@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
 } from '@angular/core';
 import { PersonalizedLearningPathService } from '../../../services/personalized-learning-path.service';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
@@ -27,8 +28,12 @@ import { LearningPathFabComponent } from '../../../components/risk-analysis/lear
   templateUrl: './personalized-learning-path.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PersonalizedLearningPathComponent {
+export class PersonalizedLearningPathComponent implements OnInit {
   protected readonly pathSvc = inject(PersonalizedLearningPathService);
+
+  ngOnInit(): void {
+    void this.pathSvc.tryLoadFromApi();
+  }
 
   protected onContinueLearning(): void {
     this.pathSvc.continueLearning();

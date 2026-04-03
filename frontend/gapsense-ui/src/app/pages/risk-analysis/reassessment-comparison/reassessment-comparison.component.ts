@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
 } from '@angular/core';
 import { ReassessmentComparisonService } from '../../../services/reassessment-comparison.service';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
@@ -27,8 +28,12 @@ import { ReassessmentCertificateBannerComponent } from '../../../components/risk
   templateUrl: './reassessment-comparison.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReassessmentComparisonComponent {
+export class ReassessmentComparisonComponent implements OnInit {
   protected readonly compSvc = inject(ReassessmentComparisonService);
+
+  ngOnInit(): void {
+    void this.compSvc.tryLoadFromApi();
+  }
 
   protected onGenerateCertificate(): void {
     this.compSvc.requestGenerateCertificate();

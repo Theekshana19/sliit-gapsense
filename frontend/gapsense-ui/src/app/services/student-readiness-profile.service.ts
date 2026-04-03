@@ -1,4 +1,6 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import type { AssessmentOutcome } from '../models/risk-analysis/assessment-trajectory-item.model';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { BatchOption } from '../models/risk-analysis/batch-option.model';
 import type { GroupOption } from '../models/risk-analysis/group-option.model';
 import type { SemesterOption } from '../models/risk-analysis/semester-option.model';
@@ -99,6 +101,21 @@ const PROFILE_BY_STUDENT: Record<string, StudentReadinessProfileViewModel> = {
  */
 @Injectable({ providedIn: 'root' })
 export class StudentReadinessProfileService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+  private readonly _apiMe = signal<{
+    studentDisplayName: string;
+    studentCode: string;
+    recentAssessments: Array<{
+      id: string;
+      assessmentName: string;
+      date: string;
+      score: string;
+      outcome: string;
+      trendDirection: string;
+      trendPercent: string;
+    }>;
+  } | null>(null);
+
   private readonly _searchQuery = signal('');
   private readonly _semesterId = signal<string | null>(null);
   private readonly _batchId = signal<string | null>(null);
@@ -151,8 +168,38 @@ export class StudentReadinessProfileService {
   readonly profile = computed((): StudentReadinessProfileViewModel | null => {
     const id = this._studentId();
     if (!id) return null;
-    return PROFILE_BY_STUDENT[id] ?? PROFILE_KAVEEN;
+    const base = PROFILE_BY_STUDENT[id] ?? PROFILE_KAVEEN;
+    const api = this._apiMe();
+    if (!api) return base;
+
+    const items = api.recentAssessments.map((r) => ({
+      id: r.id,
+      assessmentName: r.assessmentName,
+      date: r.date,
+      score: r.score,
+      outcome: mapTrajectoryOutcome(r.outcome),
+      trendDirection: r.trendDirection === 'down' ? ('down' as const) : ('up' as const),
+      trendPercent: r.trendPercent,
+    }));
+
+    return {
+      ...base,
+      summary: {
+        ...base.summary,
+        fullName: api.studentDisplayName,
+        studentId: api.studentCode,
+      },
+      assessmentTrajectory: {
+        ...base.assessmentTrajectory,
+        items: items.length > 0 ? items : base.assessmentTrajectory.items,
+      },
+    };
   });
+
+  async tryLoadFromApi(): Promise<void> {
+    const data = await this.analyticsApi.fetchReadinessProfile();
+    if (data) this._apiMe.set(data);
+  }
 
   initDefaults(): void {
     const sem = MOCK_SEMESTERS[0];
@@ -235,4 +282,10 @@ export class StudentReadinessProfileService {
     const first = students[0]?.id ?? null;
     this._studentId.set(first);
   }
+}
+
+function mapTrajectoryOutcome(o: string): AssessmentOutcome {
+  if (o === 'needs_work') return 'not_ready';
+  if (o === 'ready' || o === 'not_ready' || o === 'marginal') return o;
+  return 'marginal';
 }

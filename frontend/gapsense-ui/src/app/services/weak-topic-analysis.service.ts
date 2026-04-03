@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { BatchOption } from '../models/risk-analysis/batch-option.model';
 import type { GroupOption } from '../models/risk-analysis/group-option.model';
 import type { ModuleOption } from '../models/risk-analysis/module-option.model';
@@ -99,6 +100,9 @@ const DEMO_MATRIX_ALT: WeakTopicMatrixRow[] = [
  */
 @Injectable({ providedIn: 'root' })
 export class WeakTopicAnalysisService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+
+  private readonly _remoteAnalysis = signal<WeakTopicAnalysisViewModel | null>(null);
   private readonly _semesterId = signal<string | null>(null);
   private readonly _batchId = signal<string | null>(null);
   private readonly _groupId = signal<string | null>(null);
@@ -147,6 +151,9 @@ export class WeakTopicAnalysisService {
   });
 
   readonly analysis = computed((): WeakTopicAnalysisViewModel | null => {
+    const remote = this._remoteAnalysis();
+    if (remote) return remote;
+
     const studentId = this._studentId();
     const moduleId = this._moduleId();
     if (!studentId || !moduleId) return null;
@@ -161,6 +168,12 @@ export class WeakTopicAnalysisService {
     if (!sem) return;
     this._semesterId.set(sem.id);
     this.cascadeAfterSemester();
+  }
+
+  /** Load dashboard from API (latest quiz/readiness topics for current user). */
+  async tryLoadFromApi(moduleCode?: string): Promise<void> {
+    const data = await this.analyticsApi.fetchWeakTopics(moduleCode);
+    if (data) this._remoteAnalysis.set(data);
   }
 
   setSemesterId(id: string): void {

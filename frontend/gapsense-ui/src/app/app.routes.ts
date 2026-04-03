@@ -130,5 +130,11 @@ export const routes: Routes = [
         (m) => m.RiskTrendsSummaryComponent
       ),
   },
+  {
+    path: 'curriculum',
+    canActivate: [authGuard, roleGuard(MANAGEMENT_ROLES)],
+    loadComponent: () =>
+      import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
+  },
   { path: '**', redirectTo: 'auth/login' },
 ];

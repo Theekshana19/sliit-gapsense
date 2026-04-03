@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { RiskTrendFilterOption } from '../models/risk-analysis/risk-trend-filter.model';
 import type { RiskTrendFilterState } from '../models/risk-analysis/risk-trend-filter.model';
 import type { RiskTrendsSummaryViewModel } from '../models/risk-analysis/risk-trends-summary.model';
@@ -117,6 +118,9 @@ const MOCK_VIEW_MODEL: RiskTrendsSummaryViewModel = {
  */
 @Injectable({ providedIn: 'root' })
 export class RiskTrendsSummaryService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+  private readonly _remote = signal<RiskTrendsSummaryViewModel | null>(null);
+
   private readonly _moduleId = signal('all');
   private readonly _batchId = signal('2023');
   private readonly _semesterId = signal('s1');
@@ -135,13 +139,30 @@ export class RiskTrendsSummaryService {
   readonly batchOptions = MOCK_BATCHES;
   readonly semesterOptions = MOCK_SEMESTERS;
 
-  readonly viewModel = computed((): RiskTrendsSummaryViewModel => ({
-    ...MOCK_VIEW_MODEL,
-    weakTopicFrequency: {
-      ...MOCK_VIEW_MODEL.weakTopicFrequency,
-      selectedPeriod: this._period(),
-    },
-  }));
+  readonly viewModel = computed((): RiskTrendsSummaryViewModel => {
+    const r = this._remote();
+    if (r) {
+      return {
+        ...r,
+        weakTopicFrequency: {
+          ...r.weakTopicFrequency,
+          selectedPeriod: this._period(),
+        },
+      };
+    }
+    return {
+      ...MOCK_VIEW_MODEL,
+      weakTopicFrequency: {
+        ...MOCK_VIEW_MODEL.weakTopicFrequency,
+        selectedPeriod: this._period(),
+      },
+    };
+  });
+
+  async tryLoadFromApi(): Promise<void> {
+    const data = await this.analyticsApi.fetchRiskTrends();
+    if (data) this._remote.set(data);
+  }
 
   readonly filterState = computed((): RiskTrendFilterState => ({
     moduleId: this._moduleId(),

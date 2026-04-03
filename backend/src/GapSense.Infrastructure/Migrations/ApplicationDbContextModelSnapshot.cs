@@ -240,6 +240,211 @@ namespace GapSense.Infrastructure.Migrations
                     b.ToTable("RecommendationRules", (string)null);
                 });
 
+            modelBuilder.Entity("GapSense.Domain.Entities.Quiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModuleCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsPublished")
+                        .HasDatabaseName("IX_Quizzes_IsPublished");
+
+                    b.HasIndex("ModuleCode")
+                        .HasDatabaseName("IX_Quizzes_ModuleCode");
+
+                    b.ToTable("Quizzes", (string)null);
+
+                    b.Navigation("Attempts");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.QuizAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SubmittedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TopicScoresJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalScorePercent")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubmittedAtUtc")
+                        .HasDatabaseName("IX_QuizAttempts_SubmittedAtUtc");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_QuizAttempts_UserId");
+
+                    b.HasIndex("QuizId", "UserId", "AttemptNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_QuizAttempts_Quiz_User_Attempt");
+
+                    b.ToTable("QuizAttempts", (string)null);
+
+                    b.HasOne("GapSense.Domain.Entities.Quiz", "Quiz")
+                        .WithMany("Attempts")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.CourseModule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_CourseModules_Code");
+
+                    b.ToTable("CourseModules", (string)null);
+
+                    b.Navigation("LecturerAssignments");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerModuleAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CourseModuleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LecturerUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerUserId")
+                        .HasDatabaseName("IX_LecturerModuleAssignments_LecturerUserId");
+
+                    b.HasIndex("LecturerUserId", "CourseModuleId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LecturerModuleAssignments_Lecturer_Module");
+
+                    b.ToTable("LecturerModuleAssignments", (string)null);
+
+                    b.HasOne("GapSense.Domain.Entities.CourseModule", "CourseModule")
+                        .WithMany("LecturerAssignments")
+                        .HasForeignKey("CourseModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CourseModule");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.StudentIntervention", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_StudentInterventions_Status");
+
+                    b.HasIndex("StudentUserId")
+                        .HasDatabaseName("IX_StudentInterventions_StudentUserId");
+
+                    b.ToTable("StudentInterventions", (string)null);
+                });
+
             modelBuilder.Entity("GapSense.Domain.Entities.RiskThreshold", b =>
                 {
                     b.Property<Guid>("Id")

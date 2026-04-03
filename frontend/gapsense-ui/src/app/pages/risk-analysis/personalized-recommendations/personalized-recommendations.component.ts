@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
 } from '@angular/core';
 import { PersonalizedRecommendationsService } from '../../../services/personalized-recommendations.service';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
@@ -29,8 +30,12 @@ import { RecommendationsRoadmapPanelComponent } from '../../../components/risk-a
   templateUrl: './personalized-recommendations.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PersonalizedRecommendationsComponent {
+export class PersonalizedRecommendationsComponent implements OnInit {
   protected readonly recSvc = inject(PersonalizedRecommendationsService);
+
+  ngOnInit(): void {
+    void this.recSvc.tryLoadFromApi();
+  }
 
   protected onFilter(): void {
     this.recSvc.requestFilter();

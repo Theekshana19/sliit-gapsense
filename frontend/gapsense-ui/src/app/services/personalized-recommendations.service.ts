@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { HighPriorityRecommendation } from '../models/risk-analysis/personalized-recommendation.model';
 import type { MediumPriorityRecommendation } from '../models/risk-analysis/recommendation-medium-card.model';
 import type { RecommendationInsightView } from '../models/risk-analysis/recommendation-insight.model';
@@ -111,6 +112,9 @@ const MOCK_ROADMAP: RecommendationRoadmapView = {
  */
 @Injectable({ providedIn: 'root' })
 export class PersonalizedRecommendationsService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+  private readonly _remote = signal<PersonalizedRecommendationsViewModel | null>(null);
+
   private readonly _filterNotice = signal<string | null>(null);
   private readonly _generateNotice = signal<string | null>(null);
   private readonly _roadmapNotice = signal<string | null>(null);
@@ -120,8 +124,13 @@ export class PersonalizedRecommendationsService {
   readonly roadmapNotice = this._roadmapNotice.asReadonly();
 
   readonly viewModel = computed((): PersonalizedRecommendationsViewModel =>
-    this.buildViewModel()
+    this._remote() ?? this.buildViewModel()
   );
+
+  async tryLoadFromApi(): Promise<void> {
+    const data = await this.analyticsApi.fetchRecommendations();
+    if (data) this._remote.set(data);
+  }
 
   private buildViewModel(): PersonalizedRecommendationsViewModel {
     return {

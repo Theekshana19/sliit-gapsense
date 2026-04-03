@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { PersonalizedLearningPathViewModel } from '../models/risk-analysis/personalized-learning-path.model';
 
 const MOCK_VIEW_MODEL: PersonalizedLearningPathViewModel = {
@@ -70,6 +71,9 @@ const MOCK_VIEW_MODEL: PersonalizedLearningPathViewModel = {
  */
 @Injectable({ providedIn: 'root' })
 export class PersonalizedLearningPathService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+  private readonly _remote = signal<PersonalizedLearningPathViewModel | null>(null);
+
   private readonly _downloadPdfNotice = signal<string | null>(null);
   private readonly _retakeNotice = signal<string | null>(null);
 
@@ -77,8 +81,13 @@ export class PersonalizedLearningPathService {
   readonly retakeNotice = this._retakeNotice.asReadonly();
 
   readonly viewModel = computed((): PersonalizedLearningPathViewModel =>
-    MOCK_VIEW_MODEL
+    this._remote() ?? MOCK_VIEW_MODEL
   );
+
+  async tryLoadFromApi(): Promise<void> {
+    const data = await this.analyticsApi.fetchLearningPath();
+    if (data) this._remote.set(data);
+  }
 
   clearDownloadPdfNotice(): void {
     this._downloadPdfNotice.set(null);

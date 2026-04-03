@@ -39,6 +39,7 @@ export class StudentReadinessProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.profileSvc.initDefaults();
+    void this.profileSvc.tryLoadFromApi();
   }
 
   protected onExportPdf(): void {

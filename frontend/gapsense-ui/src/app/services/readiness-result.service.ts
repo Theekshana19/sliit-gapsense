@@ -4,63 +4,38 @@ import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 import { READINESS_RESULT_EXPORT_ID } from '../models/risk-analysis/readiness-result.constants';
 import type { ReadinessResultViewModel } from '../models/risk-analysis/readiness-result.model';
+import type { ReadinessRiskLevel } from '../models/risk-analysis/readiness-result.model';
+import type { TopicPerformanceItem } from '../models/risk-analysis/topic-performance.model';
 
-const MOCK_READINESS_RESULT: ReadinessResultViewModel = {
-  id: READINESS_RESULT_EXPORT_ID,
-  student: {
-    studentName: 'Nimna Silva',
-    studentId: 'IT21004562',
-    initials: 'NS',
-    moduleCode: 'IT3040',
-    semesterLabel: 'Year 3, Semester 1',
-    attemptLabel: '01',
-    analysisDateLabel: 'Oct 24, 2023',
-  },
-  interpretation: {
-    message:
-      'Student requires additional preparation before starting this module.',
-    tone: 'warning',
-  },
-  score: {
-    percent: 42,
-    barTone: 'error',
-  },
-  risk: {
-    level: 'high',
-    description: 'Significant gaps detected in fundamental concepts.',
-  },
-  weakTopics: {
-    count: 3,
-    severityLabel: 'High Severity',
-    helperText: 'Critical foundations missing',
-  },
-  actionPlan: {
-    recommendationCount: 5,
-    badgeLabel: 'Key Recommendations',
-    helperText: 'Targeted learning paths',
-  },
-  topicPerformance: [
-    {
-      topicName: 'Linear Algebra Basics',
-      percent: 28,
-      barVariant: 'critical',
-    },
-    {
-      topicName: 'Discrete Mathematics',
-      percent: 45,
-      barVariant: 'neutral',
-    },
-    {
-      topicName: 'Introduction to Programming',
-      percent: 52,
-      barVariant: 'neutral',
-    },
-  ],
-};
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+interface ReadinessResultApiDto {
+  id: string;
+  studentName: string;
+  studentId: string;
+  moduleCode: string;
+  semesterLabel: string;
+  attemptLabel: string;
+  analysisDateLabel: string;
+  totalScorePercent: number;
+  riskLevel: string;
+  riskDescription: string;
+  weakTopicsCount: number;
+  weakTopicsSeverityLabel: string;
+  weakTopicsHelperText: string;
+  actionPlanRecommendationCount: number;
+  actionPlanBadgeLabel: string;
+  actionPlanHelperText: string;
+  interpretationMessage: string;
+  topicPerformance: { topicName: string; percent: number }[];
+}
 
 /**
- * Provides readiness diagnostic data. Currently mock-only; swap `loadMock` / `_data`
- * for HTTP + DTO mapping when the backend is ready.
+ * Readiness diagnostic from GET /api/readiness-results.
  */
 @Injectable({ providedIn: 'root' })
 export class ReadinessResultService {
@@ -82,14 +57,40 @@ export class ReadinessResultService {
     return `${API_BASE_URL}/api/readiness-results`;
   }
 
-  /** Load placeholder data (replace with API call later). */
-  loadMock(): void {
+  /** Load from API: all results, display first row (or demo id if list empty). */
+  async loadFromApi(): Promise<void> {
     this._loading.set(true);
-    // Simulate async boundary so UI can show loading if needed later
-    queueMicrotask(() => {
-      this._data.set(MOCK_READINESS_RESULT);
+    try {
+      const listRes = await firstValueFrom(
+        this.http.get<ApiResponse<ReadinessResultApiDto[]>>(
+          `${this.exportPdfUrl}`
+        )
+      );
+      if (!listRes.success || !listRes.data?.length) {
+        await this.loadById(READINESS_RESULT_EXPORT_ID);
+        return;
+      }
+      this._data.set(mapApiToViewModel(listRes.data[0]));
+    } catch {
+      await this.loadById(READINESS_RESULT_EXPORT_ID);
+    } finally {
       this._loading.set(false);
-    });
+    }
+  }
+
+  private async loadById(id: string): Promise<void> {
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ApiResponse<ReadinessResultApiDto>>(
+          `${this.exportPdfUrl}/${encodeURIComponent(id)}`
+        )
+      );
+      if (res.success && res.data) {
+        this._data.set(mapApiToViewModel(res.data));
+      }
+    } catch {
+      this._data.set(null);
+    }
   }
 
   clearExportError(): void {
@@ -147,4 +148,85 @@ export class ReadinessResultService {
   shareReportPlaceholder(): void {
     console.info('[ReadinessResult] shareReportPlaceholder — connect share flow here');
   }
+}
+
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function normalizeRiskLevel(level: string): ReadinessRiskLevel {
+  const l = level?.toLowerCase();
+  if (l === 'high' || l === 'medium' || l === 'low') return l;
+  return 'medium';
+}
+
+function interpretationTone(
+  risk: ReadinessRiskLevel
+): ReadinessResultViewModel['interpretation']['tone'] {
+  if (risk === 'high') return 'warning';
+  if (risk === 'low') return 'success';
+  return 'info';
+}
+
+function scoreBarTone(
+  percent: number
+): ReadinessResultViewModel['score']['barTone'] {
+  if (percent < 40) return 'error';
+  if (percent < 60) return 'warning';
+  if (percent < 80) return 'neutral';
+  return 'success';
+}
+
+function topicBarVariant(percent: number): TopicPerformanceItem['barVariant'] {
+  return percent < 40 ? 'critical' : 'neutral';
+}
+
+function mapApiToViewModel(d: ReadinessResultApiDto): ReadinessResultViewModel {
+  const riskLevel = normalizeRiskLevel(d.riskLevel);
+  const topicPerformance: TopicPerformanceItem[] = (d.topicPerformance ?? []).map(
+    (t) => ({
+      topicName: t.topicName,
+      percent: t.percent,
+      barVariant: topicBarVariant(t.percent),
+    })
+  );
+
+  return {
+    id: d.id,
+    student: {
+      studentName: d.studentName,
+      studentId: d.studentId,
+      initials: initialsFromName(d.studentName),
+      moduleCode: d.moduleCode,
+      semesterLabel: d.semesterLabel,
+      attemptLabel: d.attemptLabel,
+      analysisDateLabel: d.analysisDateLabel,
+    },
+    interpretation: {
+      message: d.interpretationMessage,
+      tone: interpretationTone(riskLevel),
+    },
+    score: {
+      percent: d.totalScorePercent,
+      barTone: scoreBarTone(d.totalScorePercent),
+    },
+    risk: {
+      level: riskLevel,
+      description: d.riskDescription,
+    },
+    weakTopics: {
+      count: d.weakTopicsCount,
+      severityLabel: d.weakTopicsSeverityLabel,
+      helperText: d.weakTopicsHelperText,
+    },
+    actionPlan: {
+      recommendationCount: d.actionPlanRecommendationCount,
+      badgeLabel: d.actionPlanBadgeLabel,
+      helperText: d.actionPlanHelperText,
+    },
+    topicPerformance,
+  };
 }

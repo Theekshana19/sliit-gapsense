@@ -33,6 +33,7 @@ export class WeakTopicAnalysisComponent implements OnInit {
 
   ngOnInit(): void {
     this.analysisSvc.initDefaults();
+    void this.analysisSvc.tryLoadFromApi();
   }
 
   protected onExportMatrixPdf(): void {

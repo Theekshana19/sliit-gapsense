@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { RiskTrendsSummaryService } from '../../../services/risk-trends-summary.service';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
 import { SidebarComponent } from '../../../components/layout/sidebar/sidebar.component';
@@ -27,8 +27,12 @@ import { RiskTrendsFabComponent } from '../../../components/risk-analysis/risk-t
   templateUrl: './risk-trends-summary.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskTrendsSummaryComponent {
+export class RiskTrendsSummaryComponent implements OnInit {
   protected readonly svc = inject(RiskTrendsSummaryService);
+
+  ngOnInit(): void {
+    void this.svc.tryLoadFromApi();
+  }
 
   protected onExportPdf(): void {
     this.svc.requestExportPdf();

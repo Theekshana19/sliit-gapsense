@@ -1,3 +1,5 @@
+using GapSense.API.Models;
+using GapSense.Application.DTOs;
 using GapSense.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +16,24 @@ public class ReadinessResultsController : ControllerBase
     public ReadinessResultsController(IReadinessResultService readinessResultService)
     {
         _readinessResultService = readinessResultService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ReadinessResultResponse>>>> GetAll(
+        CancellationToken cancellationToken)
+    {
+        var items = await _readinessResultService.GetAllAsync(cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<ReadinessResultResponse>>.Ok(items));
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<ApiResponse<ReadinessResultResponse>>> GetById(Guid id,
+        CancellationToken cancellationToken)
+    {
+        var item = await _readinessResultService.GetByIdAsync(id, cancellationToken);
+        if (item is null)
+            return NotFound(ApiResponse<ReadinessResultResponse>.Fail("Readiness result not found."));
+        return Ok(ApiResponse<ReadinessResultResponse>.Ok(item));
     }
 
     /// <summary>Downloads a PDF report for the readiness result.</summary>

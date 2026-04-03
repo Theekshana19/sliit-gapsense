@@ -99,6 +99,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IRiskThresholdService, RiskThresholdService>();
 builder.Services.AddScoped<IRecommendationRuleService, RecommendationRuleService>();
 builder.Services.AddScoped<IReadinessResultService, GapSense.Infrastructure.Services.ReadinessResultService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>();
+builder.Services.AddScoped<IStudentAnalyticsService, StudentAnalyticsService>();
+builder.Services.AddScoped<IOptionalModulesService, OptionalModulesService>();
 
 // Auth module
 builder.Services.AddScoped<IAuthService, AuthService>();

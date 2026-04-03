@@ -38,7 +38,7 @@ export class ReadinessResultComponent implements OnInit {
   protected readonly readiness = inject(ReadinessResultService);
 
   ngOnInit(): void {
-    this.readiness.loadMock();
+    void this.readiness.loadFromApi();
   }
 
   protected async onExportPdf(): Promise<void> {

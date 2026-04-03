@@ -1,4 +1,5 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { ReassessmentComparisonViewModel } from '../models/risk-analysis/reassessment-comparison.model';
 
 const MOCK_VIEW_MODEL: ReassessmentComparisonViewModel = {
@@ -52,13 +53,20 @@ const MOCK_VIEW_MODEL: ReassessmentComparisonViewModel = {
  */
 @Injectable({ providedIn: 'root' })
 export class ReassessmentComparisonService {
+  private readonly analyticsApi = inject(StudentAnalyticsApiService);
+  private readonly _remote = signal<ReassessmentComparisonViewModel | null>(null);
   private readonly _certificateNotice = signal<string | null>(null);
 
   readonly certificateNotice = this._certificateNotice.asReadonly();
 
   readonly viewModel = computed((): ReassessmentComparisonViewModel =>
-    MOCK_VIEW_MODEL
+    this._remote() ?? MOCK_VIEW_MODEL
   );
+
+  async tryLoadFromApi(): Promise<void> {
+    const data = await this.analyticsApi.fetchReassessment();
+    if (data) this._remote.set(data);
+  }
 
   clearCertificateNotice(): void {
     this._certificateNotice.set(null);
