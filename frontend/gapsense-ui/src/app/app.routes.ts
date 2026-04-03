@@ -13,6 +13,7 @@ import { FollowUpsPageComponent } from './pages/monitoring/follow-ups/follow-ups
 import { ReadinessOverviewPageComponent } from './pages/readiness/overview/overview.component';
 import { RiskHeatmapPageComponent } from './pages/risk-analysis/heatmap/heatmap.component';
 import { RiskReportsPageComponent } from './pages/risk-analysis/reports/reports.component';
+import { SettingsPageComponent } from './pages/settings/settings.component';
 
 export const appRoutes: Routes = [
   {
@@ -43,6 +44,7 @@ export const appRoutes: Routes = [
       { path: 'monitoring/intervention-plan', component: InterventionPlanPageComponent },
       { path: 'monitoring/plans', component: MonitoringPlansPageComponent },
       { path: 'monitoring/follow-ups', component: FollowUpsPageComponent },
+      { path: 'settings', component: SettingsPageComponent },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

@@ -60,28 +60,8 @@ const CTA_LINK: SidebarLink = {
     <aside
       class="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col overflow-hidden border-r border-slate-200/80 bg-white pt-16 shadow-sm lg:flex"
     >
-      <!-- Upper brand (below fixed topbar) -->
-      <div class="shrink-0 border-b border-slate-200/80 bg-white px-5 pb-4 pt-3">
-        <a
-          routerLink="/dashboard"
-          class="flex items-center gap-3 rounded-xl outline-none ring-offset-2 transition hover:bg-slate-50/90 focus-visible:ring-2 focus-visible:ring-[#003f87]/30"
-          aria-label="SLIIT GapSense home"
-        >
-          <div
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#003f87] to-[#0a4a8c] text-sm font-extrabold tracking-tight text-white shadow-md shadow-[#003f87]/25"
-            aria-hidden="true"
-          >
-            GS
-          </div>
-          <div class="min-w-0 leading-tight">
-            <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">SLIIT</span>
-            <span class="font-headline text-lg font-extrabold tracking-tight text-[#003f87]">GapSense</span>
-          </div>
-        </a>
-      </div>
-
       <nav
-        class="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-6 pb-2 pt-3 text-sm font-medium [scrollbar-gutter:stable]"
+        class="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-6 pb-2 pt-4 text-sm font-medium [scrollbar-gutter:stable]"
       >
         @for (item of filteredMainLinks(); track item.path) {
           <a
@@ -118,13 +98,14 @@ const CTA_LINK: SidebarLink = {
       }
 
       <div class="shrink-0 space-y-1 px-6 pb-8 pt-2">
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
+        <a
+          routerLink="/settings"
+          routerLinkActive="router-link-active"
+          class="sidebar-link flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
         >
           <span class="material-symbols-outlined text-[20px] text-slate-500">settings</span>
           Settings
-        </button>
+        </a>
         <button
           type="button"
           (click)="logout()"

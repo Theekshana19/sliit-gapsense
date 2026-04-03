@@ -11,6 +11,7 @@ const PAGE_LABELS: Record<string, string> = {
   '/monitoring/plans': 'Interventions',
   '/monitoring/follow-ups': 'Follow-ups',
   '/monitoring/intervention-plan': 'Intervention Plan',
+  '/settings': 'Settings',
 };
 
 @Component({

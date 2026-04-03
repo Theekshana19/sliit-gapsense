@@ -26,11 +26,11 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
     <header
       class="fixed top-0 z-50 flex h-16 w-full items-center gap-4 border-b border-slate-200/80 bg-white px-4 shadow-sm sm:px-6 lg:pl-64 lg:pr-8"
     >
-      <!-- Left: wordmark on small screens only (lg+ uses sidebar logo); dashboard sub-nav -->
+      <!-- Left: SLIIT GapSense wordmark + dashboard sub-nav -->
       <div class="flex min-w-0 shrink-0 items-center gap-6 md:gap-8">
         <a
           routerLink="/dashboard"
-          class="font-headline text-xl font-extrabold tracking-tight text-[#003f87] transition-opacity hover:opacity-90 lg:hidden"
+          class="font-headline text-xl font-extrabold tracking-tight text-[#003f87] transition-opacity hover:opacity-90"
         >
           SLIIT GapSense
         </a>
@@ -106,9 +106,13 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
               <span class="material-symbols-outlined text-[22px] text-slate-600">notifications</span>
             </button>
           }
-          <button type="button" class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100" aria-label="Settings">
+          <a
+            routerLink="/settings"
+            class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+            aria-label="Settings"
+          >
             <span class="material-symbols-outlined text-[22px] text-slate-600">settings</span>
-          </button>
+          </a>
 
           @if (session.user(); as u) {
             @if (isDashboardLayout()) {
