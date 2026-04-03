@@ -1,0 +1,16 @@
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.deps.json
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.pdb
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Domain.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Domain.pdb
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.csproj.AssemblyReference.cache
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.GeneratedMSBuildEditorConfig.editorconfig
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.AssemblyInfoInputs.cache
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.AssemblyInfo.cs
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.csproj.CoreCompileInputs.cache
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.sourcelink.json
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.2820646A.Up2Date
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\refint\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.pdb
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\ref\GapSense.Application.dll

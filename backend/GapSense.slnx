@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GapSense.API/GapSense.API.csproj" />
+    <Project Path="src/GapSense.Application/GapSense.Application.csproj" />
+    <Project Path="src/GapSense.Domain/GapSense.Domain.csproj" />
+    <Project Path="src/GapSense.Infrastructure/GapSense.Infrastructure.csproj" />
+  </Folder>
+</Solution>
