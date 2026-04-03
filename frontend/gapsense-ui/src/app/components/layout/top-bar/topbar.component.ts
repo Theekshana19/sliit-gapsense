@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NotificationBellComponent } from '../../notification/notification-bell/notification-bell.component';
 import { SessionService } from '../../../services/session.service';
 import { ShellSearchService } from '../../../services/shell-search.service';
 import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
@@ -7,7 +8,7 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
 @Component({
   standalone: true,
   selector: 'app-topbar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NotificationBellComponent],
   styles: `
     /* Avoid native search-input chrome (often draws a line/underline under the field). */
     .shell-search-input {
@@ -85,27 +86,7 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
         </div>
 
         <div class="flex shrink-0 items-center gap-1 sm:gap-2">
-          @if (!isDashboardLayout()) {
-            <button
-              type="button"
-              class="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-              aria-label="Notifications"
-            >
-              <span class="material-symbols-outlined text-[22px] text-slate-600">notifications</span>
-              <span
-                class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-                aria-hidden="true"
-              ></span>
-            </button>
-          } @else {
-            <button
-              type="button"
-              class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-              aria-label="Notifications"
-            >
-              <span class="material-symbols-outlined text-[22px] text-slate-600">notifications</span>
-            </button>
-          }
+          <app-notification-bell />
           <a
             routerLink="/settings"
             class="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"

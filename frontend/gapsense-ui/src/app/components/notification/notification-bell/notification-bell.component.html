@@ -1,0 +1,24 @@
+<div class="relative flex items-center">
+  <button
+    type="button"
+    (click)="toggle($event)"
+    class="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="dialog"
+    aria-label="Notifications"
+  >
+    <span class="material-symbols-outlined text-[22px] text-slate-600">notifications</span>
+    @if (unreadCount() > 0) {
+      <span
+        class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white"
+        aria-hidden="true"
+      >
+        {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+      </span>
+    }
+  </button>
+
+  @if (open()) {
+    <app-notification-dropdown (closed)="close()" />
+  }
+</div>
