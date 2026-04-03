@@ -33,7 +33,7 @@ export class LoginFormComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
-    this.authUi.mockLogin({
+    this.authUi.login({
       email: v.email,
       password: v.password,
       rememberMe: v.rememberMe,

@@ -65,7 +65,7 @@ export class LecturerSignupFormComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
-    this.authUi.mockSignup('lecturer', {
+    this.authUi.signup('lecturer', {
       fullName: v.fullName ?? '',
       email: v.email ?? '',
       staffId: v.staffId ?? '',

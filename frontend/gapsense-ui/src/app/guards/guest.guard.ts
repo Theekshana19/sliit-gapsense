@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthUiService } from '../services/auth-ui.service';
 
-export const guestGuard: CanActivateFn = () => {
+export const guestGuard: CanActivateFn = async () => {
   const auth = inject(AuthUiService);
   const router = inject(Router);
 
@@ -10,6 +10,15 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/risk-thresholds']);
+  let profile = auth.currentUser();
+  if (!profile) {
+    profile = await auth.loadMe();
+  }
+
+  if (!profile) {
+    return true;
+  }
+
+  return router.createUrlTree([auth.defaultHomeUrlForRole(profile.role)]);
 };
 

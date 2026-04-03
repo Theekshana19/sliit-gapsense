@@ -36,6 +36,25 @@ builder.Services.AddSwaggerGen(c =>
         Type = "string",
         Format = "binary",
     });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT: enter Bearer {your token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -105,6 +124,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    // Production: run migrations explicitly (CI, dotnet ef, or hosted job)—do not rely on this block.
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

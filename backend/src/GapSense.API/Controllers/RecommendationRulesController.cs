@@ -1,12 +1,14 @@
 using GapSense.API.Models;
 using GapSense.Application.DTOs;
 using GapSense.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GapSense.API.Controllers;
 
 [ApiController]
 [Route("api/recommendation-rules")]
+[Authorize(Roles = "admin,lecturer")]
 public class RecommendationRulesController : ControllerBase
 {
     private static readonly string[] AllowedAttachmentExtensions = [".pdf", ".doc", ".docx"];

@@ -1,10 +1,12 @@
 using GapSense.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GapSense.API.Controllers;
 
 [ApiController]
 [Route("api/readiness-results")]
+[Authorize]
 public class ReadinessResultsController : ControllerBase
 {
     private readonly IReadinessResultService _readinessResultService;

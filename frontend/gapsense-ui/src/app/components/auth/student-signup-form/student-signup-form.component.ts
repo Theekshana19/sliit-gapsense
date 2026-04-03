@@ -65,7 +65,7 @@ export class StudentSignupFormComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
-    this.authUi.mockSignup('student', {
+    this.authUi.signup('student', {
       fullName: v.fullName ?? '',
       email: v.email ?? '',
       studentId: v.studentId ?? '',

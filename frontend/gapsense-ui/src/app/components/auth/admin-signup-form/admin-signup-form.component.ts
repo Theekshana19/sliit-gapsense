@@ -59,7 +59,7 @@ export class AdminSignupFormComponent {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
-    this.authUiSvc.mockSignup('admin', {
+    this.authUiSvc.signup('admin', {
       fullName: v.fullName ?? '',
       institutionalEmail: v.institutionalEmail ?? '',
       password: v.password ?? '',

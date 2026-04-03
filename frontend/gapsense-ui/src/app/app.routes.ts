@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { roleGuard } from './guards/role.guard';
+import { MANAGEMENT_ROLES } from './models/auth/auth-role.model';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
@@ -42,7 +44,7 @@ export const routes: Routes = [
   },
   {
     path: 'risk-thresholds',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(MANAGEMENT_ROLES)],
     loadComponent: () =>
       import('./pages/risk-analysis/risk-threshold-management/risk-threshold-management.component').then(
         (m) => m.RiskThresholdManagementComponent
@@ -50,7 +52,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules/add',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(MANAGEMENT_ROLES)],
     loadComponent: () =>
       import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
         (m) => m.AddRecommendationRuleComponent
@@ -58,7 +60,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules/:id/edit',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(MANAGEMENT_ROLES)],
     loadComponent: () =>
       import('./pages/risk-analysis/add-recommendation-rule/add-recommendation-rule.component').then(
         (m) => m.AddRecommendationRuleComponent
@@ -66,7 +68,7 @@ export const routes: Routes = [
   },
   {
     path: 'recommendation-rules',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(MANAGEMENT_ROLES)],
     loadComponent: () =>
       import('./pages/risk-analysis/recommendation-rule-management/recommendation-rule-management.component').then(
         (m) => m.RecommendationRuleManagementComponent

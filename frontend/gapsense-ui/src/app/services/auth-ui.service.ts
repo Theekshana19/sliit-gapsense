@@ -86,20 +86,29 @@ export class AuthUiService {
     void this.router.navigateByUrl('/auth/login');
   }
 
-  mockLogin(payload: LoginRequest): void {
-    // Keep the public method name so your existing form components work.
-    void this.login(payload);
+  /** Post-login landing: students → readiness; admin/lecturer → threshold management. */
+  defaultHomeUrlForRole(role: AuthRole): string {
+    switch (role) {
+      case 'student':
+        return '/readiness-results';
+      case 'admin':
+      case 'lecturer':
+        return '/risk-thresholds';
+    }
   }
 
-  mockSignup(
+  login(payload: LoginRequest): void {
+    void this.loginAsync(payload);
+  }
+
+  signup(
     role: AuthRole,
     payload: StudentSignupPayload | LecturerSignupPayload | AdminSignupPayload
   ): void {
-    // Keep the public method name so your existing form components work.
-    void this.signup(role, payload);
+    void this.signupAsync(role, payload);
   }
 
-  private async login(payload: LoginRequest): Promise<void> {
+  private async loginAsync(payload: LoginRequest): Promise<void> {
     this._flashMessage.set(null);
     const url = `${API_BASE_URL}/api/auth/login`;
 
@@ -123,10 +132,18 @@ export class AuthUiService {
         await this.loadMe();
       }
 
+      const profile = this.currentUser();
+      const role =
+        profile?.role ?? this.parseAuthRoleFromLogin(res.data.role);
+      const home =
+        role !== null
+          ? this.defaultHomeUrlForRole(role)
+          : '/readiness-results';
+
       this._flashMessage.set('Signed in successfully. Redirecting…');
       window.setTimeout(() => {
         this._flashMessage.set(null);
-        void this.router.navigateByUrl('/risk-thresholds');
+        void this.router.navigateByUrl(home);
       }, 300);
     } catch (err) {
       const msg = this.extractApiError(err);
@@ -134,7 +151,14 @@ export class AuthUiService {
     }
   }
 
-  private async signup(
+  private parseAuthRoleFromLogin(value: unknown): AuthRole | null {
+    if (value === 'student' || value === 'lecturer' || value === 'admin') {
+      return value;
+    }
+    return null;
+  }
+
+  private async signupAsync(
     role: AuthRole,
     payload: StudentSignupPayload | LecturerSignupPayload | AdminSignupPayload
   ): Promise<void> {
