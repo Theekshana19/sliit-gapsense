@@ -1,61 +1,175 @@
-<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-slate-50 opacity-95 backdrop-blur-xl flex flex-col gap-2 py-4 border-r border-slate-200/50">
-  <div class="px-6 mb-6">
+<aside class="flex h-screen w-64 flex-col gap-2 border-r border-slate-200/50 bg-slate-50/95 py-4 pt-20 opacity-95 backdrop-blur-xl">
+  <div class="mb-6 px-6">
     <h2 class="text-lg font-bold text-blue-800">GapSense Engine</h2>
     <p class="text-xs font-medium text-slate-500">Risk &amp; Recommendations</p>
   </div>
   <nav class="flex flex-col gap-1">
-    @if (canManage()) {
-      <a routerLink="/risk-thresholds" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg" [routerLinkActiveOptions]="{exact: true}"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+    @if (role() === 'admin') {
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">dashboard</span>
+        Admin Dashboard Page
       </a>
-      <a routerLink="/risk-thresholds" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">tune</span> Risk Thresholds
+      <a
+        routerLink="/curriculum"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">assignment_ind</span>
+        Lecturer Module Assignment
       </a>
-      <a routerLink="/recommendation-rules" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-         [routerLinkActiveOptions]="{ exact: false }"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">rule</span> Recommendation Rules
+      <a
+        routerLink="/curriculum"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">add_task</span>
+        Create New Assignment
       </a>
-      <a routerLink="/curriculum" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">menu_book</span> Curriculum
+      <a
+        routerLink="/risk-thresholds"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">tune</span>
+        Risk Threshold Management
       </a>
-      <a routerLink="/readiness-results" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">fact_check</span> Readiness Results
-      </a>
-    } @else {
-      <a routerLink="/readiness-results" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg" [routerLinkActiveOptions]="{exact: true}"
-         class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-        <span class="material-symbols-outlined text-xl">home</span> Home
+      <a
+        routerLink="/recommendation-rules"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">rule</span>
+        Recommendation Rule Management
       </a>
     }
-    <a routerLink="/weak-topic-analysis" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">analytics</span> Weak Topic Analysis
-    </a>
-    <a routerLink="/recommendations" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">lightbulb</span> Recommendations
-    </a>
-    <div class="my-4 border-t border-slate-200/50 mx-4"></div>
-    <a routerLink="/student-profile" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">person</span> Student Profile
-    </a>
-    <a routerLink="/learning-path" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">auto_stories</span> Learning Path
-    </a>
-    <a routerLink="/reassessment-comparison" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">compare_arrows</span> Reassessment Comparison
-    </a>
-    <a routerLink="/risk-trends" routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
-       class="text-slate-600 hover:text-blue-600 px-4 py-3 flex items-center gap-3 text-sm font-semibold hover:bg-blue-50/50 transition-all duration-300">
-      <span class="material-symbols-outlined text-xl">trending_up</span> Risk Trends
-    </a>
+
+    @if (role() === 'lecturer') {
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">dashboard</span>
+        Lecture Dashboard
+      </a>
+      <a
+        routerLink="/readiness-results"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">fact_check</span>
+        Readiness Result
+      </a>
+      <a
+        routerLink="/weak-topic-analysis"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">analytics</span>
+        Weak Topic analytics
+      </a>
+      <a
+        routerLink="/recommendations"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">lightbulb</span>
+        recommendation page
+      </a>
+      <a
+        routerLink="/reassessment-comparison"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">compare_arrows</span>
+        Reassesment comparison
+      </a>
+    }
+
+    @if (role() === 'student') {
+      <a
+        routerLink="/readiness-results"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">fact_check</span>
+        Readiness Result
+      </a>
+      <a
+        routerLink="/weak-topic-analysis"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">analytics</span>
+        Weak Topic analytics
+      </a>
+      <a
+        routerLink="/recommendations"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">lightbulb</span>
+        Personalized Recommendations
+      </a>
+      <a
+        routerLink="/student-profile"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">person</span>
+        Student Readiness Profile
+      </a>
+      <a
+        routerLink="/learning-path"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">auto_stories</span>
+        Personalized Learning Path
+      </a>
+      <a
+        routerLink="/reassessment-comparison"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">compare_arrows</span>
+        Reassessment Comparison
+      </a>
+      <a
+        routerLink="/risk-trends"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">trending_up</span>
+        Risk Trends &amp; Summary
+      </a>
+    }
   </nav>
+
+  <div class="mt-auto border-t border-slate-200/50 px-4 pt-4">
+    <a
+      routerLink="/profile"
+      routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+      class="mb-1 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 transition-all hover:bg-blue-50/50 hover:text-blue-600"
+    >
+      <span class="material-symbols-outlined text-xl">manage_accounts</span>
+      Profile
+    </a>
+    <button
+      type="button"
+      (click)="logout()"
+      class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-rose-600 transition-all hover:bg-rose-50"
+    >
+      <span class="material-symbols-outlined text-xl">logout</span>
+      Logout
+    </button>
+  </div>
 </aside>

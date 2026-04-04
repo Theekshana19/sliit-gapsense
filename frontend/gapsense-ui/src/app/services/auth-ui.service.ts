@@ -86,14 +86,17 @@ export class AuthUiService {
     void this.router.navigateByUrl('/auth/login');
   }
 
-  /** Post-login landing: students → readiness; admin/lecturer → threshold management. */
+  /**
+   * Post-login landing. Admin and lecturer share `/dashboard` (Academic Performance Dashboard).
+   * Students land on Readiness Result.
+   */
   defaultHomeUrlForRole(role: AuthRole): string {
     switch (role) {
       case 'student':
         return '/readiness-results';
       case 'admin':
       case 'lecturer':
-        return '/risk-thresholds';
+        return '/dashboard';
     }
   }
 
