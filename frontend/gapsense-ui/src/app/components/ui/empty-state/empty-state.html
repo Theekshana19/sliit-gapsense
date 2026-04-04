@@ -1,0 +1,24 @@
+<!-- empty state - centered icon with message -->
+<div class="flex flex-col items-center justify-center py-16 px-4">
+  <!-- icon -->
+  <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-4">
+    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 32px;">
+      {{ icon() }}
+    </span>
+  </div>
+
+  <!-- title -->
+  <h3 class="font-headline text-lg font-semibold text-on-surface mb-1">
+    {{ title() }}
+  </h3>
+
+  <!-- message -->
+  <p class="text-sm text-on-surface-variant text-center max-w-sm">
+    {{ message() }}
+  </p>
+
+  <!-- slot for action button if needed -->
+  <div class="mt-4">
+    <ng-content />
+  </div>
+</div>

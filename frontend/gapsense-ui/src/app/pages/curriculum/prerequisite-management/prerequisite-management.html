@@ -1,0 +1,123 @@
+<!-- prerequisite management page -->
+<app-main-layout pageTitle="Prerequisite Management" breadcrumb="Curriculum > Prerequisites" searchPlaceholder="Search prerequisites...">
+
+  <!-- stats cards -->
+  <div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Active Prerequisites</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ stats().activePrerequisites }}</p>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary-container">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Mandatory Paths</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ stats().mandatoryPaths }}</p>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-tertiary-container">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Avg Relevance Score</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ stats().avgRelevanceScore }}%</p>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-outline-variant">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Depth Levels</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ stats().depthLevels }}</p>
+    </div>
+  </div>
+
+  <!-- header with actions -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="font-headline text-lg font-bold text-on-surface">All Prerequisites</h3>
+    <div class="flex gap-2">
+      <button (click)="goToVisualization()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined" style="font-size: 16px;">hub</span>
+        View Graph
+      </button>
+      <button (click)="goToAddMapping()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold btn-primary-gradient">
+        <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+        Add Mapping
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-6">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Main Module</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Prerequisite Module</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Type</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Weight (%)</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (prereq of prerequisites(); track prereq.id) {
+            <tr class="hover:bg-surface-container-low transition-colors group">
+              <td class="py-4 px-5">
+                <p class="text-sm font-semibold text-on-surface">{{ prereq.mainModuleCode }}</p>
+                <p class="text-[11px] text-on-surface-variant">{{ prereq.mainModuleName }}</p>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 16px;">arrow_forward</span>
+                  <div>
+                    <p class="text-sm font-semibold text-on-surface">{{ prereq.prerequisiteModuleCode }}</p>
+                    <p class="text-[11px] text-on-surface-variant">{{ prereq.prerequisiteModuleName }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <app-status-badge [label]="prereq.relationshipType" [variant]="getTypeVariant(prereq.relationshipType)" />
+              </td>
+              <td class="py-4 px-5">
+                <span class="text-sm font-bold text-on-surface">{{ prereq.relevanceWeight }}%</span>
+              </td>
+              <td class="py-4 px-5">
+                <app-status-badge [label]="prereq.status" [variant]="getStatusVariant(prereq.status)" />
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex gap-1">
+                  <button (click)="goToEditMapping(prereq)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors" title="Edit">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
+                  </button>
+                  <button (click)="confirmDelete(prereq)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors">
+                    <span class="material-symbols-outlined text-error" style="font-size: 18px;">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- recent activity -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm max-w-md">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Recent Changes</h3>
+      <div class="space-y-3">
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">IT4020 → IT3011 validated</p>
+            <p class="text-[10px] text-on-surface-variant">2 hours ago</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">SE3020 → IT2040 weight updated to 85%</p>
+            <p class="text-[10px] text-on-surface-variant">Yesterday</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Remove Prerequisite"
+    message="Are you sure you want to remove this prerequisite mapping?"
+    confirmLabel="Remove" [danger]="true" icon="link_off"
+    (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
+</app-main-layout>

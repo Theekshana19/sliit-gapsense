@@ -1,0 +1,286 @@
+<!-- quiz form - multi-step wizard -->
+
+<!-- step indicator bar -->
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-4">
+    @for (step of [1, 2, 3]; track step) {
+      <button
+        (click)="goToStep(step)"
+        class="flex items-center gap-2"
+      >
+        <!-- step number circle -->
+        <div
+          class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+          [class]="currentStep() === step
+            ? 'bg-primary text-white'
+            : currentStep() > step
+              ? 'bg-primary-fixed text-on-primary-fixed-variant'
+              : 'bg-surface-container-high text-on-surface-variant'"
+        >
+          @if (currentStep() > step) {
+            <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+          } @else {
+            {{ step }}
+          }
+        </div>
+        <!-- step label -->
+        <span
+          class="text-sm font-medium hidden sm:inline"
+          [class]="currentStep() === step ? 'text-on-surface' : 'text-on-surface-variant'"
+        >
+          @switch (step) {
+            @case (1) { Quiz Info }
+            @case (2) { Questions }
+            @case (3) { Rules }
+          }
+        </span>
+      </button>
+
+      <!-- connector line between steps -->
+      @if (step < 3) {
+        <div class="w-12 h-0.5 bg-surface-container-high"></div>
+      }
+    }
+  </div>
+
+  <!-- step navigation buttons -->
+  <div class="flex gap-3">
+    <button
+      class="px-4 py-2 rounded-xl text-sm font-medium bg-surface-container-high
+             text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+    >
+      Save Draft
+    </button>
+    @if (currentStep() < 3) {
+      <button
+        (click)="nextStep()"
+        class="px-5 py-2 rounded-xl text-sm font-bold btn-primary-gradient"
+      >
+        Next Step
+      </button>
+    }
+  </div>
+</div>
+
+<!-- STEP 1: Quiz Info -->
+@if (currentStep() === 1) {
+  <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+    <h3 class="font-headline text-base font-bold text-on-surface mb-5">
+      <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 20px; vertical-align: middle;">info</span>
+      General Information
+    </h3>
+
+    <!-- quiz title -->
+    <div class="mb-5">
+      <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+        Quiz Title
+      </label>
+      <input
+        type="text"
+        [value]="title()"
+        (input)="title.set($any($event.target).value)"
+        placeholder="Enter quiz title..."
+        class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+               focus:ring-0 text-on-surface font-headline font-semibold
+               placeholder:text-on-surface-variant/40"
+        [class]="titleError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
+      />
+      @if (titleError()) {
+        <p class="text-[11px] text-error font-medium mt-1">{{ titleError() }}</p>
+      }
+    </div>
+
+    <!-- module and intake dropdowns -->
+    <div class="grid grid-cols-2 gap-5">
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Module *
+        </label>
+        <select
+          [value]="moduleId()"
+          (change)="onModuleSelect($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="moduleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
+        >
+          <option value="">Select module</option>
+          @for (mod of moduleList; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
+          }
+        </select>
+        @if (moduleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ moduleError() }}</p>
+        }
+      </div>
+
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Intake
+        </label>
+        <select
+          [value]="intake()"
+          (change)="intake.set($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="">Select intake</option>
+          <option value="February 2024">February 2024</option>
+          <option value="June 2024">June 2024</option>
+          <option value="October 2024">October 2024</option>
+        </select>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- STEP 2: Select Questions -->
+@if (currentStep() === 2) {
+  <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-headline text-base font-bold text-on-surface">
+        <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 20px; vertical-align: middle;">help</span>
+        Select Questions
+      </h3>
+      <span class="text-xs text-on-surface-variant">
+        {{ selectedCount }} selected · {{ totalMarks }} marks
+      </span>
+    </div>
+    @if (questionsError()) {
+      <p class="text-[11px] text-error font-medium px-6 mb-3">{{ questionsError() }}</p>
+    }
+
+    <!-- questions table -->
+    <div class="overflow-hidden rounded-xl">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider w-10"></th>
+            <th class="py-3 px-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Question Detail</th>
+            <th class="py-3 px-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Difficulty</th>
+            <th class="py-3 px-4 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Marks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (question of availableQuestions(); track question.id) {
+            <tr
+              class="hover:bg-surface-container-low transition-colors cursor-pointer"
+              (click)="toggleQuestion(question.id)"
+            >
+              <!-- checkbox -->
+              <td class="py-3 px-4">
+                <div
+                  class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
+                  [class]="isSelected(question.id)
+                    ? 'bg-primary border-primary'
+                    : 'border-outline-variant'"
+                >
+                  @if (isSelected(question.id)) {
+                    <span class="material-symbols-outlined text-white" style="font-size: 14px;">check</span>
+                  }
+                </div>
+              </td>
+
+              <!-- question details -->
+              <td class="py-3 px-4">
+                <p class="text-sm font-medium text-on-surface">{{ question.title }}</p>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">{{ question.questionType }} · {{ question.topic }}</p>
+              </td>
+
+              <!-- difficulty badge -->
+              <td class="py-3 px-4">
+                <app-status-badge [label]="question.difficulty" [variant]="getDifficultyVariant(question.difficulty)" />
+              </td>
+
+              <!-- marks -->
+              <td class="py-3 px-4 text-right">
+                <span class="text-sm font-semibold text-on-surface">{{ question.marks }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- STEP 3: Examination Rules -->
+@if (currentStep() === 3) {
+  <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+    <h3 class="font-headline text-base font-bold text-on-surface mb-5">
+      <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 20px; vertical-align: middle;">rule</span>
+      Examination Rules
+    </h3>
+
+    <div class="grid grid-cols-3 gap-6">
+      <!-- time limit -->
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          <span class="material-symbols-outlined mr-1" style="font-size: 14px; vertical-align: middle;">schedule</span>
+          Time Limit (mins)
+        </label>
+        <input
+          type="number"
+          [value]="timeLimit()"
+          (input)="timeLimit.set(+$any($event.target).value)"
+          min="5"
+          max="300"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface text-lg font-bold text-center"
+          [class]="timeLimitError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
+        />
+        @if (timeLimitError()) {
+          <p class="text-[11px] text-error font-medium mt-1 text-center">{{ timeLimitError() }}</p>
+        }
+      </div>
+
+      <!-- total attempts -->
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          <span class="material-symbols-outlined mr-1" style="font-size: 14px; vertical-align: middle;">replay</span>
+          Total Attempts
+        </label>
+        <input
+          type="number"
+          [value]="totalAttempts()"
+          (input)="totalAttempts.set(+$any($event.target).value)"
+          min="1"
+          max="10"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 border-outline-variant
+                 focus:border-primary focus:ring-0 text-on-surface text-lg font-bold text-center transition-colors"
+        />
+      </div>
+
+      <!-- pass threshold -->
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          <span class="material-symbols-outlined mr-1" style="font-size: 14px; vertical-align: middle;">grade</span>
+          Pass Threshold (%)
+        </label>
+        <input
+          type="number"
+          [value]="passThreshold()"
+          (input)="passThreshold.set(+$any($event.target).value)"
+          min="0"
+          max="100"
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface text-lg font-bold text-center"
+          [class]="passThresholdError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
+        />
+        @if (passThresholdError()) {
+          <p class="text-[11px] text-error font-medium mt-1 text-center">{{ passThresholdError() }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- submit button -->
+    <div class="mt-8 flex justify-end">
+      <button
+        (click)="onSubmit()"
+        class="px-6 py-3 rounded-xl text-sm font-bold btn-primary-gradient"
+      >
+        <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">publish</span>
+        Create Quiz
+      </button>
+    </div>
+  </div>
+}

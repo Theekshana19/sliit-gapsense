@@ -1,0 +1,142 @@
+<!-- topic management page -->
+<app-main-layout pageTitle="Topic Management" [breadcrumb]="'Curriculum > ' + (module()?.moduleCode || 'Module') + ' > Topics'" searchPlaceholder="Search topics...">
+
+  <!-- module header card with gradient -->
+  @if (module()) {
+    <div class="bg-gradient-to-r from-primary to-primary-container p-6 rounded-2xl text-white mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-white/60">{{ module()!.moduleCode }}</p>
+          <h2 class="font-headline text-2xl font-extrabold mt-1">{{ module()!.moduleName }}</h2>
+          <p class="text-xs text-white/70 mt-1">{{ module()!.program }} · {{ module()!.semester }} · {{ module()!.credits }} credits</p>
+        </div>
+        <div class="flex gap-3">
+          <div class="text-center">
+            <p class="text-2xl font-black">{{ stats().totalTopics }}</p>
+            <p class="text-[9px] text-white/60 uppercase">Topics</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-black">{{ stats().totalWeight }}%</p>
+            <p class="text-[9px] text-white/60 uppercase">Weight</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- action buttons -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="font-headline text-lg font-bold text-on-surface">Topics</h3>
+    <div class="flex gap-2">
+      <button (click)="goToWeightConfig()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined" style="font-size: 16px;">tune</span>
+        Configure Weights
+      </button>
+      <button (click)="goToAddTopic()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold btn-primary-gradient">
+        <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+        Add Topic
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && topics().length > 0) {
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-6">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Topic Name</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Description</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Weight (%)</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Priority</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (topic of topics(); track topic.id; let i = $index) {
+            <tr class="hover:bg-surface-container-low transition-colors group">
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold" [class]="getBadgeColor(i)">
+                    {{ topic.topicName.substring(0, 2).toUpperCase() }}
+                  </div>
+                  <span class="text-sm font-semibold text-on-surface">{{ topic.topicName }}</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 max-w-xs">
+                <p class="text-xs text-on-surface-variant truncate">{{ topic.description }}</p>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-bold text-on-surface">{{ topic.weight }}%</span>
+                  <div class="w-16 h-1.5 bg-surface-container-high rounded-full">
+                    <div class="h-full bg-primary rounded-full" [style.width.%]="topic.weight"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" [class]="getPriorityColor(topic.importanceLevel)"></span>
+                  <span class="text-xs text-on-surface-variant">{{ topic.importanceLevel }}</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <app-status-badge [label]="topic.status" [variant]="getStatusVariant(topic.status)" />
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-1">
+                  <button (click)="goToEditTopic(topic.id)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
+                  </button>
+                  <button (click)="confirmDelete(topic)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors">
+                    <span class="material-symbols-outlined text-error" style="font-size: 18px;">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- bottom cards -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- weight distribution -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Weight Distribution</h3>
+        <div class="space-y-2">
+          @for (topic of topics(); track topic.id) {
+            <div class="flex items-center gap-3">
+              <span class="text-[11px] text-on-surface-variant w-32 truncate">{{ topic.topicName }}</span>
+              <div class="flex-1 h-3 bg-surface-container-high rounded-full">
+                <div class="h-full bg-primary rounded-full transition-all" [style.width.%]="topic.weight"></div>
+              </div>
+              <span class="text-[11px] font-bold text-on-surface w-8 text-right">{{ topic.weight }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- academic alignment -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Academic Alignment</h3>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="flex-1 h-2 bg-surface-container-high rounded-full">
+            <div class="h-full bg-primary rounded-full" [style.width.%]="stats().alignmentPercentage"></div>
+          </div>
+          <span class="text-lg font-black text-primary">{{ stats().alignmentPercentage }}%</span>
+        </div>
+        <p class="text-xs text-on-surface-variant">Topics are well aligned with the SLIIT curriculum framework.</p>
+      </div>
+    </div>
+  }
+
+  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Delete Topic"
+    message="Are you sure you want to delete this topic? This will affect readiness evaluations."
+    confirmLabel="Delete" [danger]="true" icon="delete"
+    (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
+</app-main-layout>

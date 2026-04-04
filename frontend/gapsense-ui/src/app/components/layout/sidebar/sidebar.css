@@ -1,0 +1,45 @@
+/* sidebar - fixed left panel with glassmorphic effect */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 264px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+/* each nav item - row with icon and text */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.625rem;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: rgba(203, 213, 225, 0.3);
+  transform: translateX(2px);
+}
+
+/* active nav item - highlighted in blue */
+.nav-active {
+  background: rgba(219, 234, 254, 0.7) !important;
+  color: #1d4ed8 !important;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.nav-active .material-symbols-outlined {
+  color: #1d4ed8;
+}

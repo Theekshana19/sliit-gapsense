@@ -84,40 +84,6 @@ namespace GapSense.Infrastructure.Migrations
                 name: "IX_StudentInterventions_StudentUserId",
                 table: "StudentInterventions",
                 column: "StudentUserId");
-
-            migrationBuilder.InsertData(
-                table: "CourseModules",
-                columns: new[]
-                {
-                    "Id", "Code", "Title", "Description", "SortOrder", "CreatedAtUtc"
-                },
-                values: new object[,]
-                {
-                    {
-                        new Guid("10000000-0000-0000-0000-000000000001"),
-                        "IT3040",
-                        "Middleware Architecture",
-                        "Integration layer for enterprise systems and messaging.",
-                        10,
-                        new DateTime(2026, 4, 29, 0, 0, 0, DateTimeKind.Utc)
-                    },
-                    {
-                        new Guid("10000000-0000-0000-0000-000000000002"),
-                        "SE4010",
-                        "Software Quality Assurance",
-                        "Testing strategies, risk-based QA, and release readiness.",
-                        20,
-                        new DateTime(2026, 4, 29, 0, 0, 0, DateTimeKind.Utc)
-                    },
-                    {
-                        new Guid("10000000-0000-0000-0000-000000000003"),
-                        "CS2022",
-                        "Data Structures and Algorithms",
-                        "Core CS curriculum supporting diagnostic assessments.",
-                        30,
-                        new DateTime(2026, 4, 29, 0, 0, 0, DateTimeKind.Utc)
-                    }
-                });
         }
 
         /// <inheritdoc />

@@ -1,0 +1,142 @@
+<!-- module management page -->
+<app-main-layout
+  pageTitle="Module Management"
+  breadcrumb="Curriculum > Modules"
+  searchPlaceholder="Search modules..."
+  (searchChange)="onSearch($event)"
+>
+  <!-- stats cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- total credit hours -->
+    <div class="bg-gradient-to-br from-primary to-primary-container p-5 rounded-xl text-white">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-white/70">Total Credit Hours</p>
+      <p class="font-headline text-3xl font-black mt-1">{{ stats().totalCreditHours }}</p>
+      <p class="text-[10px] text-white/60 mt-1">Across {{ stats().totalModules }} modules</p>
+    </div>
+
+    <!-- active modules -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Active Modules</p>
+      <p class="font-headline text-3xl font-black text-on-surface mt-1">{{ stats().activeModules }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">Currently being taught</p>
+    </div>
+
+    <!-- needs attention -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-error">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Needs Attention</p>
+      <p class="font-headline text-3xl font-black text-error mt-1">{{ stats().needsAttention }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">Draft modules pending review</p>
+    </div>
+  </div>
+
+  <!-- header with add button -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-headline text-xl font-bold text-on-surface">All Modules</h2>
+    <button (click)="goToAddModule()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient">
+      <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+      Add Module
+    </button>
+  </div>
+
+  <!-- filters -->
+  <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-6">
+    <div class="flex gap-3">
+      <select [value]="filterProgram()" (change)="filterProgram.set($any($event.target).value); onFilterChange()"
+        class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Programs</option>
+        @for (p of programs; track p) { <option [value]="p">{{ p }}</option> }
+      </select>
+      <select [value]="filterSemester()" (change)="filterSemester.set($any($event.target).value); onFilterChange()"
+        class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Semesters</option>
+        @for (s of semesters; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+      <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value); onFilterChange()"
+        class="py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Draft">Draft</option>
+        <option value="Archived">Archived</option>
+      </select>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && modules().length === 0) {
+    <app-empty-state icon="inventory_2" title="No modules found" message="Try adjusting your filters or add a new module.">
+      <button (click)="goToAddModule()" class="px-4 py-2 rounded-xl text-sm font-bold btn-primary-gradient">Add Module</button>
+    </app-empty-state>
+  }
+
+  @if (!isLoading() && modules().length > 0) {
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Module Code</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Module Name</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Program</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Semester</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Credits</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (mod of paginatedModules; track mod.id) {
+            <tr class="hover:bg-surface-container-low transition-colors group">
+              <td class="py-4 px-5">
+                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-secondary-container text-on-secondary-container">
+                  {{ mod.moduleCode }}
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <p class="text-sm font-semibold text-on-surface">{{ mod.moduleName }}</p>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">{{ mod.topicCount }} topics · {{ mod.prerequisiteCount }} prerequisites</p>
+              </td>
+              <td class="py-4 px-5"><span class="text-xs text-on-surface">{{ mod.program }}</span></td>
+              <td class="py-4 px-5"><span class="text-xs text-on-surface">{{ mod.semester }}</span></td>
+              <td class="py-4 px-5"><span class="text-sm font-bold text-on-surface">{{ mod.credits }}</span></td>
+              <td class="py-4 px-5">
+                <app-status-badge [label]="mod.status" [variant]="getStatusVariant(mod.status)" />
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center gap-1">
+                  <button (click)="goToTopics(mod.id)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors" title="View Topics">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">visibility</span>
+                  </button>
+                  <button (click)="goToEditModule(mod.id)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors" title="Edit">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
+                  </button>
+                  <button (click)="confirmDelete(mod)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors" title="Archive">
+                    <span class="material-symbols-outlined text-error" style="font-size: 18px;">archive</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="flex items-center justify-between px-5 py-3 border-t border-surface-container-low">
+        <span class="text-xs text-on-surface-variant">Showing {{ paginatedModules.length }} of {{ modules().length }} modules</span>
+        <div class="flex gap-1">
+          @for (page of [].constructor(totalPages); track $index) {
+            <button (click)="goToPage($index + 1)"
+              class="w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center transition-colors"
+              [class]="currentPage() === $index + 1 ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container-high'">
+              {{ $index + 1 }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Archive Module"
+    message="Are you sure you want to archive this module? It will be hidden from active listings."
+    confirmLabel="Archive" [danger]="true" icon="archive"
+    (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
+</app-main-layout>

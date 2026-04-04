@@ -1,0 +1,7 @@
+<!-- status badge with optional pulse dot -->
+<span [class]="badgeClasses()">
+  @if (showDot()) {
+    <span [class]="dotClasses()"></span>
+  }
+  {{ label() }}
+</span>

@@ -1,0 +1,56 @@
+<!-- sidebar - fixed left, 264px wide, glassmorphic -->
+<aside class="sidebar">
+  <!-- logo area -->
+  <div class="px-5 pt-6 pb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+        <span class="text-white font-headline font-bold text-lg">G</span>
+      </div>
+      <div>
+        <h1 class="font-headline text-base font-bold text-on-surface">GapSense</h1>
+        <p class="text-[10px] text-on-surface-variant tracking-wider uppercase">Academic Management</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- navigation links -->
+  <nav class="px-3 mt-2 flex-1 overflow-y-auto">
+    <!-- curriculum section label -->
+    <p class="px-3 text-[9px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Curriculum</p>
+    <ul class="space-y-1 mb-4">
+      @for (item of curriculumItems; track item.label) {
+        <li>
+          <a [routerLink]="item.route" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+            <span class="material-symbols-outlined" style="font-size: 20px;">{{ item.icon }}</span>
+            <span class="text-sm font-medium">{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+
+    <!-- readiness section label -->
+    <p class="px-3 text-[9px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Readiness</p>
+    <ul class="space-y-1">
+      @for (item of readinessItems; track item.label) {
+        <li>
+          <a [routerLink]="item.route" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+            <span class="material-symbols-outlined" style="font-size: 20px;">{{ item.icon }}</span>
+            <span class="text-sm font-medium">{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- bottom section - settings and logout -->
+  <div class="px-3 pb-4 border-t border-slate-200/50 pt-3 mt-auto">
+    <a class="nav-item mb-1" routerLink="/readiness/settings">
+      <span class="material-symbols-outlined" style="font-size: 20px;">settings</span>
+      <span class="text-sm font-medium">Settings</span>
+    </a>
+    <a class="nav-item text-error hover:bg-error-container/30" routerLink="/auth/login">
+      <span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+      <span class="text-sm font-medium">Logout</span>
+    </a>
+  </div>
+</aside>

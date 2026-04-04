@@ -28,6 +28,20 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
 
+    // Chamodi curriculum (module/topic/prerequisite/question/quiz/submission) entities
+    public DbSet<Module> Modules => Set<Module>();
+    public DbSet<Topic> Topics => Set<Topic>();
+    public DbSet<Prerequisite> Prerequisites => Set<Prerequisite>();
+    public DbSet<SemesterOffering> SemesterOfferings => Set<SemesterOffering>();
+    public DbSet<ValidationAlert> ValidationAlerts => Set<ValidationAlert>();
+    public DbSet<Question> Questions => Set<Question>();
+    public DbSet<QuestionOption> QuestionOptions => Set<QuestionOption>();
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+    public DbSet<QuizSchedule> QuizSchedules => Set<QuizSchedule>();
+    public DbSet<Submission> Submissions => Set<Submission>();
+    public DbSet<SubmissionAnswer> SubmissionAnswers => Set<SubmissionAnswer>();
+    public DbSet<Resource> Resources => Set<Resource>();
+
     public DbSet<CourseModule> CourseModules => Set<CourseModule>();
 
     public DbSet<LecturerModuleAssignment> LecturerModuleAssignments => Set<LecturerModuleAssignment>();

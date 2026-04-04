@@ -77,25 +77,6 @@ namespace GapSense.Infrastructure.Migrations
                 name: "IX_QuizAttempts_UserId",
                 table: "QuizAttempts",
                 column: "UserId");
-
-            migrationBuilder.InsertData(
-                table: "Quizzes",
-                columns: new[]
-                {
-                    "Id", "Title", "ModuleCode", "Description", "IsPublished", "CreatedByUserId", "CreatedAtUtc",
-                    "UpdatedAtUtc"
-                },
-                values: new object[]
-                {
-                    new Guid("00000000-0000-0000-0000-000000000002"),
-                    "Demo Diagnostic Quiz",
-                    "IT3040",
-                    "Published sample quiz for student integration testing.",
-                    true,
-                    null,
-                    new DateTime(2026, 4, 3, 0, 0, 0, DateTimeKind.Utc),
-                    new DateTime(2026, 4, 3, 0, 0, 0, DateTimeKind.Utc)
-                });
         }
 
         /// <inheritdoc />

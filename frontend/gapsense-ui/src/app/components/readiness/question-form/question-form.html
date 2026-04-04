@@ -1,0 +1,308 @@
+<!-- question form - two column layout: content left, classification right -->
+<div class="grid grid-cols-12 gap-6">
+
+  <!-- LEFT COLUMN - question content (8 cols) -->
+  <div class="col-span-12 lg:col-span-8">
+    <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+      <!-- section title -->
+      <div class="mb-6">
+        <h2 class="font-headline text-lg font-bold text-on-surface">Question Content</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Create your assessment question with options</p>
+      </div>
+
+      <!-- question title -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Question Title *
+        </label>
+        <input
+          type="text"
+          [value]="title()"
+          (input)="title.set($any($event.target).value)"
+          placeholder="Enter question title..."
+          class="w-full py-2.5 px-0 bg-transparent border-0 border-b-2 transition-colors
+                 focus:ring-0 text-on-surface font-headline font-semibold
+                 placeholder:text-on-surface-variant/40"
+          [class]="titleError() ? 'border-error focus:border-error' : 'border-outline-variant focus:border-primary'"
+        />
+        @if (titleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ titleError() }}</p>
+        }
+      </div>
+
+      <!-- question text -->
+      <div class="mb-6">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Question Text *
+        </label>
+        <!-- simple toolbar -->
+        <div class="flex gap-1 mb-2">
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">format_bold</span>
+          </button>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">format_italic</span>
+          </button>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">code</span>
+          </button>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">functions</span>
+          </button>
+        </div>
+        <textarea
+          [value]="questionText()"
+          (input)="questionText.set($any($event.target).value)"
+          placeholder="Enter the question text here..."
+          rows="4"
+          class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 resize-none transition-all"
+          [class]="questionTextError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
+        ></textarea>
+        @if (questionTextError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ questionTextError() }}</p>
+        }
+      </div>
+
+      <!-- MCQ options section -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+            Options (MCQ)
+          </label>
+          <button
+            (click)="addOption()"
+            class="text-xs font-semibold text-primary hover:text-primary-container transition-colors"
+          >
+            + Add Option
+          </button>
+        </div>
+
+        <!-- validation errors for options -->
+        @if (optionsError()) {
+          <p class="text-[11px] text-error font-medium mb-2">{{ optionsError() }}</p>
+        }
+        @if (correctAnswerError()) {
+          <p class="text-[11px] text-error font-medium mb-2">{{ correctAnswerError() }}</p>
+        }
+
+        <!-- option list -->
+        <div class="space-y-3">
+          @for (option of options(); track option.id; let i = $index) {
+            <div class="flex items-center gap-3 group">
+              <!-- correct answer radio button -->
+              <button
+                (click)="setCorrectAnswer(option.id)"
+                class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                [class]="correctOptionId() === option.id
+                  ? 'border-primary bg-primary'
+                  : 'border-outline-variant hover:border-primary/50'"
+              >
+                @if (correctOptionId() === option.id) {
+                  <span class="material-symbols-outlined text-white" style="font-size: 14px;">check</span>
+                }
+              </button>
+
+              <!-- option text input -->
+              <input
+                type="text"
+                [value]="option.optionText"
+                (input)="updateOptionText(option.id, $any($event.target).value)"
+                [placeholder]="'Enter option ' + option.id.toUpperCase() + '...'"
+                class="flex-1 py-2.5 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                       placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                       focus:ring-primary/20 transition-all"
+              />
+
+              <!-- delete option button - shows on hover -->
+              @if (options().length > 2) {
+                <button
+                  (click)="removeOption(option.id)"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100
+                         hover:bg-error-container/30 transition-all"
+                >
+                  <span class="material-symbols-outlined text-error" style="font-size: 18px;">delete</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- correct answer feedback -->
+      <div>
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Correct Answer Feedback
+        </label>
+        <textarea
+          [value]="explanation()"
+          (input)="explanation.set($any($event.target).value)"
+          placeholder="Explain why this is the correct answer..."
+          rows="3"
+          class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 focus:ring-primary/20 resize-none transition-all"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN - classification & actions (4 cols) -->
+  <div class="col-span-12 lg:col-span-4 space-y-5">
+
+    <!-- classification card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <h3 class="font-headline text-base font-bold text-on-surface mb-5">Classification</h3>
+
+      <!-- module dropdown - uses real module GUIDs from API -->
+      <div class="mb-4">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+          Module *
+        </label>
+        <select
+          [value]="moduleId()"
+          (change)="onModuleSelect($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="">Select module</option>
+          @for (mod of moduleList; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- topic input -->
+      <div class="mb-4">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+          Topic
+        </label>
+        <input
+          type="text"
+          [value]="topic()"
+          (input)="topic.set($any($event.target).value)"
+          placeholder="Enter topic..."
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 focus:ring-primary/20 transition-all"
+        />
+      </div>
+
+      <!-- question type dropdown -->
+      <div class="mb-4">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+          Type
+        </label>
+        <select
+          [value]="questionType()"
+          (change)="questionType.set($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="MCQ">MCQ</option>
+          <option value="TRUE_FALSE">True / False</option>
+        </select>
+      </div>
+
+      <!-- difficulty dropdown -->
+      <div class="mb-4">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+          Difficulty
+        </label>
+        <select
+          [value]="difficulty()"
+          (change)="difficulty.set($any($event.target).value)"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+
+      <!-- marks input -->
+      <div class="mb-4">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+          Marks *
+        </label>
+        <input
+          type="number"
+          [value]="marks()"
+          (input)="marks.set(+$any($event.target).value)"
+          min="1"
+          max="100"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="marksError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
+        />
+        @if (marksError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ marksError() }}</p>
+        }
+      </div>
+
+      <!-- status toggle -->
+      <div class="flex items-center justify-between">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+          Status
+        </label>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="toggleStatus()"
+            class="w-10 h-5 rounded-full transition-colors relative"
+            [class]="isActive() ? 'bg-primary' : 'bg-outline-variant'"
+          >
+            <span
+              class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+              [class]="isActive() ? 'left-5' : 'left-0.5'"
+            ></span>
+          </button>
+          <span class="text-xs font-medium" [class]="isActive() ? 'text-primary' : 'text-on-surface-variant'">
+            {{ isActive() ? 'Active' : 'Draft' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- action buttons card -->
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <!-- save button -->
+      <button
+        (click)="onSubmit()"
+        class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
+        [class.opacity-50]="submitted() && !isFormValid()"
+      >
+        <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
+        Save Question
+      </button>
+
+      <!-- cancel button -->
+      <button
+        (click)="onCancel()"
+        class="w-full py-3 rounded-xl text-sm font-semibold bg-surface-container-high
+               text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+      >
+        Cancel Changes
+      </button>
+
+      <!-- last saved timestamp -->
+      <p class="text-[10px] text-on-surface-variant text-center mt-3">
+        Last saved: just now
+      </p>
+    </div>
+
+    <!-- academic info card -->
+    <div class="bg-blue-50/50 border border-blue-100/50 p-5 rounded-xl">
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-primary" style="font-size: 20px;">school</span>
+        <div>
+          <p class="text-xs font-bold text-on-surface mb-1">Academic Guard</p>
+          <p class="text-[11px] text-on-surface-variant leading-relaxed">
+            Questions should follow SLIIT assessment standards and align with Bloom's Taxonomy levels.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

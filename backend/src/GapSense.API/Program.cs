@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using GapSense.Application.Jwt;
 using GapSense.Application.Services;
 using GapSense.Application.Repositories;
+using GapSense.Infrastructure.Data;
 using GapSense.Infrastructure.Persistence.Repositories;
 using GapSense.Infrastructure.Persistence;
 using GapSense.Infrastructure.Services;
@@ -58,6 +59,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+// Curriculum/readiness controllers (ported from Chamodi) use AppDbContext from Infrastructure/Data.
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });

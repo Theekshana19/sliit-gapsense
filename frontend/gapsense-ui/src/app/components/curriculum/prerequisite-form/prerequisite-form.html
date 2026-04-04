@@ -1,0 +1,205 @@
+<!-- prerequisite form - define relationship between two modules -->
+<div class="grid grid-cols-12 gap-6">
+
+  <!-- LEFT COLUMN - mapping form (8 cols) -->
+  <div class="col-span-12 lg:col-span-8">
+    <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+      <div class="mb-6">
+        <h2 class="font-headline text-lg font-bold text-on-surface">
+          <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 22px; vertical-align: middle;">account_tree</span>
+          Prerequisite Mapping
+        </h2>
+        <p class="text-sm text-on-surface-variant mt-1">Define which module must be completed before another</p>
+      </div>
+
+      <!-- circular dependency warning -->
+      @if (showCircularWarning()) {
+        <div class="bg-error-container p-4 rounded-xl mb-5">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-on-error-container" style="font-size: 20px;">report_problem</span>
+            <p class="text-sm font-semibold text-on-error-container">
+              Circular dependency detected! A module cannot be its own prerequisite.
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- main module select -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Select Main Module *
+        </label>
+        <select
+          [value]="mainModuleId()"
+          (change)="mainModuleId.set($any($event.target).value); onModuleSelectionChange()"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="mainModuleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
+        >
+          <option value="">Select the module that requires a prerequisite</option>
+          @for (mod of modules; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
+          }
+        </select>
+        @if (mainModuleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ mainModuleError() }}</p>
+        }
+      </div>
+
+      <!-- prerequisite module select -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Select Prerequisite Module *
+        </label>
+        <select
+          [value]="prerequisiteModuleId()"
+          (change)="prerequisiteModuleId.set($any($event.target).value); onModuleSelectionChange()"
+          class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                 focus:outline-none focus:ring-2 transition-all"
+          [class]="prereqModuleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
+        >
+          <option value="">Select the module that must be completed first</option>
+          @for (mod of modules; track mod.id) {
+            <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
+          }
+        </select>
+        @if (prereqModuleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ prereqModuleError() }}</p>
+        }
+      </div>
+
+      <!-- relationship type toggle -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-3">
+          Relationship Type
+        </label>
+        <div class="flex gap-3">
+          <button
+            (click)="relationshipType.set('Mandatory')"
+            class="flex-1 py-3 rounded-xl text-sm font-semibold transition-all border-2"
+            [class]="relationshipType() === 'Mandatory'
+              ? 'border-primary/30 bg-primary/5 text-primary'
+              : 'border-transparent bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'"
+          >
+            <span class="material-symbols-outlined mr-1" style="font-size: 16px; vertical-align: middle;">lock</span>
+            Mandatory
+          </button>
+          <button
+            (click)="relationshipType.set('Optional')"
+            class="flex-1 py-3 rounded-xl text-sm font-semibold transition-all border-2"
+            [class]="relationshipType() === 'Optional'
+              ? 'border-primary/30 bg-primary/5 text-primary'
+              : 'border-transparent bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'"
+          >
+            <span class="material-symbols-outlined mr-1" style="font-size: 16px; vertical-align: middle;">lock_open</span>
+            Optional
+          </button>
+        </div>
+      </div>
+
+      <!-- relevance weight slider -->
+      <div class="mb-5">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Relevance Weight: <span class="text-primary">{{ relevanceWeight() }}%</span>
+        </label>
+        <input
+          type="range"
+          [value]="relevanceWeight()"
+          (input)="relevanceWeight.set(+$any($event.target).value)"
+          min="0"
+          max="100"
+          class="w-full h-2 rounded-full appearance-none bg-surface-container-high cursor-pointer
+                 accent-primary"
+        />
+        <div class="flex justify-between text-[10px] text-on-surface-variant mt-1">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <!-- notes -->
+      <div class="mb-6">
+        <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+          Notes
+        </label>
+        <textarea
+          [value]="notes()"
+          (input)="notes.set($any($event.target).value)"
+          placeholder="Add notes about this prerequisite relationship..."
+          rows="3"
+          class="w-full py-3 px-4 bg-surface-container-low rounded-xl text-sm text-on-surface
+                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+                 focus:ring-primary/20 resize-none transition-all"
+        ></textarea>
+      </div>
+
+      <!-- action buttons -->
+      <div class="flex justify-end gap-3">
+        <button
+          (click)="onCancel()"
+          class="px-5 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant
+                 hover:text-on-surface transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="onSubmit()"
+          class="px-6 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
+          [class.opacity-50]="showCircularWarning() || (submitted() && !isFormValid())"
+          [disabled]="showCircularWarning()"
+        >
+          <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
+          Save Mapping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN - helper info (4 cols) -->
+  <div class="col-span-12 lg:col-span-4 space-y-5">
+
+    <!-- smart suggestion card -->
+    <div class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-2xl text-white">
+      <span class="material-symbols-outlined mb-3" style="font-size: 24px;">auto_awesome</span>
+      <h3 class="font-headline text-sm font-bold mb-2">Smart Suggestion</h3>
+      <p class="text-xs text-white/70 leading-relaxed">
+        Based on curriculum analysis, modules in the same program track often share prerequisite chains. Check existing mappings before creating new ones.
+      </p>
+    </div>
+
+    <!-- recent activity -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Recent Activity</h3>
+      <div class="space-y-3">
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">IT2040 → IT1040 validated</p>
+            <p class="text-[10px] text-on-surface-variant">3 hours ago</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-on-surface">SE3020 → IT2040 created</p>
+            <p class="text-[10px] text-on-surface-variant">Yesterday</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- visualization link -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-tertiary-fixed flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary" style="font-size: 20px;">hub</span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-on-surface">View Dependency Graph</p>
+          <p class="text-[10px] text-on-surface-variant">See all prerequisite chains visually</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,180 @@
+<!-- quiz attempt page - student takes the quiz here (NO sidebar) -->
+<app-assessment-layout
+  [quizTitle]="quiz()?.moduleCode + ' ' + quiz()?.title"
+  [timerDisplay]="timerDisplay()"
+  studentName="K.B.C Dilshani"
+  studentInitials="CD"
+>
+  <!-- loading -->
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && currentQuestion) {
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- LEFT SIDEBAR - quiz progress (3 cols) -->
+      <div class="col-span-12 lg:col-span-3">
+        <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm sticky top-20">
+          <!-- progress bar -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Quiz Progress</span>
+              <span class="text-sm font-bold text-primary">{{ answeredCount }} / {{ totalQuestions }}</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-primary to-primary-container transition-all"
+                [style.width.%]="totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0"
+              ></div>
+            </div>
+          </div>
+
+          <!-- question number grid -->
+          <div class="grid grid-cols-5 gap-2 mb-4">
+            @for (q of questions(); track q.id; let i = $index) {
+              <button
+                (click)="goToQuestion(i)"
+                class="w-9 h-9 rounded-lg text-xs font-bold flex items-center justify-center transition-all"
+                [class]="currentIndex() === i
+                  ? 'bg-primary-container/20 text-primary ring-2 ring-primary'
+                  : isAnswered(i)
+                    ? 'bg-primary text-on-primary'
+                    : 'bg-surface-container-high text-on-surface-variant'"
+              >
+                {{ i + 1 }}
+              </button>
+            }
+          </div>
+
+          <!-- legend -->
+          <div class="space-y-1.5 text-[10px]">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-primary"></span>
+              <span class="text-on-surface-variant">Completed</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded border-2 border-primary bg-transparent"></span>
+              <span class="text-on-surface-variant">Current</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-surface-container-high"></span>
+              <span class="text-on-surface-variant">Unattempted</span>
+            </div>
+          </div>
+
+          <!-- instructions -->
+          <div class="mt-4 bg-primary/5 border border-primary/10 p-3 rounded-xl">
+            <p class="text-[11px] text-on-surface-variant leading-relaxed">
+              {{ totalQuestions }} MCQ questions. Do not refresh the page. Progress is saved every 30 seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT - current question (9 cols) -->
+      <div class="col-span-12 lg:col-span-9">
+        <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+          <!-- question header -->
+          <div class="flex items-center gap-3 mb-6">
+            <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-primary text-on-primary uppercase">
+              Question {{ currentIndex() + 1 }}
+            </span>
+            <span class="text-[11px] text-on-surface-variant">Single Choice</span>
+            <span class="text-[11px] font-bold text-primary ml-auto">
+              {{ currentQuestion.marks }}.0 Points
+            </span>
+          </div>
+
+          <!-- question text -->
+          <h2 class="font-headline text-xl md:text-2xl font-bold text-on-surface mb-8 leading-relaxed">
+            {{ currentQuestion.questionText }}
+          </h2>
+
+          <!-- answer options -->
+          <div class="space-y-3 mb-8">
+            @for (option of currentQuestion.options; track option.id) {
+              <label
+                (click)="selectOption(option.id)"
+                class="flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border-2"
+                [class]="isOptionSelected(option.id)
+                  ? 'border-primary/40 bg-primary/5'
+                  : 'border-transparent bg-surface-container-low hover:bg-primary-container/5 hover:border-primary/20'"
+              >
+                <!-- radio circle -->
+                <div
+                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                  [class]="isOptionSelected(option.id)
+                    ? 'border-primary bg-primary'
+                    : 'border-outline-variant'"
+                >
+                  @if (isOptionSelected(option.id)) {
+                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                  }
+                </div>
+
+                <!-- option text -->
+                <span class="text-sm text-on-surface" [class.font-semibold]="isOptionSelected(option.id)">
+                  {{ option.optionText }}
+                </span>
+              </label>
+            }
+          </div>
+
+          <!-- navigation buttons -->
+          <div class="flex items-center justify-between">
+            <div class="flex gap-3">
+              <!-- previous -->
+              @if (currentIndex() > 0) {
+                <button
+                  (click)="prevQuestion()"
+                  class="px-5 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+                >
+                  Previous
+                </button>
+              }
+
+              <!-- save draft -->
+              <button class="px-5 py-2.5 rounded-xl text-sm font-medium bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+                Save Draft
+              </button>
+            </div>
+
+            <div class="flex gap-3">
+              <!-- next question -->
+              @if (currentIndex() < totalQuestions - 1) {
+                <button
+                  (click)="nextQuestion()"
+                  class="px-5 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
+                >
+                  Next Question
+                </button>
+              }
+
+              <!-- submit quiz -->
+              <button
+                (click)="confirmSubmit()"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold bg-error text-on-error hover:opacity-90 transition-opacity"
+              >
+                Submit Quiz Attempt
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- submit confirmation dialog -->
+  <app-confirm-dialog
+    [isOpen]="showSubmitDialog()"
+    title="Final Submission"
+    [message]="'You have answered ' + answeredCount + ' out of ' + totalQuestions + ' questions. Once submitted, you cannot change your answers.'"
+    confirmLabel="Yes, Submit"
+    cancelLabel="Go Back"
+    [danger]="true"
+    icon="warning"
+    (confirmed)="submitQuiz()"
+    (cancelled)="cancelSubmit()"
+  />
+</app-assessment-layout>
