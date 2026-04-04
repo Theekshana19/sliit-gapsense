@@ -1,9 +1,12 @@
-<aside class="flex h-screen w-64 flex-col gap-2 border-r border-slate-200/50 bg-slate-50/95 py-4 pt-20 opacity-95 backdrop-blur-xl">
-  <div class="mb-6 px-6">
+<!-- Fixed below the top bar so <main> is not pushed down by a full-viewport in-flow sidebar. -->
+<aside
+  class="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-64 flex-col gap-2 overflow-hidden border-r border-slate-200/50 bg-slate-50/95 py-4 opacity-95 backdrop-blur-xl"
+>
+  <div class="mb-4 shrink-0 px-6">
     <h2 class="text-lg font-bold text-blue-800">GapSense Engine</h2>
     <p class="text-xs font-medium text-slate-500">Risk &amp; Recommendations</p>
   </div>
-  <nav class="flex flex-col gap-1">
+  <nav class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-0">
     @if (role() === 'admin') {
       <a
         routerLink="/dashboard"
@@ -154,7 +157,7 @@
     }
   </nav>
 
-  <div class="mt-auto border-t border-slate-200/50 px-4 pt-4">
+  <div class="mt-auto shrink-0 border-t border-slate-200/50 px-4 pt-4">
     <a
       routerLink="/profile"
       routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
