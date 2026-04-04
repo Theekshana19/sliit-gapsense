@@ -1,6 +1,7 @@
 <app-top-bar />
 <app-sidebar />
-<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+<main class="ml-64 min-h-0 pt-20 px-6 pb-10 sm:px-8 sm:pb-12 md:pt-20 bg-slate-50/50">
+  <div class="mx-auto max-w-7xl">
   @if (notice(); as n) {
     <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
       <span class="material-symbols-outlined text-blue-800 shrink-0">info</span>
@@ -11,7 +12,7 @@
     </div>
   }
 
-  <header class="mb-10">
+  <header class="mb-8 scroll-mt-24 sm:mb-10">
     <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Curriculum and follow-up</h1>
     <p class="text-slate-600 font-medium max-w-3xl">
       Course catalogue, lecturer module assignments, and student intervention notes (management).
@@ -141,5 +142,6 @@
     </section>
   </div>
 
-  <app-footer class="mt-12 block" />
+  <app-footer class="mt-10 block sm:mt-12" />
+  </div>
 </main>

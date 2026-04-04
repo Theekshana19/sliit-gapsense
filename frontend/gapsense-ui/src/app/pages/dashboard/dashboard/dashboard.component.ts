@@ -12,7 +12,7 @@ import { AuthUiService } from '../../../services/auth-ui.service';
   template: `
     <app-top-bar />
     <app-sidebar />
-    <main class="ml-64 min-h-screen bg-slate-50/50 px-8 pb-12 pt-24 font-body text-on-surface">
+    <main class="ml-64 min-h-screen bg-slate-50/50 px-8 pb-12 pt-24 font-sans text-slate-900">
     <div class="w-full space-y-10 pb-12">
       <!-- Header Section -->
       <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -47,14 +47,14 @@ import { AuthUiService } from '../../../services/auth-ui.service';
           class="flex min-h-[168px] flex-col justify-between rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgb(0_0_0_/_0.06)] transition-shadow hover:shadow-[0_4px_12px_rgb(0_0_0_/_0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
-            <span class="material-symbols-outlined text-[28px] leading-none text-on-surface" data-icon="school"
+            <span class="material-symbols-outlined text-[28px] leading-none text-slate-900" data-icon="school"
               >school</span
             >
-            <span class="shrink-0 text-right text-xs font-bold text-on-surface">+12% vs LY</span>
+            <span class="shrink-0 text-right text-xs font-bold text-slate-900">+12% vs LY</span>
           </div>
           <div>
             <span class="mb-1 block text-sm font-medium text-[#6B7280]">Total Students</span>
-            <h2 class="font-headline text-2xl font-extrabold text-on-surface">2,482</h2>
+            <h2 class="font-headline text-2xl font-extrabold text-slate-900">2,482</h2>
           </div>
         </div>
 
@@ -62,14 +62,14 @@ import { AuthUiService } from '../../../services/auth-ui.service';
           class="flex min-h-[168px] flex-col justify-between rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgb(0_0_0_/_0.06)] transition-shadow hover:shadow-[0_4px_12px_rgb(0_0_0_/_0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
-            <span class="material-symbols-outlined text-[28px] leading-none text-on-surface" data-icon="menu_book"
+            <span class="material-symbols-outlined text-[28px] leading-none text-slate-900" data-icon="menu_book"
               >menu_book</span
             >
-            <span class="shrink-0 text-right text-xs font-bold text-on-surface">Active</span>
+            <span class="shrink-0 text-right text-xs font-bold text-slate-900">Active</span>
           </div>
           <div>
             <span class="mb-1 block text-sm font-medium text-[#6B7280]">Active Modules</span>
-            <h2 class="font-headline text-2xl font-extrabold text-on-surface">42</h2>
+            <h2 class="font-headline text-2xl font-extrabold text-slate-900">42</h2>
           </div>
         </div>
 
@@ -77,14 +77,14 @@ import { AuthUiService } from '../../../services/auth-ui.service';
           class="flex min-h-[168px] flex-col justify-between rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgb(0_0_0_/_0.06)] transition-shadow hover:shadow-[0_4px_12px_rgb(0_0_0_/_0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
-            <span class="material-symbols-outlined text-[28px] leading-none text-on-surface" data-icon="priority_high"
+            <span class="material-symbols-outlined text-[28px] leading-none text-slate-900" data-icon="priority_high"
               >priority_high</span
             >
-            <span class="shrink-0 text-right text-xs font-bold text-error">-4.2%</span>
+            <span class="shrink-0 text-right text-xs font-bold text-red-600">-4.2%</span>
           </div>
           <div>
             <span class="mb-1 block text-sm font-medium text-[#6B7280]">High-Risk Students</span>
-            <h2 class="font-headline text-2xl font-extrabold text-on-surface">156</h2>
+            <h2 class="font-headline text-2xl font-extrabold text-slate-900">156</h2>
           </div>
         </div>
 
@@ -92,14 +92,14 @@ import { AuthUiService } from '../../../services/auth-ui.service';
           class="flex min-h-[168px] flex-col justify-between rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgb(0_0_0_/_0.06)] transition-shadow hover:shadow-[0_4px_12px_rgb(0_0_0_/_0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
-            <span class="material-symbols-outlined text-[28px] leading-none text-on-surface" data-icon="trending_up"
+            <span class="material-symbols-outlined text-[28px] leading-none text-slate-900" data-icon="trending_up"
               >trending_up</span
             >
-            <span class="shrink-0 text-right text-xs font-bold text-on-surface">Target: 85%</span>
+            <span class="shrink-0 text-right text-xs font-bold text-slate-900">Target: 85%</span>
           </div>
           <div>
             <span class="mb-1 block text-sm font-medium text-[#6B7280]">Avg. Readiness Score</span>
-            <h2 class="font-headline text-2xl font-extrabold text-on-surface">78.4%</h2>
+            <h2 class="font-headline text-2xl font-extrabold text-slate-900">78.4%</h2>
           </div>
         </div>
       </div>
@@ -152,28 +152,28 @@ import { AuthUiService } from '../../../services/auth-ui.service';
             <div class="h-full w-full rounded-full" style="background: conic-gradient(#ba1a1a 0% 15%, #ff9800 15% 45%, #003f87 45% 100%);"></div>
             <div class="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner">
               <span class="font-headline text-2xl font-extrabold">156</span>
-              <span class="mt-1 text-[10px] font-bold text-outline uppercase">TOTAL RISKS</span>
+              <span class="mt-1 text-[10px] font-bold uppercase text-slate-500">TOTAL RISKS</span>
             </div>
           </div>
           <div class="w-full space-y-3">
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center gap-2">
-                <span class="h-3 w-3 rounded-full bg-error"></span>
-                <span class="font-medium text-on-surface-variant">Critical Risk</span>
+                <span class="h-3 w-3 rounded-full bg-[#ba1a1a]"></span>
+                <span class="font-medium text-slate-600">Critical Risk</span>
               </div>
               <span class="font-bold">15%</span>
             </div>
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center gap-2">
                 <span class="h-3 w-3 rounded-full bg-orange-500"></span>
-                <span class="font-medium text-on-surface-variant">Elevated Risk</span>
+                <span class="font-medium text-slate-600">Elevated Risk</span>
               </div>
               <span class="font-bold">30%</span>
             </div>
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center gap-2">
-                <span class="h-3 w-3 rounded-full bg-primary"></span>
-                <span class="font-medium text-on-surface-variant">Stable</span>
+                <span class="h-3 w-3 rounded-full bg-[#003f87]"></span>
+                <span class="font-medium text-slate-600">Stable</span>
               </div>
               <span class="font-bold">55%</span>
             </div>
@@ -212,9 +212,9 @@ import { AuthUiService } from '../../../services/auth-ui.service';
                     12 students in IT1010 falling below 40% readiness.
                   </p>
                   <a
-                    routerLink="/monitoring/intervention-plan"
+                    [routerLink]="quickLink()"
                     class="mt-3 inline-block text-[11px] font-extrabold uppercase tracking-wide text-[#991b1b] underline-offset-2 hover:underline"
-                    >Launch Intervention</a
+                    >Open next step</a
                   >
                 </div>
               </div>

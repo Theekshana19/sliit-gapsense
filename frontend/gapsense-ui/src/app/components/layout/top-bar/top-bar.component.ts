@@ -16,6 +16,20 @@ export class TopBarComponent {
 
   protected readonly role = computed<AuthRole | null>(() => this.authUi.currentUser()?.role ?? null);
 
+  /** Short label for the header so staff/students see which role is active after login. */
+  protected readonly roleLabel = computed(() => {
+    switch (this.role()) {
+      case 'admin':
+        return 'Admin';
+      case 'lecturer':
+        return 'Lecturer';
+      case 'student':
+        return 'Student';
+      default:
+        return '';
+    }
+  });
+
   constructor() {
     if (this.authUi.hasToken()) {
       void this.authUi.loadMe();

@@ -1,7 +1,15 @@
 <header class="fixed top-0 z-50 flex h-16 w-full items-center justify-between bg-white/80 px-8 shadow-sm backdrop-blur-xl">
-  <div class="flex items-center gap-8">
-    <span class="text-xl font-extrabold tracking-tight text-blue-900">SLIIT GapSense</span>
-    <nav class="hidden items-center gap-6 md:flex">
+  <div class="flex min-w-0 flex-1 items-center gap-4 sm:gap-8">
+    <span class="shrink-0 text-xl font-extrabold tracking-tight text-blue-900">SLIIT GapSense</span>
+    @if (authUi.hasToken(); as _) {
+      @if (roleLabel(); as label) {
+        <span
+          class="inline-flex shrink-0 rounded-md border border-blue-100 bg-blue-50 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-blue-900"
+          title="Account role"
+          >{{ label }}</span>
+      }
+    }
+    <nav class="hidden min-w-0 flex-wrap items-center gap-4 md:flex lg:gap-6">
       @if (authUi.hasToken()) {
         @if (role() === 'admin' || role() === 'lecturer') {
           <a
@@ -66,6 +74,9 @@
           <div class="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
             <p class="text-sm font-semibold text-slate-900">{{ authUi.currentUser()?.fullName || 'User' }}</p>
             <p class="mt-0.5 text-xs text-slate-600">{{ authUi.currentUser()?.email }}</p>
+            @if (roleLabel(); as rl) {
+              <p class="mt-1 text-xs font-medium text-blue-800">Role: {{ rl }}</p>
+            }
             <div class="mt-3 flex flex-col gap-1 border-t border-slate-200 pt-2">
               <a
                 routerLink="/profile"
