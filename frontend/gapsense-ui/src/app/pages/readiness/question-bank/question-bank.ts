@@ -39,7 +39,6 @@ export class QuestionBankComponent implements OnInit {
   filterTopic = signal('');
   filterDifficulty = signal<DifficultyLevel | ''>('');
   filterStatus = signal<QuestionStatus | ''>('');
-  searchText = signal('');
 
   // dropdown options
   modules: string[] = [];
@@ -64,7 +63,6 @@ export class QuestionBankComponent implements OnInit {
     this.isLoading.set(true);
 
     const filter: QuestionFilter = {
-      search: this.searchText(),
       module: this.filterModule(),
       topic: this.filterTopic(),
       difficulty: this.filterDifficulty() || undefined,
@@ -75,13 +73,6 @@ export class QuestionBankComponent implements OnInit {
       this.questions.set(data);
       this.isLoading.set(false);
     });
-  }
-
-  // search handler from top bar
-  onSearch(text: string) {
-    this.searchText.set(text);
-    this.currentPage.set(1);
-    this.loadQuestions();
   }
 
   // filter change handlers
