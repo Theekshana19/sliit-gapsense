@@ -76,3 +76,31 @@ body {
 h1, h2, h3, .font-headline {
   font-family: 'Manrope', sans-serif;
 }
+
+/* Primary CTA — used across curriculum/readiness (was referenced but never defined) */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+  color: var(--color-on-primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 63, 135, 0.28);
+  transition:
+    filter 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.btn-primary-gradient:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: 0 4px 14px rgba(0, 63, 135, 0.35);
+}
+
+.btn-primary-gradient:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary-gradient:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}

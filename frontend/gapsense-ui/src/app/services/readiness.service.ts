@@ -73,6 +73,16 @@ export class ReadinessService {
 
   // create a new question - moduleId must be a GUID from getModuleList()
   createQuestion(question: Partial<Question> & { moduleId?: string; topicId?: string }): Observable<Question> {
+    const trimmedOptions =
+      question.options
+        ?.filter((o) => (o.optionText || '').trim().length > 0)
+        .map((o) => ({
+          optionText: o.optionText.trim(),
+          isCorrect: o.isCorrect,
+        })) ?? [];
+
+    const correctOptionIndex = trimmedOptions.findIndex((o) => o.isCorrect);
+
     const body = {
       title: question.title,
       questionText: question.questionText,
@@ -80,42 +90,60 @@ export class ReadinessService {
       difficulty: question.difficulty,
       moduleId: question.moduleId || '', // GUID from modules API
       topicId: question.topicId || null,
-      explanation: question.explanation,
+      explanation: question.explanation ?? '',
       marks: question.marks,
       status: question.status,
-      options: question.options?.map((o) => ({
-        optionText: o.optionText,
-        isCorrect: o.isCorrect,
-      })) || [],
-      correctOptionIndex: question.options?.findIndex((o) => o.isCorrect) ?? 0,
+      options: trimmedOptions,
+      correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
     };
 
     return this.http
       .post<ApiResponse<Question>>(`${this.apiUrl}/questions`, body)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not create question');
+          }
+          return res.data;
+        })
+      );
   }
 
   // update a question
   updateQuestion(id: string, updates: Partial<Question> & { topicId?: string | null }): Observable<Question> {
+    const trimmedOptions =
+      updates.options
+        ?.filter((o) => (o.optionText || '').trim().length > 0)
+        .map((o) => ({
+          optionText: o.optionText.trim(),
+          isCorrect: o.isCorrect,
+        })) ?? [];
+
+    const correctOptionIndex = trimmedOptions.findIndex((o) => o.isCorrect);
+
     const body = {
       title: updates.title,
       questionText: updates.questionText,
       questionType: updates.questionType,
       difficulty: updates.difficulty,
-      topicId: updates.topicId || null, // pass actual topic ID
-      explanation: updates.explanation,
+      topicId: updates.topicId || null,
+      explanation: updates.explanation ?? '',
       marks: updates.marks,
       status: updates.status,
-      options: updates.options?.map((o) => ({
-        optionText: o.optionText,
-        isCorrect: o.isCorrect,
-      })) || [],
-      correctOptionIndex: updates.options?.findIndex((o) => o.isCorrect) ?? 0,
+      options: trimmedOptions,
+      correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
     };
 
     return this.http
       .put<ApiResponse<Question>>(`${this.apiUrl}/questions/${id}`, body)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not update question');
+          }
+          return res.data;
+        })
+      );
   }
 
   // delete a question
