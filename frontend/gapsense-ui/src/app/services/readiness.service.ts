@@ -202,9 +202,12 @@ export class ReadinessService {
 
   // get all quizzes
   getQuizzes(): Observable<Quiz[]> {
-    return this.http
-      .get<ApiResponse<Quiz[]>>(`${this.apiUrl}/quizzes`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Quiz[]>>(`${this.apiUrl}/quizzes`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
   // get a single quiz by id
@@ -222,11 +225,36 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // create a new quiz
-  createQuiz(quiz: Partial<Quiz>): Observable<Quiz> {
-    return this.http
-      .post<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes`, quiz)
-      .pipe(map((res) => res.data));
+  // create a new quiz — body matches CreateQuizDto (moduleId + questions required)
+  createQuiz(quiz: Partial<Quiz> & { moduleId?: string }): Observable<Quiz> {
+    const questions = (quiz.questions ?? []).map((q, index) => ({
+      questionId: q.questionId,
+      order: q.order ?? index + 1,
+      marks: q.marks ?? 0,
+    }));
+
+    const body = {
+      title: (quiz.title ?? '').trim(),
+      description: quiz.description ?? '',
+      moduleId: quiz.moduleId ?? '',
+      intake: quiz.intake ?? '',
+      passingPercentage: quiz.passingPercentage ?? 40,
+      timeLimitMinutes: quiz.timeLimitMinutes ?? 60,
+      maxAttempts: quiz.maxAttempts ?? 1,
+      shuffleQuestions: quiz.shuffleQuestions ?? false,
+      shuffleOptions: quiz.shuffleOptions ?? false,
+      status: quiz.status ?? 'Draft',
+      questions,
+    };
+
+    return this.http.post<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes`, body).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) {
+          throw new Error(res?.message || 'Could not create quiz');
+        }
+        return res.data;
+      })
+    );
   }
 
   // ---------- SCHEDULE METHODS ----------

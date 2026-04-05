@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
@@ -18,6 +19,7 @@ import { Quiz, QuizSchedule, ResultVisibility } from '../../../models/readiness/
 export class QuizSchedulingComponent implements OnInit {
   private readinessService = inject(ReadinessService);
   private toastService = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   isLoading = signal(true);
   schedules = signal<QuizSchedule[]>([]);
@@ -37,11 +39,17 @@ export class QuizSchedulingComponent implements OnInit {
   get draftCount() { return this.schedules().filter(s => s.status === 'Draft').length; }
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe((params) => {
+      const id = params.get('quizId');
+      if (id) this.selectedQuizId.set(id);
+    });
+
     this.loadSchedules();
-    // load quizzes for the dropdown
     this.readinessService.getQuizzes().subscribe({
       next: (data) => this.quizzes.set(data),
-      error: () => console.error('Failed to load quizzes'),
+      error: () => {
+        this.toastService.error('Failed to load quizzes');
+      },
     });
   }
 

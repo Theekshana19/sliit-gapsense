@@ -1,5 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { QuizFormComponent } from '../../../components/readiness/quiz-form/quiz-form';
 import { ReadinessService } from '../../../services/readiness.service';
@@ -21,11 +23,45 @@ export class QuizBuilderComponent {
   private toastService = inject(ToastService);
   private router = inject(Router);
 
-  // handle quiz form submission
-  onQuizSubmit(data: Partial<Quiz>) {
-    this.readinessService.createQuiz(data).subscribe((quiz) => {
-      this.toastService.success('Quiz created successfully!');
-      this.router.navigate(['/readiness/quiz-scheduling']);
-    });
+  isSaving = signal(false);
+
+  // handle quiz form submission (Create Quiz or Save Draft — both POST /api/quizzes)
+  onQuizSubmit(data: Partial<Quiz> & { moduleId?: string }) {
+    this.isSaving.set(true);
+    this.readinessService
+      .createQuiz(data)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (quiz) => {
+          const label = data.status === 'Draft' ? 'Draft saved' : 'Quiz created';
+          this.toastService.success(`${label}: ${quiz.title}`);
+          this.router.navigate(['/readiness/quiz-scheduling'], {
+            queryParams: { quizId: quiz.id },
+          });
+        },
+        error: (err: unknown) => {
+          this.toastService.error(this.apiErrorMessage(err, 'Could not save quiz'));
+        },
+      });
+  }
+
+  private apiErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      const body = err.error;
+      if (body && typeof body === 'object') {
+        const msg = (body as { message?: string }).message;
+        if (msg) return msg;
+        const errors = (body as { errors?: Record<string, string[]> }).errors;
+        if (errors) {
+          const first = Object.values(errors).flat()[0];
+          if (first) return first;
+        }
+      }
+      if (err.status === 0) return 'Network error — is the API running?';
+      if (err.status === 401) return 'Please sign in again.';
+      if (err.status === 403) return 'You are not allowed to create quizzes.';
+    }
+    if (err instanceof Error && err.message) return err.message;
+    return fallback;
   }
 }

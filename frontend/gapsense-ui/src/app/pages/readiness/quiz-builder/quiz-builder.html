@@ -4,7 +4,7 @@
   <div class="grid grid-cols-12 gap-6">
     <!-- left side - quiz form wizard (8 cols) -->
     <div class="col-span-12 lg:col-span-8">
-      <app-quiz-form (formSubmit)="onQuizSubmit($event)" />
+      <app-quiz-form [isSaving]="isSaving()" (formSubmit)="onQuizSubmit($event)" />
     </div>
 
     <!-- right side - summary and quick actions (4 cols) -->
