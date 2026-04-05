@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AssessmentLayoutComponent } from '../../../components/layout/assessment-layout/assessment-layout';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { AuthUiService } from '../../../services/auth-ui.service';
 import { ReadinessService } from '../../../services/readiness.service';
@@ -17,7 +17,7 @@ import { Quiz } from '../../../models/readiness/quiz.model';
 @Component({
   selector: 'app-quiz-attempt',
   standalone: true,
-  imports: [AssessmentLayoutComponent, ConfirmDialogComponent, LoadingSpinnerComponent],
+  imports: [AssessmentLayoutComponent, ConfirmPromptDialogComponent, LoadingSpinnerComponent],
   templateUrl: './quiz-attempt.html',
   styleUrl: './quiz-attempt.css',
 })

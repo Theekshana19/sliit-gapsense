@@ -130,7 +130,7 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Archive Module"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Archive Module"
     message="Are you sure you want to archive this module? It will be hidden from active listings."
     confirmLabel="Archive" [danger]="true" icon="archive"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />

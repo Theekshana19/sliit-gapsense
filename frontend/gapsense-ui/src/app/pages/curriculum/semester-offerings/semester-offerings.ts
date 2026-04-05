@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { CurriculumOverlayModalComponent } from '../../../components/ui/curriculum-overlay-modal/curriculum-overlay-modal.component';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
@@ -18,7 +18,7 @@ import { Module } from '../../../models/curriculum/module.model';
     MemberShellComponent,
     PillBadgeComponent,
     LoadingSpinnerComponent,
-    ConfirmDialogComponent,
+    ConfirmPromptDialogComponent,
     CurriculumOverlayModalComponent,
     FormsModule,
   ],

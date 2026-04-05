@@ -116,7 +116,7 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Remove Prerequisite"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Remove Prerequisite"
     message="Are you sure you want to remove this prerequisite mapping?"
     confirmLabel="Remove" [danger]="true" icon="link_off"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />

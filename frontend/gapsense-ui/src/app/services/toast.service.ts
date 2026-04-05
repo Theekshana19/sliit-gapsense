@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 // toast types - different colors for different messages
 export type ToastType = 'success' | 'error' | 'info';
@@ -19,8 +19,18 @@ export class ToastService {
   // list of active toasts
   toasts = signal<Toast[]>([]);
 
+  /** Tharindu-style read-only queue (`text` + `variant`). */
+  readonly messages = computed(() =>
+    this.toasts().map((t) => ({ id: t.id, text: t.message, variant: t.type }))
+  );
+
   // counter to give each toast a unique id
   private nextId = 1;
+
+  /** Tharindu API: `toast.show('Saved', 'success')`. */
+  show(text: string, variant: ToastType = 'info'): void {
+    this.addToast(variant, text);
+  }
 
   // show a success toast (green - for save, create, update)
   success(message: string) {

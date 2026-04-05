@@ -143,38 +143,89 @@ export const routes: Routes = [
         (m) => m.RiskTrendsSummaryComponent
       ),
   },
+  { path: 'reports-export', redirectTo: '/risk-analysis/reports', pathMatch: 'full' },
+  { path: 'notification-center', redirectTo: '/notifications', pathMatch: 'full' },
+  { path: 'intervention-planning', redirectTo: '/monitoring/plans', pathMatch: 'full' },
+  { path: 'follow-up-management', redirectTo: '/monitoring/follow-ups', pathMatch: 'full' },
+  { path: 'high-risk-monitoring', redirectTo: '/risk-analysis/heatmap', pathMatch: 'full' },
   {
-    path: 'reports-export',
-    canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
-    loadComponent: () =>
-      import('./pages/admin/reports-export/reports-export').then((m) => m.ReportsExportComponent),
-  },
-  {
-    path: 'notification-center',
-    canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
-    loadComponent: () =>
-      import('./pages/admin/notification-center/notification-center').then((m) => m.NotificationCenterComponent),
-  },
-  {
-    path: 'intervention-planning',
+    path: 'monitoring',
     canActivate: [authGuard, roleGuard(ADMIN_AND_LECTURER_ROLES)],
     loadComponent: () =>
-      import('./pages/monitoring/intervention-planning/intervention-planning').then(
-        (m) => m.InterventionPlanningComponent
+      import('./components/layout/tharindu-shell/tharindu-main-layout.component').then(
+        (m) => m.TharinduShellLayoutComponent
       ),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'plans' },
+      {
+        path: 'plans',
+        loadComponent: () =>
+          import('./pages/monitoring/plans/plans.component').then((m) => m.MonitoringPlansPageComponent),
+      },
+      {
+        path: 'intervention-plan',
+        loadComponent: () =>
+          import('./pages/monitoring/intervention-plan/intervention-plan.component').then(
+            (m) => m.InterventionPlanPageComponent
+          ),
+      },
+      {
+        path: 'follow-ups',
+        loadComponent: () =>
+          import('./pages/monitoring/follow-ups/follow-ups.component').then((m) => m.FollowUpsPageComponent),
+      },
+    ],
   },
   {
-    path: 'follow-up-management',
-    redirectTo: '/intervention-planning',
-    pathMatch: 'full',
-  },
-  {
-    path: 'high-risk-monitoring',
+    path: 'risk-analysis',
     canActivate: [authGuard, roleGuard(ADMIN_AND_LECTURER_ROLES)],
     loadComponent: () =>
-      import('./pages/monitoring/high-risk-monitoring/high-risk-monitoring').then(
-        (m) => m.HighRiskMonitoringComponent
+      import('./components/layout/tharindu-shell/tharindu-main-layout.component').then(
+        (m) => m.TharinduShellLayoutComponent
       ),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'reports' },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./pages/risk-analysis/reports/reports.component').then((m) => m.RiskReportsPageComponent),
+      },
+      {
+        path: 'heatmap',
+        loadComponent: () =>
+          import('./pages/risk-analysis/heatmap/heatmap.component').then((m) => m.RiskHeatmapPageComponent),
+      },
+    ],
+  },
+  {
+    path: 'notifications',
+    canActivate: [authGuard, roleGuard(ALL_AUTHENTICATED_ROLES)],
+    loadComponent: () =>
+      import('./components/layout/tharindu-shell/tharindu-main-layout.component').then(
+        (m) => m.TharinduShellLayoutComponent
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/notifications/notifications-page.component').then((m) => m.NotificationsPageComponent),
+      },
+    ],
+  },
+  {
+    path: 'settings',
+    canActivate: [authGuard, roleGuard(ALL_AUTHENTICATED_ROLES)],
+    loadComponent: () =>
+      import('./components/layout/tharindu-shell/tharindu-main-layout.component').then(
+        (m) => m.TharinduShellLayoutComponent
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/settings/settings.component').then((m) => m.SettingsPageComponent),
+      },
+    ],
   },
   {
     path: 'curriculum',
@@ -263,6 +314,21 @@ export const routes: Routes = [
         pathMatch: 'full',
         loadComponent: () =>
           import('./pages/readiness/readiness-redirect/readiness-redirect').then((m) => m.ReadinessRedirectComponent),
+      },
+      {
+        path: 'overview',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./components/layout/tharindu-shell/tharindu-main-layout.component').then(
+            (m) => m.TharinduShellLayoutComponent
+          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/readiness/overview/overview.component').then((m) => m.ReadinessOverviewPageComponent),
+          },
+        ],
       },
       {
         path: 'question-bank',

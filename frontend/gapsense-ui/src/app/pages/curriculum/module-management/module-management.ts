@@ -4,7 +4,7 @@ import { MemberShellComponent } from '../../../components/layout/member-shell/me
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state.component';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
 import { Module, ModuleFilter, ModuleStats } from '../../../models/curriculum/module.model';
@@ -14,7 +14,7 @@ import { Module, ModuleFilter, ModuleStats } from '../../../models/curriculum/mo
 @Component({
   selector: 'app-module-management',
   standalone: true,
-  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, EmptyStateComponent, ConfirmDialogComponent],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, EmptyStateComponent, ConfirmPromptDialogComponent],
   templateUrl: './module-management.html',
 })
 export class ModuleManagementComponent implements OnInit {

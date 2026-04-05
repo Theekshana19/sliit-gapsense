@@ -135,7 +135,7 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Delete Topic"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Delete Topic"
     message="Are you sure you want to delete this topic? This will affect readiness evaluations."
     confirmLabel="Delete" [danger]="true" icon="delete"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />

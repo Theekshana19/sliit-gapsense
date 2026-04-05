@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
 import { Prerequisite, PrerequisiteStats } from '../../../models/curriculum/prerequisite.model';
@@ -13,7 +13,7 @@ import { Prerequisite, PrerequisiteStats } from '../../../models/curriculum/prer
 @Component({
   selector: 'app-prerequisite-management',
   standalone: true,
-  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, ConfirmDialogComponent],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, ConfirmPromptDialogComponent],
   templateUrl: './prerequisite-management.html',
 })
 export class PrerequisiteManagementComponent implements OnInit {

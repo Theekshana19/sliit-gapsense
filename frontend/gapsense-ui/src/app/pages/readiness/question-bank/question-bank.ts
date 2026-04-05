@@ -4,7 +4,7 @@ import { MemberShellComponent } from '../../../components/layout/member-shell/me
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state.component';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { ReadinessService } from '../../../services/readiness.service';
 import { ToastService } from '../../../services/toast.service';
 import { Question, QuestionFilter, DifficultyLevel, QuestionStatus } from '../../../models/readiness/question.model';
@@ -19,7 +19,7 @@ import { Question, QuestionFilter, DifficultyLevel, QuestionStatus } from '../..
     PillBadgeComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    ConfirmDialogComponent,
+    ConfirmPromptDialogComponent,
   ],
   templateUrl: './question-bank.html',
 })

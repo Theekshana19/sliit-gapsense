@@ -211,7 +211,7 @@
   </app-curriculum-overlay-modal>
 
   <!-- delete confirmation -->
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Delete Offering"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Delete Offering"
     message="Are you sure you want to delete this offering?" confirmLabel="Delete" [danger]="true" icon="delete"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
 </app-member-shell>
