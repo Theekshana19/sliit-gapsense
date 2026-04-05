@@ -108,8 +108,17 @@ public class QuizzesController : ControllerBase
 
     // POST /api/quizzes - create a new quiz with questions
     [HttpPost]
-    public async Task<ActionResult<ApiResponseDto<QuizDto>>> CreateQuiz(CreateQuizDto dto)
+    public async Task<ActionResult<ApiResponseDto<QuizDto>>> CreateQuiz([FromBody] CreateQuizDto? dto)
     {
+        if (dto == null)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Request body is required."));
+
+        // JSON "questions": null deserializes to null; .Count would throw → HTTP 500
+        dto.Questions ??= new List<CreateQuizQuestionDto>();
+
+        if (dto.ModuleId == Guid.Empty)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("A valid moduleId (GUID) is required."));
+
         // check module exists
         var module = await _db.Modules.FindAsync(dto.ModuleId);
         if (module == null)
@@ -138,15 +147,15 @@ public class QuizzesController : ControllerBase
         var quiz = new Quiz
         {
             Title = dto.Title,
-            Description = dto.Description,
+            Description = dto.Description ?? string.Empty,
             ModuleId = dto.ModuleId,
-            Intake = dto.Intake,
+            Intake = dto.Intake ?? string.Empty,
             PassingPercentage = dto.PassingPercentage,
             TimeLimitMinutes = dto.TimeLimitMinutes,
             MaxAttempts = dto.MaxAttempts,
             ShuffleQuestions = dto.ShuffleQuestions,
             ShuffleOptions = dto.ShuffleOptions,
-            Status = dto.Status,
+            Status = string.IsNullOrWhiteSpace(dto.Status) ? "Draft" : dto.Status,
         };
 
         // QuizQuestion.Marks must be 1–100; frontend may send 0 — fall back to question bank marks.
@@ -175,6 +184,13 @@ public class QuizzesController : ControllerBase
             return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
                 "Could not save the quiz. Check that the module and every question id exist in the database."));
         }
+        catch (Exception)
+        {
+            // Connection failures, timeouts, etc. are not always DbUpdateException
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                ApiResponseDto<QuizDto>.ErrorResponse(
+                    "Database error while saving the quiz. Check API logs and the database connection."));
+        }
 
         var result = new QuizDto
         {
@@ -197,8 +213,8 @@ public class QuizzesController : ControllerBase
             UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
         };
 
-        return CreatedAtAction(nameof(GetQuiz), new { id = quiz.Id },
-            ApiResponseDto<QuizDto>.SuccessResponse(result, "Quiz created successfully"));
+        // Use Ok instead of CreatedAtAction — route resolution failures there surface as HTTP 500
+        return Ok(ApiResponseDto<QuizDto>.SuccessResponse(result, "Quiz created successfully"));
     }
 
     // DELETE /api/quizzes/{id} - delete a quiz
