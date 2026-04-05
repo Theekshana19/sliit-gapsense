@@ -30,7 +30,6 @@ export class ModuleManagementComponent implements OnInit {
   filterProgram = signal('');
   filterSemester = signal('');
   filterStatus = signal('');
-  searchText = signal('');
 
   // dropdown options
   programs: string[] = [];
@@ -54,7 +53,6 @@ export class ModuleManagementComponent implements OnInit {
     this.isLoading.set(true);
 
     const filter: ModuleFilter = {
-      search: this.searchText(),
       program: this.filterProgram() as any,
       semester: this.filterSemester() as any,
       status: this.filterStatus() as any,
@@ -66,12 +64,6 @@ export class ModuleManagementComponent implements OnInit {
     });
 
     this.curriculumService.getModuleStats().subscribe((s) => this.stats.set(s));
-  }
-
-  onSearch(text: string) {
-    this.searchText.set(text);
-    this.currentPage.set(1);
-    this.loadData();
   }
 
   onFilterChange() {
