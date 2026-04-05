@@ -1,9 +1,9 @@
 <!-- quiz attempt page - student takes the quiz here (NO sidebar) -->
 <app-assessment-layout
-  [quizTitle]="quiz()?.moduleCode + ' ' + quiz()?.title"
+  [quizTitle]="quizHeading()"
   [timerDisplay]="timerDisplay()"
-  studentName="K.B.C Dilshani"
-  studentInitials="CD"
+  [studentName]="displayStudentName()"
+  [studentInitials]="displayStudentInitials()"
 >
   <!-- loading -->
   @if (isLoading()) {

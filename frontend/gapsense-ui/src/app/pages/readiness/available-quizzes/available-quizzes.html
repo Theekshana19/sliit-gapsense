@@ -1,0 +1,50 @@
+<app-member-shell>
+  <div class="mb-6">
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface">Readiness quizzes</h2>
+    <p class="mt-2 max-w-2xl text-sm text-on-surface-variant">
+      Quizzes your lecturer has published for the current date window appear here. There is no separate email or push
+      notification yet—check this page or your dashboard when a new schedule opens.
+    </p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && schedules().length === 0) {
+    <div class="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center shadow-sm">
+      <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 48px;">event_busy</span>
+      <p class="mt-4 font-headline text-lg font-bold text-on-surface">No quizzes open right now</p>
+      <p class="mt-2 text-sm text-on-surface-variant">
+        When a lecturer schedules a quiz with status Published or Scheduled and today falls between the start and end
+        dates, it will show up here so you can start an attempt.
+      </p>
+    </div>
+  }
+
+  @if (!isLoading() && schedules().length > 0) {
+    <div class="grid gap-4 md:grid-cols-2">
+      @for (s of schedules(); track s.id) {
+        <div
+          class="flex flex-col justify-between rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm"
+        >
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ s.moduleCode }}</p>
+            <h3 class="mt-1 font-headline text-lg font-bold text-on-surface">{{ s.quizTitle }}</h3>
+            <p class="mt-2 text-xs text-on-surface-variant">
+              Window: {{ s.startDate }} → {{ s.endDate }} · {{ s.questionCount }} questions · Up to
+              {{ s.maxAttempts }} attempt(s)
+            </p>
+          </div>
+          <a
+            [routerLink]="['/readiness/quiz-attempt', s.quizId]"
+            class="btn-primary-gradient mt-5 inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-center text-sm font-bold"
+          >
+            <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">play_arrow</span>
+            Start attempt
+          </a>
+        </div>
+      }
+    </div>
+  }
+</app-member-shell>

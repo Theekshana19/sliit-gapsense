@@ -88,14 +88,16 @@ export class QuizSchedulingComponent implements OnInit {
     }
 
     // create a new schedule for the selected quiz
-    this.readinessService.createSchedule({
-      quizId: this.selectedQuizId(),
-      startDate: this.startDate(),
-      endDate: this.endDate(),
-      maxAttempts: this.attemptLimit(),
-      resultVisibility: this.resultVisibility(),
-      status: 'Published',
-    } as any).subscribe({
+    this.readinessService
+      .createSchedule({
+        quizId: this.selectedQuizId(),
+        startDate: this.startDate(),
+        endDate: this.endDate(),
+        maxAttempts: this.attemptLimit(),
+        resultVisibility: this.resultVisibility(),
+        status: 'Published',
+      })
+      .subscribe({
       next: () => {
         this.toastService.success('Quiz scheduled and published!');
         this.onDiscard();

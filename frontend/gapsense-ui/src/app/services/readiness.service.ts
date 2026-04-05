@@ -212,17 +212,23 @@ export class ReadinessService {
 
   // get a single quiz by id
   getQuizById(id: string): Observable<Quiz | undefined> {
-    return this.http
-      .get<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes/${id}`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes/${id}`).pipe(
+      map((res) => {
+        if (!res?.success) return undefined;
+        return res.data ?? undefined;
+      })
+    );
   }
 
   // get questions for a specific quiz (for the quiz attempt page)
   // note: backend hides correct answers so students can't cheat
   getQuizQuestions(quizId: string): Observable<Question[]> {
-    return this.http
-      .get<ApiResponse<Question[]>>(`${this.apiUrl}/quizzes/${quizId}/questions`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Question[]>>(`${this.apiUrl}/quizzes/${quizId}/questions`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
   // create a new quiz — body matches CreateQuizDto (moduleId + questions required)
@@ -259,18 +265,35 @@ export class ReadinessService {
 
   // ---------- SCHEDULE METHODS ----------
 
-  // get all quiz schedules
+  // get all quiz schedules (students receive only open-window schedules from the API)
   getSchedules(): Observable<QuizSchedule[]> {
-    return this.http
-      .get<ApiResponse<QuizSchedule[]>>(`${this.apiUrl}/quiz-schedules`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<QuizSchedule[]>>(`${this.apiUrl}/quiz-schedules`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
-  // create a new schedule
-  createSchedule(schedule: Partial<QuizSchedule>): Observable<QuizSchedule> {
+  // create a new schedule — body matches CreateQuizScheduleDto
+  createSchedule(schedule: {
+    quizId: string;
+    startDate: string;
+    endDate: string;
+    maxAttempts: number;
+    resultVisibility: string;
+    status: string;
+  }): Observable<QuizSchedule> {
     return this.http
       .post<ApiResponse<QuizSchedule>>(`${this.apiUrl}/quiz-schedules`, schedule)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not create schedule');
+          }
+          return res.data;
+        })
+      );
   }
 
   // update a schedule
@@ -302,43 +325,55 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // submit a quiz (student answers) - backend auto-calculates score
-  // TODO: replace hardcoded student info with auth service when login is integrated
+  // submit a quiz (student answers) — identity must match profile StudentId for attempt history
   submitQuiz(
     quizId: string,
-    answers: { questionId: string; selectedOptionId: string }[]
+    answers: { questionId: string; selectedOptionId: string }[],
+    identity: { studentId: string; studentName: string; studentAvatar: string; avatarColor: string }
   ): Observable<Submission> {
     const body = {
       quizId,
-      studentId: 'IT23201996', // hardcoded for now - will come from auth later
-      studentName: 'Test Student',
-      studentAvatar: 'TS',
-      avatarColor: 'bg-primary-fixed',
+      studentId: identity.studentId,
+      studentName: identity.studentName,
+      studentAvatar: identity.studentAvatar,
+      avatarColor: identity.avatarColor,
       answers: answers.map((a) => ({
         questionId: a.questionId,
         selectedOptionId: a.selectedOptionId || null,
       })),
     };
 
-    return this.http
-      .post<ApiResponse<Submission>>(`${this.apiUrl}/submissions`, body)
-      .pipe(map((res) => res.data));
+    return this.http.post<ApiResponse<Submission>>(`${this.apiUrl}/submissions`, body).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) {
+          throw new Error(res?.message || 'Could not submit quiz');
+        }
+        return res.data;
+      })
+    );
   }
 
   // ---------- ATTEMPT HISTORY METHODS ----------
 
   // get attempt history (all past attempts)
   getAttemptHistory(): Observable<AttemptSummary[]> {
-    return this.http
-      .get<ApiResponse<AttemptSummary[]>>(`${this.apiUrl}/submissions/history`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<AttemptSummary[]>>(`${this.apiUrl}/submissions/history`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
   // get attempt history statistics
   getAttemptStats(): Observable<AttemptStats> {
-    return this.http
-      .get<ApiResponse<AttemptStats>>(`${this.apiUrl}/submissions/history/stats`)
-      .pipe(map((res) => res.data));
+    const empty: AttemptStats = { totalAttempts: 0, avgSuccessRate: 0, flaggedAttempts: 0, changePercentage: 0 };
+    return this.http.get<ApiResponse<AttemptStats>>(`${this.apiUrl}/submissions/history/stats`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return empty;
+        return res.data;
+      })
+    );
   }
 
   // ---------- RESOURCE METHODS ----------

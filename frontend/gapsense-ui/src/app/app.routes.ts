@@ -259,7 +259,12 @@ export const routes: Routes = [
     path: 'readiness',
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'question-bank' },
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./pages/readiness/readiness-redirect/readiness-redirect').then((m) => m.ReadinessRedirectComponent),
+      },
       {
         path: 'question-bank',
         canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
@@ -301,6 +306,12 @@ export const routes: Routes = [
           import('./pages/readiness/quiz-attempt/quiz-attempt').then((m) => m.QuizAttemptComponent),
       },
       {
+        path: 'available-quizzes',
+        canActivate: [roleGuard(STUDENT_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/available-quizzes/available-quizzes').then((m) => m.AvailableQuizzesComponent),
+      },
+      {
         path: 'submission-tracking',
         canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
         loadComponent: () =>
@@ -310,7 +321,7 @@ export const routes: Routes = [
       },
       {
         path: 'attempt-history',
-        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        canActivate: [roleGuard(ALL_AUTHENTICATED_ROLES)],
         loadComponent: () =>
           import('./pages/readiness/attempt-history/attempt-history').then((m) => m.AttemptHistoryComponent),
       },

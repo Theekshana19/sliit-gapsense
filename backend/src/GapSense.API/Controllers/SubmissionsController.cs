@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -69,14 +70,36 @@ public class SubmissionsController : ControllerBase
         return Ok(ApiResponseDto<SubmissionStatsDto>.SuccessResponse(stats));
     }
 
-    // GET /api/submissions/history - get attempt history (all graded/submitted attempts)
+    // GET /api/submissions/history — students see only their attempts (match profile StudentId); staff see all
     [HttpGet("history")]
     public async Task<ActionResult<ApiResponseDto<List<AttemptSummaryDto>>>> GetHistory()
     {
-        var attempts = await _db.Submissions
+        var query = _db.Submissions
             .Include(s => s.Quiz)
                 .ThenInclude(q => q.Module)
             .Where(s => s.Status == "Submitted" || s.Status == "Graded")
+            .AsQueryable();
+
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        if (string.Equals(role, "student", StringComparison.OrdinalIgnoreCase))
+        {
+            var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(idValue, out var userId))
+                return Ok(ApiResponseDto<List<AttemptSummaryDto>>.SuccessResponse(new List<AttemptSummaryDto>()));
+
+            var user = await _db.Users
+                .AsNoTracking()
+                .Include(u => u.StudentProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            var regId = user?.StudentProfile?.StudentId;
+            if (string.IsNullOrWhiteSpace(regId))
+                return Ok(ApiResponseDto<List<AttemptSummaryDto>>.SuccessResponse(new List<AttemptSummaryDto>()));
+
+            query = query.Where(s => s.StudentId == regId);
+        }
+
+        var attempts = await query
             .OrderByDescending(s => s.SubmittedAt)
             .Select(s => new AttemptSummaryDto
             {
@@ -98,13 +121,50 @@ public class SubmissionsController : ControllerBase
         return Ok(ApiResponseDto<List<AttemptSummaryDto>>.SuccessResponse(attempts));
     }
 
-    // GET /api/submissions/history/stats - get attempt history stats
+    // GET /api/submissions/history/stats — scoped to the current student when role is student
     [HttpGet("history/stats")]
     public async Task<ActionResult<ApiResponseDto<AttemptStatsDto>>> GetHistoryStats()
     {
-        var attempts = await _db.Submissions
+        var query = _db.Submissions
             .Where(s => s.Status == "Submitted" || s.Status == "Graded")
-            .ToListAsync();
+            .AsQueryable();
+
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        if (string.Equals(role, "student", StringComparison.OrdinalIgnoreCase))
+        {
+            var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(idValue, out var userId))
+            {
+                return Ok(ApiResponseDto<AttemptStatsDto>.SuccessResponse(new AttemptStatsDto
+                {
+                    TotalAttempts = 0,
+                    AvgSuccessRate = 0,
+                    FlaggedAttempts = 0,
+                    ChangePercentage = 0,
+                }));
+            }
+
+            var user = await _db.Users
+                .AsNoTracking()
+                .Include(u => u.StudentProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            var regId = user?.StudentProfile?.StudentId;
+            if (string.IsNullOrWhiteSpace(regId))
+            {
+                return Ok(ApiResponseDto<AttemptStatsDto>.SuccessResponse(new AttemptStatsDto
+                {
+                    TotalAttempts = 0,
+                    AvgSuccessRate = 0,
+                    FlaggedAttempts = 0,
+                    ChangePercentage = 0,
+                }));
+            }
+
+            query = query.Where(s => s.StudentId == regId);
+        }
+
+        var attempts = await query.ToListAsync();
 
         var stats = new AttemptStatsDto
         {

@@ -141,6 +141,18 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
 
   // —— Student ——
   { label: 'Dashboard', routerLink: '/dashboard', icon: 'dashboard', roles: ['student'] },
+  {
+    label: 'Readiness quizzes',
+    routerLink: '/readiness/available-quizzes',
+    icon: 'quiz',
+    roles: ['student'],
+  },
+  {
+    label: 'My quiz attempts',
+    routerLink: '/readiness/attempt-history',
+    icon: 'history',
+    roles: ['student'],
+  },
   { label: 'Readiness Result', routerLink: '/readiness-results', icon: 'fact_check', roles: ['student'] },
   {
     label: 'Student Readiness Profile',
