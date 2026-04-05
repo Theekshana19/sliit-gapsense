@@ -1,0 +1,277 @@
+<!-- quiz scheduling page -->
+<app-member-shell>
+  <!-- stats cards row -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <!-- total assessments -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Assessments</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ totalAssessments }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">+3 this semester</p>
+    </div>
+
+    <!-- published -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary-container">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Published Quizzes</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ publishedCount }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">Across 4 modules</p>
+    </div>
+
+    <!-- scheduled -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-tertiary-container">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Scheduled (Pending)</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ scheduledCount }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">Active next 7 days</p>
+    </div>
+
+    <!-- drafts -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-outline-variant">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Drafts</p>
+      <p class="font-headline text-2xl font-black text-on-surface mt-1">{{ draftCount }}</p>
+      <p class="text-[10px] text-on-surface-variant mt-1">Needs completion</p>
+    </div>
+  </div>
+
+  <!-- loading -->
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <!-- publishing queue table -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-6">
+      <div class="flex items-center justify-between px-5 py-4">
+        <h3 class="font-headline text-base font-bold text-on-surface">Publishing Queue</h3>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 rounded-lg text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+            <span class="material-symbols-outlined mr-1" style="font-size: 14px; vertical-align: middle;">filter_list</span>
+            Filter
+          </button>
+          <button class="px-4 py-2 rounded-lg text-xs font-bold btn-primary-gradient">
+            Bulk Publish
+          </button>
+        </div>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="text-left">
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Quiz Title</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Module</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Window</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Attempts</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+            <th class="py-3 px-5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (schedule of schedules(); track schedule.id) {
+            <tr class="hover:bg-surface-container-low transition-colors">
+              <td class="py-4 px-5">
+                <p class="text-sm font-semibold text-on-surface">{{ schedule.quizTitle }}</p>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">{{ schedule.questionCount }} questions · {{ schedule.questionType }}</p>
+              </td>
+              <td class="py-4 px-5">
+                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-secondary-container text-on-secondary-container">
+                  {{ schedule.moduleCode }}
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                @if (schedule.startDate) {
+                  <p class="text-xs text-on-surface">{{ schedule.startDate }}</p>
+                  <p class="text-[11px] text-on-surface-variant">to {{ schedule.endDate }}</p>
+                } @else {
+                  <p class="text-xs text-on-surface-variant italic">Not scheduled</p>
+                }
+              </td>
+              <td class="py-4 px-5">
+                <span class="text-sm font-semibold text-on-surface">{{ schedule.maxAttempts }}</span>
+              </td>
+              <td class="py-4 px-5">
+                <app-pill-badge
+                  [label]="schedule.status"
+                  [variant]="getStatusVariant(schedule.status)"
+                  [showDot]="schedule.status === 'Published'"
+                />
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex gap-1">
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                    <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">edit</span>
+                  </button>
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-error-container/30 transition-colors">
+                    <span class="material-symbols-outlined text-error" style="font-size: 18px;">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- quick scheduler and info cards -->
+    <div class="grid grid-cols-12 gap-6">
+      <!-- quick scheduler form (8 cols) -->
+      <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+        <h3 class="font-headline text-base font-bold text-on-surface mb-5">
+          <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 20px; vertical-align: middle;">calendar_month</span>
+          Quick Scheduler
+        </h3>
+
+        <!-- select quiz dropdown -->
+        <div class="mb-4">
+          <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+            Select Quiz *
+          </label>
+          <select
+            [value]="selectedQuizId()"
+            (change)="selectedQuizId.set($any($event.target).value)"
+            class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                   focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Choose a quiz to schedule...</option>
+            @for (quiz of quizzes(); track quiz.id) {
+              <option [value]="quiz.id">{{ quiz.title }} ({{ quiz.moduleCode }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <!-- start date -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Window Start Date
+            </label>
+            <div class="relative">
+              <input
+                type="date"
+                [value]="startDate()"
+                (input)="startDate.set($any($event.target).value)"
+                class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                       focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <!-- end date -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Window End Date
+            </label>
+            <input
+              type="date"
+              [value]="endDate()"
+              (input)="endDate.set($any($event.target).value)"
+              class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                     focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <!-- attempt limit -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Attempt Limit
+            </label>
+            <select
+              [value]="attemptLimit()"
+              (change)="attemptLimit.set(+$any($event.target).value)"
+              class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                     focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option [value]="1">Single Attempt</option>
+              <option [value]="2">2 Attempts</option>
+              <option [value]="3">3 Attempts</option>
+              <option [value]="0">Unlimited</option>
+            </select>
+          </div>
+
+          <!-- result visibility -->
+          <div>
+            <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+              Result Visibility
+            </label>
+            <select
+              [value]="resultVisibility()"
+              (change)="resultVisibility.set($any($event.target).value)"
+              class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+                     focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="Immediate">Immediate Feedback</option>
+              <option value="AfterWindow">After Window Closes</option>
+              <option value="Manual">Manual Release Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- info banner -->
+        <div class="bg-primary-fixed/30 p-4 rounded-xl mb-5">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-primary" style="font-size: 18px;">info</span>
+            <p class="text-xs text-on-surface-variant">
+              <strong>Automated Publishing Policy:</strong> Quiz will auto-activate at the start date. Students will be notified 24 hours prior.
+            </p>
+          </div>
+        </div>
+
+        <!-- action buttons -->
+        <div class="flex justify-end gap-3">
+          <button
+            (click)="onDiscard()"
+            class="px-5 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            Discard
+          </button>
+          <button
+            (click)="onPublish()"
+            class="px-6 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
+          >
+            Publish Assessment
+          </button>
+        </div>
+      </div>
+
+      <!-- right side info cards (4 cols) -->
+      <div class="col-span-12 lg:col-span-4 space-y-5">
+        <!-- publishing tips card -->
+        <div class="bg-blue-900 text-white p-6 rounded-2xl shadow-xl">
+          <span class="material-symbols-outlined mb-3" style="font-size: 24px;">tips_and_updates</span>
+          <h3 class="font-headline text-sm font-bold mb-2">Publishing Tips</h3>
+          <p class="text-xs text-white/70 leading-relaxed">
+            Once a quiz is published and students begin attempting it, the quiz content cannot be edited.
+            Make sure all questions are reviewed before publishing.
+          </p>
+          <button class="mt-3 text-xs font-semibold text-white/80 hover:text-white transition-colors">
+            View Guide →
+          </button>
+        </div>
+
+        <!-- recent activity card -->
+        <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+          <h3 class="font-headline text-sm font-bold text-on-surface mb-3">Recent Activity</h3>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full bg-primary-fixed flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary" style="font-size: 14px;">publish</span>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-on-surface">Quiz Published</p>
+                <p class="text-[10px] text-primary font-medium">2 hours ago</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-tertiary" style="font-size: 14px;">schedule</span>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-on-surface">Window Extended</p>
+                <p class="text-[10px] text-primary font-medium">Yesterday</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</app-member-shell>

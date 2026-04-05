@@ -1,0 +1,62 @@
+<!-- confirm dialog overlay -->
+@if (isOpen()) {
+  <div
+    class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 page-transition"
+    (click)="onCancel()"
+  >
+    <!-- dialog box -->
+    <div
+      class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-md p-6"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- icon -->
+      <div class="flex justify-center mb-4">
+        <div
+          class="w-12 h-12 rounded-full flex items-center justify-center"
+          [class]="danger() ? 'bg-error-container' : 'bg-primary-fixed'"
+        >
+          <span
+            class="material-symbols-outlined"
+            [class]="danger() ? 'text-on-error-container' : 'text-primary'"
+            style="font-size: 24px;"
+          >
+            {{ icon() }}
+          </span>
+        </div>
+      </div>
+
+      <!-- title -->
+      <h3 class="font-headline text-lg font-bold text-on-surface text-center mb-2">
+        {{ title() }}
+      </h3>
+
+      <!-- message -->
+      <p class="text-sm text-on-surface-variant text-center mb-6">
+        {{ message() }}
+      </p>
+
+      <!-- buttons -->
+      <div class="flex gap-3 justify-center">
+        <!-- cancel button -->
+        <button
+          (click)="onCancel()"
+          class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-surface-container-high
+                 text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+        >
+          {{ cancelLabel() }}
+        </button>
+
+        <!-- confirm button -->
+        <button
+          (click)="onConfirm()"
+          class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          [class]="danger()
+            ? 'bg-error text-on-error hover:opacity-90'
+            : 'btn-primary-gradient'"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,10 @@
+<app-member-shell> Topic Editor" [showSearch]="false">
+  @if (isLoading()) {
+    <div class="py-20 flex justify-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  }
+  @if (!isLoading()) {
+    <app-topic-form [topic]="topic()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+  }
+</app-member-shell>

@@ -1,0 +1,128 @@
+<!-- resource form - simple form for adding learning resources -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm max-w-2xl">
+  <h3 class="font-headline text-base font-bold text-on-surface mb-5">
+    <span class="material-symbols-outlined mr-2 text-primary" style="font-size: 20px; vertical-align: middle;">menu_book</span>
+    Learning Resource Details
+  </h3>
+
+  <!-- title -->
+  <div class="mb-4">
+    <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+      Title *
+    </label>
+    <input
+      type="text"
+      [value]="title()"
+      (input)="title.set($any($event.target).value)"
+      placeholder="Enter resource title..."
+      class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+             placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+             focus:ring-primary/20 transition-all"
+    />
+  </div>
+
+  <!-- description -->
+  <div class="mb-4">
+    <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+      Description
+    </label>
+    <textarea
+      [value]="description()"
+      (input)="description.set($any($event.target).value)"
+      placeholder="Describe the resource..."
+      rows="3"
+      class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+             placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+             focus:ring-primary/20 resize-none transition-all"
+    ></textarea>
+  </div>
+
+  <!-- type and url -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+        Type
+      </label>
+      <select
+        [value]="type()"
+        (change)="type.set($any($event.target).value)"
+        class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+               focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+      >
+        <option value="Article">Article</option>
+        <option value="Video">Video</option>
+        <option value="PDF">PDF</option>
+        <option value="Link">Link</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+        URL *
+      </label>
+      <input
+        type="url"
+        [value]="url()"
+        (input)="url.set($any($event.target).value)"
+        placeholder="https://..."
+        class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+               placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
+               focus:ring-primary/20 transition-all"
+      />
+    </div>
+  </div>
+
+  <!-- module and topic -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+        Module
+      </label>
+      <select
+        [value]="module()"
+        (change)="module.set($any($event.target).value)"
+        class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+               focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+      >
+        <option value="">Select module</option>
+        @for (mod of modules; track mod) {
+          <option [value]="mod">{{ mod }}</option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
+        Topic
+      </label>
+      <select
+        [value]="topic()"
+        (change)="topic.set($any($event.target).value)"
+        class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
+               focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+      >
+        <option value="">Select topic</option>
+        @for (t of topics; track t) {
+          <option [value]="t">{{ t }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- action buttons -->
+  <div class="flex gap-3 justify-end">
+    <button
+      (click)="onCancel()"
+      class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-surface-container-high
+             text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+    >
+      Cancel
+    </button>
+    <button
+      (click)="onSubmit()"
+      class="px-5 py-2.5 rounded-xl text-sm font-bold btn-primary-gradient"
+    >
+      Save Resource
+    </button>
+  </div>
+</div>

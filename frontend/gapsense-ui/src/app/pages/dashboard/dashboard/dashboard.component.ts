@@ -338,17 +338,23 @@ export class DashboardPageComponent {
   private readonly authUi = inject(AuthUiService);
 
   /** Role-based quick action: admin → thresholds; lecturer → class analytics entry point. */
-  readonly quickLink = computed(() =>
-    this.authUi.currentUser()?.role === 'admin' ? '/risk-thresholds' : '/readiness-results'
-  );
+  readonly quickLink = computed(() => {
+    const r = this.authUi.currentUser()?.role;
+    if (r === 'admin') return '/risk-thresholds';
+    return '/readiness-results';
+  });
 
-  readonly quickLinkLabel = computed(() =>
-    this.authUi.currentUser()?.role === 'admin' ? 'Risk thresholds' : 'Readiness results'
-  );
+  readonly quickLinkLabel = computed(() => {
+    const r = this.authUi.currentUser()?.role;
+    if (r === 'admin') return 'Risk thresholds';
+    return 'Readiness results';
+  });
 
-  readonly quickLinkIcon = computed(() =>
-    this.authUi.currentUser()?.role === 'admin' ? 'tune' : 'fact_check'
-  );
+  readonly quickLinkIcon = computed(() => {
+    const r = this.authUi.currentUser()?.role;
+    if (r === 'admin') return 'tune';
+    return 'fact_check';
+  });
 
   // These values are mock UI data for the dashboard layout.
   // If you later connect APIs, keep the template and replace only these fields.

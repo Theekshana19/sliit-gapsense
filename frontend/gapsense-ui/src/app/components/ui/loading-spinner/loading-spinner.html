@@ -1,0 +1,12 @@
+<!-- spinning circle loader -->
+<div class="flex items-center justify-center">
+  <div
+    class="rounded-full border-2 border-surface-container-high border-t-primary animate-spin"
+    [class.w-5]="size() === 'sm'"
+    [class.h-5]="size() === 'sm'"
+    [class.w-8]="size() === 'md'"
+    [class.h-8]="size() === 'md'"
+    [class.w-12]="size() === 'lg'"
+    [class.h-12]="size() === 'lg'"
+  ></div>
+</div>

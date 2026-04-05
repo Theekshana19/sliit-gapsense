@@ -3,9 +3,11 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { roleGuard } from './guards/role.guard';
 import {
+  ADMIN_AND_LECTURER_ROLES,
   ADMIN_ROLES,
+  ALL_AUTHENTICATED_ROLES,
   LECTURER_OR_STUDENT_ROLES,
-  STAFF_DASHBOARD_ROLES,
+  LECTURER_ROLES,
   STUDENT_ROLES,
 } from './models/auth/auth-role.model';
 
@@ -49,7 +51,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    canActivate: [authGuard, roleGuard(STAFF_DASHBOARD_ROLES)],
+    canActivate: [authGuard, roleGuard(ALL_AUTHENTICATED_ROLES)],
     loadComponent: () =>
       import('./pages/dashboard/dashboard/dashboard.component').then((m) => m.DashboardPageComponent),
   },
@@ -111,7 +113,7 @@ export const routes: Routes = [
   },
   {
     path: 'student-profile',
-    canActivate: [authGuard, roleGuard(STUDENT_ROLES)],
+    canActivate: [authGuard, roleGuard(LECTURER_OR_STUDENT_ROLES)],
     loadComponent: () =>
       import('./pages/risk-analysis/student-readiness-profile/student-readiness-profile.component').then(
         (m) => m.StudentReadinessProfileComponent
@@ -142,10 +144,177 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'curriculum',
+    path: 'reports-export',
     canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
     loadComponent: () =>
-      import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
+      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
+    data: { title: 'Reports and Export' },
+  },
+  {
+    path: 'notification-center',
+    canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
+    loadComponent: () =>
+      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
+    data: { title: 'Notification Center Page' },
+  },
+  {
+    path: 'follow-up-management',
+    canActivate: [authGuard, roleGuard(LECTURER_ROLES)],
+    loadComponent: () =>
+      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
+    data: { title: 'Follow - Up Management' },
+  },
+  {
+    path: 'high-risk-monitoring',
+    canActivate: [authGuard, roleGuard(LECTURER_ROLES)],
+    loadComponent: () =>
+      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
+    data: { title: 'High risk student monitoring page' },
+  },
+  {
+    path: 'curriculum',
+    canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'module-management' },
+      {
+        path: 'lecturer-assignment',
+        loadComponent: () =>
+          import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
+      },
+      {
+        path: 'create-assignment',
+        loadComponent: () =>
+          import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
+        data: { title: 'Create New Assignment' },
+      },
+      {
+        path: 'module-management',
+        loadComponent: () =>
+          import('./pages/curriculum/module-management/module-management').then((m) => m.ModuleManagementComponent),
+      },
+      {
+        path: 'modules/new',
+        loadComponent: () =>
+          import('./pages/curriculum/add-edit-module/add-edit-module').then((m) => m.AddEditModuleComponent),
+      },
+      {
+        path: 'modules/:id/edit',
+        loadComponent: () =>
+          import('./pages/curriculum/add-edit-module/add-edit-module').then((m) => m.AddEditModuleComponent),
+      },
+      {
+        path: 'modules/:moduleId/topics',
+        loadComponent: () =>
+          import('./pages/curriculum/topic-management/topic-management').then((m) => m.TopicManagementComponent),
+      },
+      {
+        path: 'topics/new',
+        loadComponent: () =>
+          import('./pages/curriculum/add-edit-topic/add-edit-topic').then((m) => m.AddEditTopicComponent),
+      },
+      {
+        path: 'topics/:id/edit',
+        loadComponent: () =>
+          import('./pages/curriculum/add-edit-topic/add-edit-topic').then((m) => m.AddEditTopicComponent),
+      },
+      {
+        path: 'topic-weight-config/:moduleId',
+        loadComponent: () =>
+          import('./pages/curriculum/topic-weight-config/topic-weight-config').then((m) => m.TopicWeightConfigComponent),
+      },
+      {
+        path: 'prerequisite-mapping',
+        loadComponent: () =>
+          import('./pages/curriculum/prerequisite-mapping/prerequisite-mapping').then(
+            (m) => m.PrerequisiteMappingComponent
+          ),
+      },
+      {
+        path: 'prerequisite-management',
+        loadComponent: () =>
+          import('./pages/curriculum/prerequisite-management/prerequisite-management').then(
+            (m) => m.PrerequisiteManagementComponent
+          ),
+      },
+      {
+        path: 'dependency-visualization',
+        loadComponent: () =>
+          import('./pages/curriculum/dependency-visualization/dependency-visualization').then(
+            (m) => m.DependencyVisualizationComponent
+          ),
+      },
+      {
+        path: 'semester-offerings',
+        loadComponent: () =>
+          import('./pages/curriculum/semester-offerings/semester-offerings').then((m) => m.SemesterOfferingsComponent),
+      },
+      {
+        path: 'validation-alerts',
+        loadComponent: () =>
+          import('./pages/curriculum/validation-alerts/validation-alerts').then((m) => m.ValidationAlertsComponent),
+      },
+    ],
+  },
+  {
+    path: 'readiness',
+    canActivate: [authGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'question-bank' },
+      {
+        path: 'question-bank',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/question-bank/question-bank').then((m) => m.QuestionBankComponent),
+      },
+      {
+        path: 'questions/new',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/question-bank/add-edit-question/add-edit-question').then(
+            (m) => m.AddEditQuestionComponent
+          ),
+      },
+      {
+        path: 'questions/:id/edit',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/question-bank/add-edit-question/add-edit-question').then(
+            (m) => m.AddEditQuestionComponent
+          ),
+      },
+      {
+        path: 'quiz-builder',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/quiz-builder/quiz-builder').then((m) => m.QuizBuilderComponent),
+      },
+      {
+        path: 'quiz-scheduling',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/quiz-scheduling/quiz-scheduling').then((m) => m.QuizSchedulingComponent),
+      },
+      {
+        path: 'quiz-attempt/:id',
+        canActivate: [roleGuard(LECTURER_OR_STUDENT_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/quiz-attempt/quiz-attempt').then((m) => m.QuizAttemptComponent),
+      },
+      {
+        path: 'submission-tracking',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/submission-tracking/submission-tracking').then(
+            (m) => m.SubmissionTrackingComponent
+          ),
+      },
+      {
+        path: 'attempt-history',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/attempt-history/attempt-history').then((m) => m.AttemptHistoryComponent),
+      },
+    ],
   },
   { path: '**', redirectTo: 'auth/login' },
 ];

@@ -21,6 +21,12 @@
         }
         @if (role() === 'student') {
           <a
+            routerLink="/dashboard"
+            routerLinkActive="border-b-2 border-blue-700 pb-1 text-sm font-bold text-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="border-b-2 border-transparent pb-1 text-sm font-medium text-slate-500 transition-colors hover:text-blue-600"
+            >Dashboard</a>
+          <a
             routerLink="/readiness-results"
             routerLinkActive="border-b-2 border-blue-700 pb-1 text-sm font-bold text-blue-700"
             [routerLinkActiveOptions]="{ exact: true }"

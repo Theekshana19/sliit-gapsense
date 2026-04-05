@@ -1,0 +1,20 @@
+<!-- add/edit question page -->
+<app-member-shell> Question Editor"
+  [showSearch]="false"
+>
+  <!-- show loading spinner while fetching question data -->
+  @if (isLoading()) {
+    <div class="py-20 flex justify-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  }
+
+  <!-- show the form only when data is ready (or creating new) -->
+  @if (!isLoading()) {
+    <app-question-form
+      [question]="question()"
+      (formSubmit)="onFormSubmit($event)"
+      (formCancel)="onFormCancel()"
+    />
+  }
+</app-member-shell>

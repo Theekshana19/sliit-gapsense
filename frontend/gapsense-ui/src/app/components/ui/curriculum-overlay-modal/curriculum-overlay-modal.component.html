@@ -1,0 +1,25 @@
+@if (isOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    (click)="onBackdropClick()"
+  >
+    <div
+      class="w-full max-w-lg rounded-2xl bg-white shadow-xl"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between px-6 pb-4 pt-6">
+        <h2 class="text-xl font-bold text-slate-900">{{ title() }}</h2>
+        <button
+          type="button"
+          (click)="onClose()"
+          class="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-slate-100"
+        >
+          <span class="material-symbols-outlined text-slate-600">close</span>
+        </button>
+      </div>
+      <div class="px-6 pb-6">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+}
