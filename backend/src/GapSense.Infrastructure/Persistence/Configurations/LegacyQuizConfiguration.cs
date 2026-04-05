@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GapSense.Infrastructure.Persistence.Configurations;
 
-public class QuizConfiguration : IEntityTypeConfiguration<Quiz>
+public class LegacyQuizConfiguration : IEntityTypeConfiguration<LegacyQuiz>
 {
-    public void Configure(EntityTypeBuilder<Quiz> builder)
+    public void Configure(EntityTypeBuilder<LegacyQuiz> builder)
     {
-        builder.ToTable("Quizzes");
+        builder.ToTable("LegacyQuizzes");
 
         builder.HasKey(e => e.Id);
 
@@ -33,9 +33,9 @@ public class QuizConfiguration : IEntityTypeConfiguration<Quiz>
             .IsRequired();
 
         builder.HasIndex(e => e.ModuleCode)
-            .HasDatabaseName("IX_Quizzes_ModuleCode");
+            .HasDatabaseName("IX_LegacyQuizzes_ModuleCode");
 
         builder.HasIndex(e => e.IsPublished)
-            .HasDatabaseName("IX_Quizzes_IsPublished");
+            .HasDatabaseName("IX_LegacyQuizzes_IsPublished");
     }
 }

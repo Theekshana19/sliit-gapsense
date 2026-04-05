@@ -17,7 +17,7 @@ public class QuizService : IQuizService
 
     public async Task<IReadOnlyList<QuizResponse>> GetPublishedAsync(CancellationToken cancellationToken = default)
     {
-        var rows = await _context.Quizzes
+        var rows = await _context.LegacyQuizzes
             .AsNoTracking()
             .Where(q => q.IsPublished)
             .OrderBy(q => q.ModuleCode)
@@ -29,7 +29,7 @@ public class QuizService : IQuizService
 
     public async Task<IReadOnlyList<QuizResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var rows = await _context.Quizzes
+        var rows = await _context.LegacyQuizzes
             .AsNoTracking()
             .OrderByDescending(q => q.UpdatedAtUtc)
             .ToListAsync(cancellationToken);
@@ -39,7 +39,7 @@ public class QuizService : IQuizService
 
     public async Task<QuizResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var row = await _context.Quizzes.AsNoTracking().FirstOrDefaultAsync(q => q.Id == id, cancellationToken);
+        var row = await _context.LegacyQuizzes.AsNoTracking().FirstOrDefaultAsync(q => q.Id == id, cancellationToken);
         return row is null ? null : Map(row);
     }
 
@@ -54,7 +54,7 @@ public class QuizService : IQuizService
             throw new ArgumentException("ModuleCode is required.", nameof(request));
 
         var now = DateTime.UtcNow;
-        var entity = new Quiz
+        var entity = new LegacyQuiz
         {
             Id = Guid.NewGuid(),
             Title = title,
@@ -66,12 +66,12 @@ public class QuizService : IQuizService
             UpdatedAtUtc = now
         };
 
-        _context.Quizzes.Add(entity);
+        _context.LegacyQuizzes.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
         return Map(entity);
     }
 
-    private static QuizResponse Map(Quiz q) =>
+    private static QuizResponse Map(LegacyQuiz q) =>
         new()
         {
             Id = q.Id,

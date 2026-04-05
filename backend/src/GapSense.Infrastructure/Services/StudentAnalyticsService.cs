@@ -234,7 +234,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
         var rows = new List<StudentAssessmentRowDto>();
         var attempts = await _context.QuizAttempts
             .AsNoTracking()
-            .Include(a => a.Quiz)
+            .Include(a => a.LegacyQuiz)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.SubmittedAtUtc)
             .Take(10)
@@ -246,7 +246,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
             rows.Add(new StudentAssessmentRowDto
             {
                 Id = a.Id.ToString(),
-                AssessmentName = a.Quiz.Title,
+                AssessmentName = a.LegacyQuiz.Title,
                 Date = a.SubmittedAtUtc.ToString("yyyy-MM-dd"),
                 Score = $"{a.TotalScorePercent}/100",
                 Outcome = a.TotalScorePercent >= 60 ? "ready" : "needs_work",
@@ -386,7 +386,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
     {
         var attempts = await _context.QuizAttempts
             .AsNoTracking()
-            .Include(a => a.Quiz)
+            .Include(a => a.LegacyQuiz)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.SubmittedAtUtc)
             .Take(2)
@@ -618,11 +618,11 @@ public class StudentAnalyticsService : IStudentAnalyticsService
     {
         var query = _context.QuizAttempts
             .AsNoTracking()
-            .Include(a => a.Quiz)
+            .Include(a => a.LegacyQuiz)
             .Where(a => a.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(moduleCode))
-            query = query.Where(a => a.Quiz.ModuleCode == moduleCode.Trim());
+            query = query.Where(a => a.LegacyQuiz.ModuleCode == moduleCode.Trim());
 
         var attempt = await query
             .OrderByDescending(a => a.SubmittedAtUtc)
@@ -631,7 +631,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
         if (attempt != null)
         {
             var topics = ParseTopics(attempt.TopicScoresJson);
-            return (topics.Select(t => (t.TopicName, t.Percent)).ToList(), attempt.Quiz.ModuleCode, attempt.TotalScorePercent);
+            return (topics.Select(t => (t.TopicName, t.Percent)).ToList(), attempt.LegacyQuiz.ModuleCode, attempt.TotalScorePercent);
         }
 
         var sp = await _context.StudentProfiles.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);

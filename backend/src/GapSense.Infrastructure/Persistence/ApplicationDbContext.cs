@@ -24,7 +24,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<AdminProfile> AdminProfiles => Set<AdminProfile>();
 
-    public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<LegacyQuiz> LegacyQuizzes => Set<LegacyQuiz>();
 
     public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
 
@@ -34,8 +34,35 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<StudentIntervention> StudentInterventions => Set<StudentIntervention>();
 
+    public DbSet<Module> Modules => Set<Module>();
+
+    public DbSet<Topic> Topics => Set<Topic>();
+
+    public DbSet<Prerequisite> Prerequisites => Set<Prerequisite>();
+
+    public DbSet<SemesterOffering> SemesterOfferings => Set<SemesterOffering>();
+
+    public DbSet<ValidationAlert> ValidationAlerts => Set<ValidationAlert>();
+
+    public DbSet<Question> Questions => Set<Question>();
+
+    public DbSet<QuestionOption> QuestionOptions => Set<QuestionOption>();
+
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+
+    public DbSet<QuizSchedule> QuizSchedules => Set<QuizSchedule>();
+
+    public DbSet<Submission> Submissions => Set<Submission>();
+
+    public DbSet<SubmissionAnswer> SubmissionAnswers => Set<SubmissionAnswer>();
+
+    public DbSet<Resource> Resources => Set<Resource>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        CurriculumReadinessModelBuilder.Configure(modelBuilder);
     }
 }

@@ -28,7 +28,7 @@ export interface QuizTopicScoreInput {
 @Injectable({ providedIn: 'root' })
 export class QuizApiService {
   private readonly http = inject(HttpClient);
-  private readonly root = `${API_BASE_URL}/api/Quizzes`;
+  private readonly root = `${API_BASE_URL}/api/simple-quizzes`;
 
   async getPublishedQuizzes(): Promise<QuizSummaryDto[]> {
     try {

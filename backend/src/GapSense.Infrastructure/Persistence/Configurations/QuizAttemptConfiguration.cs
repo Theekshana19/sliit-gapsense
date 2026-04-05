@@ -24,7 +24,7 @@ public class QuizAttemptConfiguration : IEntityTypeConfiguration<QuizAttempt>
         builder.Property(e => e.AttemptNumber)
             .IsRequired();
 
-        builder.HasOne(e => e.Quiz)
+        builder.HasOne(e => e.LegacyQuiz)
             .WithMany(q => q.Attempts)
             .HasForeignKey(e => e.QuizId)
             .OnDelete(DeleteBehavior.Cascade);

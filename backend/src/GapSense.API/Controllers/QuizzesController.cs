@@ -1,107 +1,246 @@
-using System.Security.Claims;
-using GapSense.API.Models;
-using GapSense.Application.DTOs;
-using GapSense.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using GapSense.Infrastructure.Persistence;
+using GapSense.Domain.Entities;
+using GapSense.Application.DTOs.Common;
+using GapSense.Application.DTOs.Readiness;
 
 namespace GapSense.API.Controllers;
 
+// handles all API requests related to quizzes
+// base route: /api/quizzes
 [ApiController]
-[Route("api/[controller]")]
 [Authorize]
+[Route("api/[controller]")]
 public class QuizzesController : ControllerBase
 {
-    private readonly IQuizService _quizService;
-    private readonly IQuizAttemptService _attemptService;
+    private readonly ApplicationDbContext _db;
 
-    public QuizzesController(IQuizService quizService, IQuizAttemptService attemptService)
+    public QuizzesController(ApplicationDbContext db)
     {
-        _quizService = quizService;
-        _attemptService = attemptService;
+        _db = db;
     }
 
+    // GET /api/quizzes - get all quizzes
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<QuizResponse>>>> GetPublished(
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<ApiResponseDto<List<QuizDto>>>> GetQuizzes()
     {
-        var items = await _quizService.GetPublishedAsync(cancellationToken);
-        return Ok(ApiResponse<IReadOnlyList<QuizResponse>>.Ok(items));
+        var quizzes = await _db.Quizzes
+            .Include(q => q.Module)
+            .Include(q => q.QuizQuestions)
+            .OrderByDescending(q => q.CreatedAt)
+            .Select(q => new QuizDto
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Description = q.Description,
+                Module = q.Module.ModuleName,
+                ModuleCode = q.Module.ModuleCode,
+                Intake = q.Intake,
+                Questions = q.QuizQuestions.OrderBy(qq => qq.SortOrder).Select(qq => new QuizQuestionDto
+                {
+                    QuestionId = qq.QuestionId.ToString(),
+                    Order = qq.SortOrder,
+                    Marks = qq.Marks,
+                }).ToList(),
+                TotalQuestions = q.QuizQuestions.Count,
+                TotalMarks = q.TotalMarks,
+                PassingMarks = (int)Math.Round(q.TotalMarks * q.PassingPercentage / 100.0),
+                PassingPercentage = q.PassingPercentage,
+                TimeLimitMinutes = q.TimeLimitMinutes,
+                MaxAttempts = q.MaxAttempts,
+                ShuffleQuestions = q.ShuffleQuestions,
+                ShuffleOptions = q.ShuffleOptions,
+                Status = q.Status,
+                CreatedAt = q.CreatedAt.ToString("yyyy-MM-dd"),
+                UpdatedAt = q.UpdatedAt.ToString("yyyy-MM-dd"),
+            })
+            .ToListAsync();
+
+        return Ok(ApiResponseDto<List<QuizDto>>.SuccessResponse(quizzes));
     }
 
-    [HttpGet("all")]
-    [Authorize(Roles = "admin,lecturer")]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<QuizResponse>>>> GetAll(
-        CancellationToken cancellationToken)
+    // GET /api/quizzes/{id} - get a single quiz with its questions
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponseDto<QuizDto>>> GetQuiz(Guid id)
     {
-        var items = await _quizService.GetAllAsync(cancellationToken);
-        return Ok(ApiResponse<IReadOnlyList<QuizResponse>>.Ok(items));
+        var quiz = await _db.Quizzes
+            .Include(q => q.Module)
+            .Include(q => q.QuizQuestions)
+            .FirstOrDefaultAsync(q => q.Id == id);
+
+        if (quiz == null)
+            return NotFound(ApiResponseDto<QuizDto>.ErrorResponse("Quiz not found"));
+
+        var dto = new QuizDto
+        {
+            Id = quiz.Id,
+            Title = quiz.Title,
+            Description = quiz.Description,
+            Module = quiz.Module.ModuleName,
+            ModuleCode = quiz.Module.ModuleCode,
+            Intake = quiz.Intake,
+            Questions = quiz.QuizQuestions.OrderBy(qq => qq.SortOrder).Select(qq => new QuizQuestionDto
+            {
+                QuestionId = qq.QuestionId.ToString(),
+                Order = qq.SortOrder,
+                Marks = qq.Marks,
+            }).ToList(),
+            TotalQuestions = quiz.QuizQuestions.Count,
+            TotalMarks = quiz.TotalMarks,
+            PassingMarks = (int)Math.Round(quiz.TotalMarks * quiz.PassingPercentage / 100.0),
+            PassingPercentage = quiz.PassingPercentage,
+            TimeLimitMinutes = quiz.TimeLimitMinutes,
+            MaxAttempts = quiz.MaxAttempts,
+            ShuffleQuestions = quiz.ShuffleQuestions,
+            ShuffleOptions = quiz.ShuffleOptions,
+            Status = quiz.Status,
+            CreatedAt = quiz.CreatedAt.ToString("yyyy-MM-dd"),
+            UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
+        };
+
+        return Ok(ApiResponseDto<QuizDto>.SuccessResponse(dto));
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ApiResponse<QuizResponse>>> GetById(Guid id,
-        CancellationToken cancellationToken)
+    // GET /api/quizzes/{id}/questions - get full question details for a quiz (for quiz attempt page)
+    [HttpGet("{id}/questions")]
+    public async Task<ActionResult<ApiResponseDto<List<QuestionDto>>>> GetQuizQuestions(Guid id)
     {
-        var item = await _quizService.GetByIdAsync(id, cancellationToken);
-        if (item is null)
-            return NotFound(ApiResponse<QuizResponse>.Fail("Quiz not found."));
-        return Ok(ApiResponse<QuizResponse>.Ok(item));
+        var quiz = await _db.Quizzes
+            .Include(q => q.QuizQuestions)
+                .ThenInclude(qq => qq.Question)
+                    .ThenInclude(q => q.Options)
+            .Include(q => q.QuizQuestions)
+                .ThenInclude(qq => qq.Question)
+                    .ThenInclude(q => q.Module)
+            .FirstOrDefaultAsync(q => q.Id == id);
+
+        if (quiz == null)
+            return NotFound(ApiResponseDto<List<QuestionDto>>.ErrorResponse("Quiz not found"));
+
+        var questions = quiz.QuizQuestions
+            .OrderBy(qq => qq.SortOrder)
+            .Select(qq =>
+            {
+                var q = qq.Question;
+                var correctOption = q.Options.FirstOrDefault(o => o.IsCorrect);
+                return new QuestionDto
+                {
+                    Id = q.Id,
+                    QuestionId = q.QuestionDisplayId,
+                    Title = q.Title,
+                    QuestionText = q.QuestionText,
+                    QuestionType = q.QuestionType,
+                    Difficulty = q.Difficulty,
+                    Topic = q.Topic?.TopicName ?? "",
+                    Module = q.Module.ModuleName,
+                    ModuleCode = q.Module.ModuleCode,
+                    Options = q.Options.OrderBy(o => o.SortOrder).Select(o => new QuestionOptionDto
+                    {
+                        Id = o.Id,
+                        OptionText = o.OptionText,
+                        IsCorrect = false, // don't reveal correct answer to student!
+                    }).ToList(),
+                    CorrectOptionId = "", // hidden from student
+                    Explanation = "", // hidden until after submission
+                    Marks = qq.Marks,
+                    Status = q.Status,
+                    CreatedAt = q.CreatedAt.ToString("yyyy-MM-dd"),
+                    UpdatedAt = q.UpdatedAt.ToString("yyyy-MM-dd"),
+                };
+            })
+            .ToList();
+
+        return Ok(ApiResponseDto<List<QuestionDto>>.SuccessResponse(questions));
     }
 
+    // POST /api/quizzes - create a new quiz with questions
     [HttpPost]
-    [Authorize(Roles = "admin,lecturer")]
-    public async Task<ActionResult<ApiResponse<QuizResponse>>> Create(
-        [FromBody] CreateQuizRequest request,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<ApiResponseDto<QuizDto>>> CreateQuiz(CreateQuizDto dto)
     {
-        if (!TryGetUserId(out var userId))
-            return Unauthorized(ApiResponse<QuizResponse>.Fail("Invalid user."));
+        // check module exists
+        var module = await _db.Modules.FindAsync(dto.ModuleId);
+        if (module == null)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Module not found"));
 
-        try
+        // check at least one question
+        if (dto.Questions.Count == 0)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("At least one question is required"));
+
+        // calculate total marks from questions
+        var totalMarks = dto.Questions.Sum(q => q.Marks);
+
+        var quiz = new Quiz
         {
-            var created = await _quizService.CreateAsync(request, userId, cancellationToken);
-            return Ok(ApiResponse<QuizResponse>.Ok(created, "Quiz created."));
-        }
-        catch (ArgumentException ex)
+            Title = dto.Title,
+            Description = dto.Description,
+            ModuleId = dto.ModuleId,
+            Intake = dto.Intake,
+            TotalMarks = totalMarks,
+            PassingPercentage = dto.PassingPercentage,
+            TimeLimitMinutes = dto.TimeLimitMinutes,
+            MaxAttempts = dto.MaxAttempts,
+            ShuffleQuestions = dto.ShuffleQuestions,
+            ShuffleOptions = dto.ShuffleOptions,
+            Status = dto.Status,
+        };
+
+        // add questions to quiz
+        foreach (var qq in dto.Questions)
         {
-            return BadRequest(ApiResponse<QuizResponse>.Fail(ex.Message));
+            quiz.QuizQuestions.Add(new QuizQuestion
+            {
+                QuestionId = qq.QuestionId,
+                SortOrder = qq.Order,
+                Marks = qq.Marks,
+            });
         }
+
+        _db.Quizzes.Add(quiz);
+        await _db.SaveChangesAsync();
+
+        // return created quiz
+        var result = new QuizDto
+        {
+            Id = quiz.Id,
+            Title = quiz.Title,
+            Description = quiz.Description,
+            Module = module.ModuleName,
+            ModuleCode = module.ModuleCode,
+            Intake = quiz.Intake,
+            TotalQuestions = quiz.QuizQuestions.Count,
+            TotalMarks = quiz.TotalMarks,
+            PassingMarks = (int)Math.Round(quiz.TotalMarks * quiz.PassingPercentage / 100.0),
+            PassingPercentage = quiz.PassingPercentage,
+            TimeLimitMinutes = quiz.TimeLimitMinutes,
+            MaxAttempts = quiz.MaxAttempts,
+            Status = quiz.Status,
+            CreatedAt = quiz.CreatedAt.ToString("yyyy-MM-dd"),
+            UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
+        };
+
+        return CreatedAtAction(nameof(GetQuiz), new { id = quiz.Id },
+            ApiResponseDto<QuizDto>.SuccessResponse(result, "Quiz created successfully"));
     }
 
-    [HttpPost("{quizId:guid}/attempts")]
-    public async Task<ActionResult<ApiResponse<QuizAttemptResponse>>> SubmitAttempt(
-        Guid quizId,
-        [FromBody] SubmitQuizAttemptRequest request,
-        CancellationToken cancellationToken)
+    // DELETE /api/quizzes/{id} - delete a quiz
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiResponseDto<bool>>> DeleteQuiz(Guid id)
     {
-        if (!TryGetUserId(out var userId))
-            return Unauthorized(ApiResponse<QuizAttemptResponse>.Fail("Invalid user."));
+        var quiz = await _db.Quizzes.FindAsync(id);
+        if (quiz == null)
+            return NotFound(ApiResponseDto<bool>.ErrorResponse("Quiz not found"));
 
-        try
-        {
-            var attempt = await _attemptService.SubmitAsync(quizId, userId, request, cancellationToken);
-            return Ok(ApiResponse<QuizAttemptResponse>.Ok(attempt, "Attempt saved."));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ApiResponse<QuizAttemptResponse>.Fail(ex.Message));
-        }
-    }
+        // check if quiz has submissions
+        var hasSubmissions = await _db.Submissions.AnyAsync(s => s.QuizId == id);
+        if (hasSubmissions)
+            return BadRequest(ApiResponseDto<bool>.ErrorResponse(
+                "Cannot delete this quiz because students have already submitted attempts."));
 
-    [HttpGet("{quizId:guid}/attempts")]
-    [Authorize(Roles = "admin,lecturer")]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<QuizAttemptResponse>>>> GetAttemptsForQuiz(
-        Guid quizId,
-        CancellationToken cancellationToken)
-    {
-        var items = await _attemptService.GetForQuizAsync(quizId, cancellationToken);
-        return Ok(ApiResponse<IReadOnlyList<QuizAttemptResponse>>.Ok(items));
-    }
+        _db.Quizzes.Remove(quiz);
+        await _db.SaveChangesAsync();
 
-    private bool TryGetUserId(out Guid userId)
-    {
-        userId = default;
-        var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return !string.IsNullOrWhiteSpace(idValue) && Guid.TryParse(idValue, out userId);
+        return Ok(ApiResponseDto<bool>.SuccessResponse(true, "Quiz deleted successfully"));
     }
 }

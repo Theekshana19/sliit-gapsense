@@ -25,7 +25,7 @@ public class QuizAttemptService : IQuizAttemptService
     public async Task<QuizAttemptResponse> SubmitAsync(Guid quizId, Guid userId, SubmitQuizAttemptRequest request,
         CancellationToken cancellationToken = default)
     {
-        var quiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId, cancellationToken);
+        var quiz = await _context.LegacyQuizzes.FirstOrDefaultAsync(q => q.Id == quizId, cancellationToken);
         if (quiz is null)
             throw new InvalidOperationException("Quiz not found.");
         if (!quiz.IsPublished)
@@ -72,12 +72,12 @@ public class QuizAttemptService : IQuizAttemptService
     {
         var rows = await _context.QuizAttempts
             .AsNoTracking()
-            .Include(a => a.Quiz)
+            .Include(a => a.LegacyQuiz)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.SubmittedAtUtc)
             .ToListAsync(cancellationToken);
 
-        return rows.Select(a => Map(a, a.Quiz.Title, ParseTopics(a.TopicScoresJson))).ToList();
+        return rows.Select(a => Map(a, a.LegacyQuiz.Title, ParseTopics(a.TopicScoresJson))).ToList();
     }
 
     public async Task<IReadOnlyList<QuizAttemptResponse>> GetForQuizAsync(Guid quizId,
@@ -85,13 +85,13 @@ public class QuizAttemptService : IQuizAttemptService
     {
         var rows = await _context.QuizAttempts
             .AsNoTracking()
-            .Include(a => a.Quiz)
+            .Include(a => a.LegacyQuiz)
             .Where(a => a.QuizId == quizId)
             .OrderBy(a => a.UserId)
             .ThenBy(a => a.AttemptNumber)
             .ToListAsync(cancellationToken);
 
-        return rows.Select(a => Map(a, a.Quiz.Title, ParseTopics(a.TopicScoresJson))).ToList();
+        return rows.Select(a => Map(a, a.LegacyQuiz.Title, ParseTopics(a.TopicScoresJson))).ToList();
     }
 
     private static QuizAttemptResponse Map(QuizAttempt a, string quizTitle, IReadOnlyList<QuizTopicScoreDto> topics) =>

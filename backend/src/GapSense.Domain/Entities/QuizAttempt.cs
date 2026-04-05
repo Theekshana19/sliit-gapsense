@@ -6,7 +6,7 @@ public class QuizAttempt
 
     public Guid QuizId { get; set; }
 
-    public Quiz Quiz { get; set; } = null!;
+    public LegacyQuiz LegacyQuiz { get; set; } = null!;
 
     public Guid UserId { get; set; }
 
