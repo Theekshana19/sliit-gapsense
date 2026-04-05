@@ -235,10 +235,11 @@ export class QuizFormComponent implements OnInit {
 
     const questions = Array.from(this.selectedQuestionIds()).map((id, index) => {
       const q = this.availableQuestions().find((aq) => aq.id === id);
+      const m = q?.marks ?? 5;
       return {
         questionId: id,
         order: index + 1,
-        marks: q?.marks || 0,
+        marks: Math.max(1, Math.min(100, m)),
       };
     });
 

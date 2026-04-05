@@ -26,38 +26,15 @@ public class QuizzesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponseDto<List<QuizDto>>>> GetQuizzes()
     {
-        var quizzes = await _db.Quizzes
+        // Load then map in memory — Guid.ToString() in IQueryable Select is not reliably translatable to SQL.
+        var rows = await _db.Quizzes
+            .AsNoTracking()
             .Include(q => q.Module)
             .Include(q => q.QuizQuestions)
             .OrderByDescending(q => q.CreatedAt)
-            .Select(q => new QuizDto
-            {
-                Id = q.Id,
-                Title = q.Title,
-                Description = q.Description,
-                Module = q.Module.ModuleName,
-                ModuleCode = q.Module.ModuleCode,
-                Intake = q.Intake,
-                Questions = q.QuizQuestions.OrderBy(qq => qq.SortOrder).Select(qq => new QuizQuestionDto
-                {
-                    QuestionId = qq.QuestionId.ToString(),
-                    Order = qq.SortOrder,
-                    Marks = qq.Marks,
-                }).ToList(),
-                TotalQuestions = q.QuizQuestions.Count,
-                TotalMarks = q.TotalMarks,
-                PassingMarks = (int)Math.Round(q.TotalMarks * q.PassingPercentage / 100.0),
-                PassingPercentage = q.PassingPercentage,
-                TimeLimitMinutes = q.TimeLimitMinutes,
-                MaxAttempts = q.MaxAttempts,
-                ShuffleQuestions = q.ShuffleQuestions,
-                ShuffleOptions = q.ShuffleOptions,
-                Status = q.Status,
-                CreatedAt = q.CreatedAt.ToString("yyyy-MM-dd"),
-                UpdatedAt = q.UpdatedAt.ToString("yyyy-MM-dd"),
-            })
             .ToListAsync();
 
+        var quizzes = rows.Select(MapQuizToDto).ToList();
         return Ok(ApiResponseDto<List<QuizDto>>.SuccessResponse(quizzes));
     }
 
@@ -66,6 +43,7 @@ public class QuizzesController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<QuizDto>>> GetQuiz(Guid id)
     {
         var quiz = await _db.Quizzes
+            .AsNoTracking()
             .Include(q => q.Module)
             .Include(q => q.QuizQuestions)
             .FirstOrDefaultAsync(q => q.Id == id);
@@ -73,34 +51,7 @@ public class QuizzesController : ControllerBase
         if (quiz == null)
             return NotFound(ApiResponseDto<QuizDto>.ErrorResponse("Quiz not found"));
 
-        var dto = new QuizDto
-        {
-            Id = quiz.Id,
-            Title = quiz.Title,
-            Description = quiz.Description,
-            Module = quiz.Module.ModuleName,
-            ModuleCode = quiz.Module.ModuleCode,
-            Intake = quiz.Intake,
-            Questions = quiz.QuizQuestions.OrderBy(qq => qq.SortOrder).Select(qq => new QuizQuestionDto
-            {
-                QuestionId = qq.QuestionId.ToString(),
-                Order = qq.SortOrder,
-                Marks = qq.Marks,
-            }).ToList(),
-            TotalQuestions = quiz.QuizQuestions.Count,
-            TotalMarks = quiz.TotalMarks,
-            PassingMarks = (int)Math.Round(quiz.TotalMarks * quiz.PassingPercentage / 100.0),
-            PassingPercentage = quiz.PassingPercentage,
-            TimeLimitMinutes = quiz.TimeLimitMinutes,
-            MaxAttempts = quiz.MaxAttempts,
-            ShuffleQuestions = quiz.ShuffleQuestions,
-            ShuffleOptions = quiz.ShuffleOptions,
-            Status = quiz.Status,
-            CreatedAt = quiz.CreatedAt.ToString("yyyy-MM-dd"),
-            UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
-        };
-
-        return Ok(ApiResponseDto<QuizDto>.SuccessResponse(dto));
+        return Ok(ApiResponseDto<QuizDto>.SuccessResponse(MapQuizToDto(quiz)));
     }
 
     // GET /api/quizzes/{id}/questions - get full question details for a quiz (for quiz attempt page)
@@ -168,8 +119,21 @@ public class QuizzesController : ControllerBase
         if (dto.Questions.Count == 0)
             return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("At least one question is required"));
 
-        // calculate total marks from questions
-        var totalMarks = dto.Questions.Sum(q => q.Marks);
+        if (dto.Questions.Select(q => q.QuestionId).Distinct().Count() != dto.Questions.Count)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Each question may only appear once in a quiz."));
+
+        var questionIds = dto.Questions.Select(q => q.QuestionId).Distinct().ToList();
+        var existingIds = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id))
+            .Select(q => q.Id)
+            .ToListAsync();
+        if (existingIds.Count != questionIds.Count)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "One or more question IDs are invalid. Use each question's API id (GUID), not the display code."));
+
+        var marksByQuestion = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id))
+            .ToDictionaryAsync(q => q.Id, q => q.Marks);
 
         var quiz = new Quiz
         {
@@ -177,7 +141,6 @@ public class QuizzesController : ControllerBase
             Description = dto.Description,
             ModuleId = dto.ModuleId,
             Intake = dto.Intake,
-            TotalMarks = totalMarks,
             PassingPercentage = dto.PassingPercentage,
             TimeLimitMinutes = dto.TimeLimitMinutes,
             MaxAttempts = dto.MaxAttempts,
@@ -186,21 +149,25 @@ public class QuizzesController : ControllerBase
             Status = dto.Status,
         };
 
-        // add questions to quiz
-        foreach (var qq in dto.Questions)
+        // QuizQuestion.Marks must be 1–100; frontend may send 0 — fall back to question bank marks.
+        foreach (var qq in dto.Questions.OrderBy(x => x.Order))
         {
+            var marks = qq.Marks < 1
+                ? Math.Clamp(marksByQuestion.GetValueOrDefault(qq.QuestionId, 5), 1, 100)
+                : Math.Clamp(qq.Marks, 1, 100);
             quiz.QuizQuestions.Add(new QuizQuestion
             {
                 QuestionId = qq.QuestionId,
                 SortOrder = qq.Order,
-                Marks = qq.Marks,
+                Marks = marks,
             });
         }
+
+        quiz.TotalMarks = quiz.QuizQuestions.Sum(x => x.Marks);
 
         _db.Quizzes.Add(quiz);
         await _db.SaveChangesAsync();
 
-        // return created quiz
         var result = new QuizDto
         {
             Id = quiz.Id,
@@ -215,6 +182,8 @@ public class QuizzesController : ControllerBase
             PassingPercentage = quiz.PassingPercentage,
             TimeLimitMinutes = quiz.TimeLimitMinutes,
             MaxAttempts = quiz.MaxAttempts,
+            ShuffleQuestions = quiz.ShuffleQuestions,
+            ShuffleOptions = quiz.ShuffleOptions,
             Status = quiz.Status,
             CreatedAt = quiz.CreatedAt.ToString("yyyy-MM-dd"),
             UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
@@ -242,5 +211,40 @@ public class QuizzesController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok(ApiResponseDto<bool>.SuccessResponse(true, "Quiz deleted successfully"));
+    }
+
+    private static QuizDto MapQuizToDto(Quiz q)
+    {
+        var moduleName = q.Module?.ModuleName ?? string.Empty;
+        var moduleCode = q.Module?.ModuleCode ?? string.Empty;
+        return new QuizDto
+        {
+            Id = q.Id,
+            Title = q.Title,
+            Description = q.Description,
+            Module = moduleName,
+            ModuleCode = moduleCode,
+            Intake = q.Intake ?? string.Empty,
+            Questions = q.QuizQuestions
+                .OrderBy(qq => qq.SortOrder)
+                .Select(qq => new QuizQuestionDto
+                {
+                    QuestionId = qq.QuestionId.ToString(),
+                    Order = qq.SortOrder,
+                    Marks = qq.Marks,
+                })
+                .ToList(),
+            TotalQuestions = q.QuizQuestions.Count,
+            TotalMarks = q.TotalMarks,
+            PassingMarks = (int)Math.Round(q.TotalMarks * q.PassingPercentage / 100.0),
+            PassingPercentage = q.PassingPercentage,
+            TimeLimitMinutes = q.TimeLimitMinutes,
+            MaxAttempts = q.MaxAttempts,
+            ShuffleQuestions = q.ShuffleQuestions,
+            ShuffleOptions = q.ShuffleOptions,
+            Status = q.Status,
+            CreatedAt = q.CreatedAt.ToString("yyyy-MM-dd"),
+            UpdatedAt = q.UpdatedAt.ToString("yyyy-MM-dd"),
+        };
     }
 }
