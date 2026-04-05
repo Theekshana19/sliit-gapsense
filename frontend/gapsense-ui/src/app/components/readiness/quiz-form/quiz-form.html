@@ -112,7 +112,7 @@
           [class]="moduleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select module</option>
-          @for (mod of moduleList; track mod.id) {
+          @for (mod of moduleList(); track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>

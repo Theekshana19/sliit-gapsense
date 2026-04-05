@@ -166,7 +166,15 @@ public class QuizzesController : ControllerBase
         quiz.TotalMarks = quiz.QuizQuestions.Sum(x => x.Marks);
 
         _db.Quizzes.Add(quiz);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "Could not save the quiz. Check that the module and every question id exist in the database."));
+        }
 
         var result = new QuizDto
         {

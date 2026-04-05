@@ -155,9 +155,23 @@ export class ReadinessService {
 
   // get modules from curriculum API for dropdowns (returns real data from backend)
   getModuleList(): Observable<ModuleInfo[]> {
-    return this.http
-      .get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`).pipe(
+      map((res) => ReadinessService.normalizeModuleList(res?.data))
+    );
+  }
+
+  /** Ensures stable `id` strings (camelCase or PascalCase JSON) and drops invalid rows. */
+  private static normalizeModuleList(data: unknown): ModuleInfo[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map((row: Record<string, unknown>) => ({
+        id: String(row['id'] ?? row['Id'] ?? ''),
+        moduleCode: String(row['moduleCode'] ?? row['ModuleCode'] ?? ''),
+        moduleName: String(row['moduleName'] ?? row['ModuleName'] ?? ''),
+      }))
+      .filter((m) => m.id.length > 0);
   }
 
   // get topics from curriculum API for dropdowns
@@ -233,11 +247,14 @@ export class ReadinessService {
 
   // create a new quiz — body matches CreateQuizDto (moduleId + questions required)
   createQuiz(quiz: Partial<Quiz> & { moduleId?: string }): Observable<Quiz> {
-    const questions = (quiz.questions ?? []).map((q, index) => ({
-      questionId: q.questionId,
-      order: q.order ?? index + 1,
-      marks: q.marks ?? 0,
-    }));
+    const questions = (quiz.questions ?? []).map((q, index) => {
+      const m = q.marks ?? 5;
+      return {
+        questionId: q.questionId,
+        order: q.order ?? index + 1,
+        marks: Math.max(1, Math.min(100, m)),
+      };
+    });
 
     const body = {
       title: (quiz.title ?? '').trim(),

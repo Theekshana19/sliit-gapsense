@@ -48,8 +48,8 @@ export class QuizFormComponent implements OnInit {
   totalAttempts = signal(1);
   passThreshold = signal(40);
 
-  // real module list from API (with GUIDs)
-  moduleList: { id: string; moduleCode: string; moduleName: string }[] = [];
+  // real module list from API (with GUIDs) — signal + deferred updates avoid NG0100 after HTTP
+  moduleList = signal<{ id: string; moduleCode: string; moduleName: string }[]>([]);
 
   // track if user tried to go next or submit (shows errors)
   stepSubmitted = signal(false);
@@ -100,15 +100,21 @@ export class QuizFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    // load real modules from API
+    // Defer signal updates to the next microtask so dev-mode CD verification does not see
+    // module/options appear mid-check (NG0100 on <option [value]="mod.id">).
     this.readinessService.getModuleList().subscribe({
-      next: (mods) => { this.moduleList = mods; },
-      error: () => { console.error('Failed to load modules'); },
+      next: (mods) => {
+        queueMicrotask(() => this.moduleList.set(mods));
+      },
+      error: () => {
+        console.error('Failed to load modules');
+      },
     });
 
     this.readinessService.getQuestions().subscribe({
       next: (questions) => {
-        this.availableQuestions.set(questions.filter((q) => q.status === 'Active'));
+        const active = questions.filter((q) => q.status === 'Active');
+        queueMicrotask(() => this.availableQuestions.set(active));
       },
       error: () => {
         this.toastService.error('Could not load questions. Check the API and try again.');
@@ -135,7 +141,7 @@ export class QuizFormComponent implements OnInit {
   // when user selects a module from the dropdown
   onModuleSelect(id: string) {
     this.moduleId.set(id);
-    const mod = this.moduleList.find((m) => m.id === id);
+    const mod = this.moduleList().find((m) => m.id === id);
     if (mod) {
       this.module.set(mod.moduleName);
       this.moduleCode.set(mod.moduleCode);
