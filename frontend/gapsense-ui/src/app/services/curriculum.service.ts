@@ -282,9 +282,9 @@ export class CurriculumService {
 
   // get all validation alerts
   getValidationAlerts(): Observable<ValidationAlert[]> {
-    return this.http
-      .get<ApiResponse<ValidationAlert[]>>(`${this.apiUrl}/validation-alerts`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<ValidationAlert[]>>(`${this.apiUrl}/validation-alerts`).pipe(
+      map((res) => (res.success && res.data ? res.data : []))
+    );
   }
 
   // get validation stats

@@ -1,0 +1,73 @@
+<app-member-shell>
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h2 class="font-headline text-2xl font-extrabold text-on-surface">Reports and export</h2>
+      <p class="mt-2 max-w-3xl text-sm text-on-surface-variant">
+        All rows from <code class="rounded bg-surface-container-high px-1 text-xs">GET /api/readiness-results</code>.
+        Download individual PDFs or export the table as CSV (generated in the browser from live API data).
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="exportCsv()"
+      [disabled]="isLoading() || rows().length === 0"
+      class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-high px-4 py-2.5 text-sm font-bold text-on-surface disabled:opacity-50"
+    >
+      <span class="material-symbols-outlined text-base">download</span>
+      Export CSV
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && rows().length === 0) {
+    <div class="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center shadow-sm">
+      <p class="font-headline text-lg font-bold text-on-surface">No readiness results</p>
+      <p class="mt-2 text-sm text-on-surface-variant">Populate <code class="text-xs">ReadinessResults</code> to see data here.</p>
+    </div>
+  }
+
+  @if (!isLoading() && rows().length > 0) {
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/40 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            <th class="py-3 px-4">Student</th>
+            <th class="py-3 px-4">Module</th>
+            <th class="py-3 px-4 text-center">Score</th>
+            <th class="py-3 px-4">Risk</th>
+            <th class="py-3 px-4 text-center">Weak topics</th>
+            <th class="py-3 px-4 text-right">PDF</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20">
+          @for (r of rows(); track r.id) {
+            <tr class="hover:bg-surface-container-low/80">
+              <td class="px-4 py-3">
+                <p class="font-semibold text-on-surface">{{ r.studentName }}</p>
+                <p class="text-xs text-on-surface-variant">{{ r.studentId }}</p>
+              </td>
+              <td class="px-4 py-3 text-on-surface">{{ r.moduleCode }}</td>
+              <td class="px-4 py-3 text-center font-bold">{{ r.totalScorePercent }}%</td>
+              <td class="px-4 py-3">
+                <app-pill-badge [label]="r.riskLevel" [variant]="riskVariant(r.riskLevel)" />
+              </td>
+              <td class="px-4 py-3 text-center">{{ r.weakTopicsCount }}</td>
+              <td class="px-4 py-3 text-right">
+                <button
+                  type="button"
+                  (click)="downloadPdf(r)"
+                  class="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white hover:opacity-90"
+                >
+                  PDF
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-member-shell>

@@ -147,29 +147,34 @@ export const routes: Routes = [
     path: 'reports-export',
     canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
     loadComponent: () =>
-      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
-    data: { title: 'Reports and Export' },
+      import('./pages/admin/reports-export/reports-export').then((m) => m.ReportsExportComponent),
   },
   {
     path: 'notification-center',
     canActivate: [authGuard, roleGuard(ADMIN_ROLES)],
     loadComponent: () =>
-      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
-    data: { title: 'Notification Center Page' },
+      import('./pages/admin/notification-center/notification-center').then((m) => m.NotificationCenterComponent),
+  },
+  {
+    path: 'intervention-planning',
+    canActivate: [authGuard, roleGuard(ADMIN_AND_LECTURER_ROLES)],
+    loadComponent: () =>
+      import('./pages/monitoring/intervention-planning/intervention-planning').then(
+        (m) => m.InterventionPlanningComponent
+      ),
   },
   {
     path: 'follow-up-management',
-    canActivate: [authGuard, roleGuard(LECTURER_ROLES)],
-    loadComponent: () =>
-      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
-    data: { title: 'Follow - Up Management' },
+    redirectTo: '/intervention-planning',
+    pathMatch: 'full',
   },
   {
     path: 'high-risk-monitoring',
-    canActivate: [authGuard, roleGuard(LECTURER_ROLES)],
+    canActivate: [authGuard, roleGuard(ADMIN_AND_LECTURER_ROLES)],
     loadComponent: () =>
-      import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
-    data: { title: 'High risk student monitoring page' },
+      import('./pages/monitoring/high-risk-monitoring/high-risk-monitoring').then(
+        (m) => m.HighRiskMonitoringComponent
+      ),
   },
   {
     path: 'curriculum',
@@ -180,12 +185,6 @@ export const routes: Routes = [
         path: 'lecturer-assignment',
         loadComponent: () =>
           import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
-      },
-      {
-        path: 'create-assignment',
-        loadComponent: () =>
-          import('./pages/shell/backend-pending-page.component').then((m) => m.BackendPendingPageComponent),
-        data: { title: 'Create New Assignment' },
       },
       {
         path: 'module-management',

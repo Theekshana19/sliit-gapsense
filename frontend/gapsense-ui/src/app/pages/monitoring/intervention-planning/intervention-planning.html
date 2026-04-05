@@ -1,0 +1,127 @@
+<app-member-shell>
+  <div class="mb-6">
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface">Intervention planning</h2>
+    <p class="mt-2 max-w-3xl text-sm text-on-surface-variant">
+      Create and review student follow-ups stored in
+      <code class="rounded bg-surface-container-high px-1 text-xs">StudentInterventions</code>
+      (<code class="rounded bg-surface-container-high px-1 text-xs">GET/POST /api/StudentInterventions</code>). Use the
+      student’s <strong>user account ID</strong> (GUID from your user directory), not the display registration number.
+    </p>
+  </div>
+
+  <div class="mb-8 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+      <h3 class="font-headline text-base font-bold text-on-surface">Record follow-up</h3>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Student user ID (GUID)</label>
+          <input
+            type="text"
+            [(ngModel)]="formStudentUserId"
+            class="mt-1 w-full rounded-lg border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-sm"
+            placeholder="00000000-0000-0000-0000-000000000000"
+          />
+        </div>
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Title</label>
+          <input
+            type="text"
+            [(ngModel)]="formTitle"
+            class="mt-1 w-full rounded-lg border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-sm"
+            placeholder="e.g. Week 4 check-in"
+          />
+        </div>
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Notes</label>
+          <textarea
+            [(ngModel)]="formNotes"
+            rows="3"
+            class="mt-1 w-full rounded-lg border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-sm"
+            placeholder="Optional details"
+          ></textarea>
+        </div>
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Status</label>
+          <select
+            [(ngModel)]="formStatus"
+            class="mt-1 w-full rounded-lg border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-sm"
+          >
+            <option value="open">open</option>
+            <option value="closed">closed</option>
+          </select>
+        </div>
+        <button
+          type="button"
+          (click)="submit()"
+          [disabled]="saving()"
+          class="btn-primary-gradient w-full rounded-xl py-2.5 text-sm font-bold disabled:opacity-50"
+        >
+          {{ saving() ? 'Saving…' : 'Save intervention' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+      <h3 class="font-headline text-base font-bold text-on-surface">Filter list</h3>
+      <p class="mt-1 text-xs text-on-surface-variant">Leave empty to load all interventions visible to your role.</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <input
+          type="text"
+          [(ngModel)]="filterStudentUserId"
+          class="min-w-[12rem] flex-1 rounded-lg border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-sm"
+          placeholder="Filter by student user GUID"
+        />
+        <button
+          type="button"
+          (click)="applyFilter()"
+          class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white"
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          (click)="clearFilter()"
+          class="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-16"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/40 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            <th class="py-3 px-4">Created</th>
+            <th class="py-3 px-4">Student user</th>
+            <th class="py-3 px-4">Title</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20">
+          @for (i of items(); track i.id) {
+            <tr class="align-top hover:bg-surface-container-low/80">
+              <td class="whitespace-nowrap px-4 py-3 text-xs text-on-surface-variant">{{ i.createdAtUtc | date: 'medium' }}</td>
+              <td class="px-4 py-3 font-mono text-xs text-on-surface">{{ i.studentUserId }}</td>
+              <td class="px-4 py-3 font-medium text-on-surface">{{ i.title }}</td>
+              <td class="px-4 py-3">
+                <app-pill-badge [label]="i.status" [variant]="statusVariant(i.status)" />
+              </td>
+              <td class="max-w-md px-4 py-3 text-xs text-on-surface-variant">{{ i.notes || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (items().length === 0) {
+        <p class="px-4 py-8 text-center text-sm text-on-surface-variant">No interventions yet.</p>
+      }
+    </div>
+  }
+</app-member-shell>

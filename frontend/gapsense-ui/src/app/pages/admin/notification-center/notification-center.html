@@ -1,0 +1,67 @@
+<app-member-shell>
+  <div class="mb-6">
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface">Notification center</h2>
+    <p class="mt-2 max-w-3xl text-sm text-on-surface-variant">
+      Operational signals from real APIs: curriculum
+      <code class="rounded bg-surface-container-high px-1 text-xs">GET /api/validation-alerts</code>
+      and staff follow-ups
+      <code class="rounded bg-surface-container-high px-1 text-xs">GET /api/StudentInterventions</code>
+      (all interventions visible to admins). This is not an email inbox—only in-app data.
+    </p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading()) {
+    <div class="grid gap-8 lg:grid-cols-2">
+      <section class="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+        <h3 class="font-headline text-base font-bold text-on-surface">Curriculum validation alerts</h3>
+        <p class="mt-1 text-xs text-on-surface-variant">{{ alerts().length }} row(s)</p>
+        <ul class="mt-4 space-y-3">
+          @for (a of alerts(); track a.id) {
+            <li class="rounded-lg border border-outline-variant/40 p-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <app-pill-badge [label]="a.severity" [variant]="severityVariant(a.severity)" />
+                <app-pill-badge [label]="a.status" variant="neutral" />
+                <span class="text-xs text-on-surface-variant">{{ a.moduleCode }}</span>
+              </div>
+              <p class="mt-2 text-sm font-medium text-on-surface">{{ a.type }}</p>
+              <p class="mt-1 text-xs text-on-surface-variant">{{ a.description }}</p>
+              <p class="mt-2 text-[10px] uppercase tracking-wider text-on-surface-variant">
+                {{ a.createdAt }}
+              </p>
+            </li>
+          }
+        </ul>
+        @if (alerts().length === 0) {
+          <p class="mt-4 text-sm text-on-surface-variant">No validation alerts.</p>
+        }
+      </section>
+
+      <section class="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-sm">
+        <h3 class="font-headline text-base font-bold text-on-surface">Recent staff follow-ups</h3>
+        <p class="mt-1 text-xs text-on-surface-variant">{{ interventions().length }} intervention(s)</p>
+        <ul class="mt-4 space-y-3">
+          @for (i of interventions(); track i.id) {
+            <li class="rounded-lg border border-outline-variant/40 p-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <app-pill-badge [label]="i.status" [variant]="interventionStatusVariant(i.status)" />
+                <span class="font-mono text-[10px] text-on-surface-variant">{{ i.studentUserId }}</span>
+              </div>
+              <p class="mt-2 text-sm font-semibold text-on-surface">{{ i.title }}</p>
+              @if (i.notes) {
+                <p class="mt-1 text-xs text-on-surface-variant">{{ i.notes }}</p>
+              }
+              <p class="mt-2 text-[10px] text-on-surface-variant">{{ i.createdAtUtc | date: 'medium' }}</p>
+            </li>
+          }
+        </ul>
+        @if (interventions().length === 0) {
+          <p class="mt-4 text-sm text-on-surface-variant">No interventions recorded.</p>
+        }
+      </section>
+    </div>
+  }
+</app-member-shell>

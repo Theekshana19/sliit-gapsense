@@ -1,0 +1,65 @@
+<app-member-shell>
+  <div class="mb-6">
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface">High-risk student monitoring</h2>
+    <p class="mt-2 max-w-3xl text-sm text-on-surface-variant">
+      Students whose latest persisted readiness diagnostic is marked <strong>high</strong> risk (from
+      <code class="rounded bg-surface-container-high px-1 text-xs">ReadinessResults</code> via
+      <code class="rounded bg-surface-container-high px-1 text-xs">GET /api/readiness-results</code>). Export PDFs use
+      <code class="rounded bg-surface-container-high px-1 text-xs">/export-pdf</code> per row.
+    </p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-20"><app-loading-spinner size="lg" /></div>
+  }
+
+  @if (!isLoading() && highRiskRows().length === 0) {
+    <div class="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-8 text-center shadow-sm">
+      <p class="font-headline text-lg font-bold text-on-surface">No high-risk readiness rows</p>
+      <p class="mt-2 text-sm text-on-surface-variant">
+        When readiness diagnostics are stored with risk level &quot;high&quot;, they will appear here.
+      </p>
+    </div>
+  }
+
+  @if (!isLoading() && highRiskRows().length > 0) {
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/40 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            <th class="py-3 px-4">Student</th>
+            <th class="py-3 px-4">Module</th>
+            <th class="py-3 px-4 text-center">Score</th>
+            <th class="py-3 px-4">Risk</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20">
+          @for (r of highRiskRows(); track r.id) {
+            <tr class="hover:bg-surface-container-low/80">
+              <td class="px-4 py-3">
+                <p class="font-semibold text-on-surface">{{ r.studentName }}</p>
+                <p class="text-xs text-on-surface-variant">{{ r.studentId }}</p>
+              </td>
+              <td class="px-4 py-3 text-on-surface">{{ r.moduleCode }}</td>
+              <td class="px-4 py-3 text-center font-bold text-on-surface">{{ r.totalScorePercent }}%</td>
+              <td class="px-4 py-3">
+                <app-pill-badge [label]="r.riskLevel" variant="error" />
+                <p class="mt-1 max-w-xs text-xs text-on-surface-variant line-clamp-2">{{ r.riskDescription }}</p>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <button
+                  type="button"
+                  (click)="downloadPdf(r)"
+                  class="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white hover:opacity-90"
+                >
+                  PDF
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-member-shell>

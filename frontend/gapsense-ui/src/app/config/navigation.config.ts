@@ -77,9 +77,15 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     roles: ['admin'],
   },
   {
-    label: 'Create New Assignment',
-    routerLink: '/curriculum/create-assignment',
-    icon: 'add_task',
+    label: 'Intervention planning',
+    routerLink: '/intervention-planning',
+    icon: 'health_and_safety',
+    roles: ['admin'],
+  },
+  {
+    label: 'High-risk monitoring',
+    routerLink: '/high-risk-monitoring',
+    icon: 'crisis_alert',
     roles: ['admin'],
   },
 
@@ -127,15 +133,15 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     roles: ['lecturer'],
   },
   {
-    label: 'High risk student monitoring page',
+    label: 'High-risk monitoring',
     routerLink: '/high-risk-monitoring',
     icon: 'crisis_alert',
     roles: ['lecturer'],
   },
   {
-    label: 'Follow - Up Management',
-    routerLink: '/follow-up-management',
-    icon: 'follow_the_signs',
+    label: 'Intervention planning',
+    routerLink: '/intervention-planning',
+    icon: 'health_and_safety',
     roles: ['lecturer'],
   },
 
