@@ -16,10 +16,14 @@ namespace GapSense.API.Controllers;
 public class QuizzesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
+    private readonly ILogger<QuizzesController> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public QuizzesController(ApplicationDbContext db)
+    public QuizzesController(ApplicationDbContext db, ILogger<QuizzesController> logger, IWebHostEnvironment env)
     {
         _db = db;
+        _logger = logger;
+        _env = env;
     }
 
     // GET /api/quizzes - get all quizzes
@@ -140,6 +144,13 @@ public class QuizzesController : ControllerBase
             return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
                 "One or more question IDs are invalid. Use each question's API id (GUID), not the display code."));
 
+        var wrongModule = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id) && q.ModuleId != dto.ModuleId)
+            .AnyAsync();
+        if (wrongModule)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "Every selected question must belong to the module you chose for this quiz."));
+
         var marksByQuestion = await _db.Questions
             .Where(q => questionIds.Contains(q.Id))
             .ToDictionaryAsync(q => q.Id, q => q.Marks);
@@ -155,7 +166,7 @@ public class QuizzesController : ControllerBase
             MaxAttempts = dto.MaxAttempts,
             ShuffleQuestions = dto.ShuffleQuestions,
             ShuffleOptions = dto.ShuffleOptions,
-            Status = string.IsNullOrWhiteSpace(dto.Status) ? "Draft" : dto.Status,
+            Status = NormalizeQuizStatus(dto.Status),
         };
 
         // QuizQuestion.Marks must be 1–100; frontend may send 0 — fall back to question bank marks.
@@ -179,10 +190,15 @@ public class QuizzesController : ControllerBase
         {
             await _db.SaveChangesAsync();
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException ex)
         {
-            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
-                "Could not save the quiz. Check that the module and every question id exist in the database."));
+            _logger.LogWarning(ex, "CreateQuiz SaveChanges failed");
+            var message =
+                "Could not save the quiz. Check that the module and every question id exist in the database.";
+            List<string>? errors = null;
+            if (_env.IsDevelopment() && !string.IsNullOrWhiteSpace(ex.InnerException?.Message))
+                errors = new List<string> { ex.InnerException.Message };
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(message, errors));
         }
         catch (Exception)
         {
@@ -235,6 +251,21 @@ public class QuizzesController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok(ApiResponseDto<bool>.SuccessResponse(true, "Quiz deleted successfully"));
+    }
+
+    private static string NormalizeQuizStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return "Draft";
+        var s = status.Trim();
+        string[] allowed = ["Draft", "Published", "Scheduled", "Active", "Closed"];
+        foreach (var a in allowed)
+        {
+            if (string.Equals(a, s, StringComparison.OrdinalIgnoreCase))
+                return a;
+        }
+
+        return "Draft";
     }
 
     private static QuizDto MapQuizToDto(Quiz q)

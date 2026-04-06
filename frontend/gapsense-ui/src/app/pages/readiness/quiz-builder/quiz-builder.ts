@@ -50,7 +50,10 @@ export class QuizBuilderComponent {
       const body = err.error;
       if (body && typeof body === 'object') {
         const msg = (body as { message?: string }).message;
+        const apiErrors = (body as { errors?: string[] }).errors;
+        if (msg && apiErrors?.[0]) return `${msg} ${apiErrors[0]}`;
         if (msg) return msg;
+        if (apiErrors?.[0]) return apiErrors[0];
         const errors = (body as { errors?: Record<string, string[]> }).errors;
         if (errors) {
           const first = Object.values(errors).flat()[0];

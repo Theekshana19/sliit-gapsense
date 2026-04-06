@@ -61,7 +61,7 @@ export class ReadinessService {
 
     return this.http
       .get<ApiResponse<Question[]>>(`${this.apiUrl}/questions`, { params })
-      .pipe(map((res) => res.data));
+      .pipe(map((res) => ReadinessService.normalizeQuestionList(res?.data)));
   }
 
   // get a single question by id
@@ -160,6 +160,22 @@ export class ReadinessService {
     );
   }
 
+  /** Ensures each question has API `id` (GUID) and display `questionId` after JSON binding. */
+  private static normalizeQuestionList(data: unknown): Question[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map((row) => {
+        const r = row as Record<string, unknown>;
+        const q = row as Question;
+        const id = String(r['id'] ?? r['Id'] ?? q.id ?? '');
+        const questionId = String(r['questionId'] ?? r['QuestionId'] ?? q.questionId ?? '');
+        return { ...q, id, questionId };
+      })
+      .filter((q) => q.id.length > 0);
+  }
+
   /** Ensures stable `id` strings (camelCase or PascalCase JSON) and drops invalid rows. */
   private static normalizeModuleList(data: unknown): ModuleInfo[] {
     if (!Array.isArray(data)) {
@@ -247,14 +263,18 @@ export class ReadinessService {
 
   // create a new quiz — body matches CreateQuizDto (moduleId + questions required)
   createQuiz(quiz: Partial<Quiz> & { moduleId?: string }): Observable<Quiz> {
-    const questions = (quiz.questions ?? []).map((q, index) => {
-      const m = q.marks ?? 5;
-      return {
-        questionId: q.questionId,
-        order: q.order ?? index + 1,
-        marks: Math.max(1, Math.min(100, m)),
-      };
-    });
+    const questions = (quiz.questions ?? [])
+      .map((q, index) => {
+        const row = q as Quiz['questions'][number] & { id?: string };
+        const rawId = String(row.id ?? row.questionId ?? '').trim();
+        const m = q.marks ?? 5;
+        return {
+          questionId: rawId,
+          order: q.order ?? index + 1,
+          marks: Math.max(1, Math.min(100, m)),
+        };
+      })
+      .filter((x) => x.questionId.length > 0);
 
     const body = {
       title: (quiz.title ?? '').trim(),

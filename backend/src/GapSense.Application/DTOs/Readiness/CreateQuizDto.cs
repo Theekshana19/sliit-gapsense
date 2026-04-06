@@ -30,6 +30,7 @@ public class CreateQuizDto
     public bool ShuffleQuestions { get; set; } = false;
     public bool ShuffleOptions { get; set; } = false;
 
+    [StringLength(20)]
     public string Status { get; set; } = "Draft";
 
     // questions to include in this quiz
