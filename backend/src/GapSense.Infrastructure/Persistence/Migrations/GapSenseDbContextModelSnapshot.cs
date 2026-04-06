@@ -22,6 +22,396 @@ namespace GapSense.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GapSense.Domain.Entities.InAppNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LecturerProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerProfileId", "CreatedAt");
+
+                    b.HasIndex("LecturerProfileId", "IsRead");
+
+                    b.ToTable("InAppNotifications", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000001"),
+                            CreatedAt = new DateTime(2026, 4, 6, 10, 58, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "INTE 3123 — 3 students flagged for follow-up this week.",
+                            Title = "High-risk student detected",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000002"),
+                            CreatedAt = new DateTime(2026, 4, 6, 10, 42, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Batch SE-24 — attendance below 75% threshold.",
+                            Title = "Low attendance warning",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000003"),
+                            CreatedAt = new DateTime(2026, 4, 6, 9, 30, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Mid-term average dropped vs last semester in Data Structures.",
+                            Title = "Low performance alert",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000004"),
+                            CreatedAt = new DateTime(2026, 4, 6, 8, 30, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Assignment 02 marks published for INTE 3123.",
+                            Title = "Marks uploaded",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000005"),
+                            CreatedAt = new DateTime(2026, 4, 6, 7, 30, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "12 new submissions pending review for Week 5 lab.",
+                            Title = "Assignment submitted",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000006"),
+                            CreatedAt = new DateTime(2026, 4, 5, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Learning outcomes revised for INTE 3123 — please review.",
+                            Title = "Module updated",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000007"),
+                            CreatedAt = new DateTime(2026, 4, 5, 8, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Lecture tomorrow 9:00 AM — Hall B-204.",
+                            Title = "Upcoming lecture",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000008"),
+                            CreatedAt = new DateTime(2026, 4, 5, 7, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Faculty curriculum sync in 45 minutes (Teams).",
+                            Title = "Meeting reminder",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000009"),
+                            CreatedAt = new DateTime(2026, 4, 4, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "3 intervention plans due for review by Friday.",
+                            Title = "Intervention follow-up",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000010"),
+                            CreatedAt = new DateTime(2026, 4, 4, 10, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Semester risk summary PDF is ready to download.",
+                            Title = "Report generated",
+                            Type = 3
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000011"),
+                            CreatedAt = new DateTime(2026, 4, 3, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "Your notification preferences were saved successfully.",
+                            Title = "Settings updated",
+                            Type = 3
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-4000-8000-000000000012"),
+                            CreatedAt = new DateTime(2026, 4, 2, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsRead = false,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Message = "5 students enrolled in INTE 3123 for Semester 2.",
+                            Title = "New student added",
+                            Type = 3
+                        });
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerAcademicSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("AssignedFaculty")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DefaultModule")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LecturerProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerProfileId")
+                        .IsUnique();
+
+                    b.ToTable("LecturerAcademicSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-4000-8000-000000000002"),
+                            AcademicYear = "2025/2026",
+                            AssignedFaculty = "Faculty of Computing — Software Engineering",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DefaultModule = "INTE 3123 — Data Structures & Algorithms",
+                            IsActive = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            Semester = "Semester 1"
+                        });
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerNotificationSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AssignmentReminders")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("EmailAlerts")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LecturerProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("StudentRiskAlerts")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("WeeklyReports")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerProfileId")
+                        .IsUnique();
+
+                    b.ToTable("LecturerNotificationSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-4000-8000-000000000003"),
+                            AssignmentReminders = false,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            EmailAlerts = true,
+                            IsActive = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            StudentRiskAlerts = true,
+                            WeeklyReports = true
+                        });
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("LecturerProfiles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-4000-8000-000000000001"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Faculty of Computing",
+                            Email = "nimal.perera@sliit.lk",
+                            FullName = "Dr. Nimal Perera",
+                            IsActive = true,
+                            PhoneNumber = "+94 77 123 4567"
+                        });
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerSecuritySettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLogoutAllDevicesUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("LecturerProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerProfileId")
+                        .IsUnique();
+
+                    b.ToTable("LecturerSecuritySettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-4000-8000-000000000004"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            LecturerProfileId = new Guid("00000000-0000-4000-8000-000000000001"),
+                            TwoFactorEnabled = false
+                        });
+                });
+
             modelBuilder.Entity("GapSense.Domain.Entities.ReadinessResult", b =>
                 {
                     b.Property<Guid>("Id")
@@ -161,6 +551,61 @@ namespace GapSense.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("RiskThresholds", (string)null);
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.InAppNotification", b =>
+                {
+                    b.HasOne("GapSense.Domain.Entities.LecturerProfile", "LecturerProfile")
+                        .WithMany("InAppNotifications")
+                        .HasForeignKey("LecturerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LecturerProfile");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerAcademicSettings", b =>
+                {
+                    b.HasOne("GapSense.Domain.Entities.LecturerProfile", "LecturerProfile")
+                        .WithOne("AcademicSettings")
+                        .HasForeignKey("GapSense.Domain.Entities.LecturerAcademicSettings", "LecturerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LecturerProfile");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerNotificationSettings", b =>
+                {
+                    b.HasOne("GapSense.Domain.Entities.LecturerProfile", "LecturerProfile")
+                        .WithOne("NotificationSettings")
+                        .HasForeignKey("GapSense.Domain.Entities.LecturerNotificationSettings", "LecturerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LecturerProfile");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerSecuritySettings", b =>
+                {
+                    b.HasOne("GapSense.Domain.Entities.LecturerProfile", "LecturerProfile")
+                        .WithOne("SecuritySettings")
+                        .HasForeignKey("GapSense.Domain.Entities.LecturerSecuritySettings", "LecturerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LecturerProfile");
+                });
+
+            modelBuilder.Entity("GapSense.Domain.Entities.LecturerProfile", b =>
+                {
+                    b.Navigation("AcademicSettings");
+
+                    b.Navigation("InAppNotifications");
+
+                    b.Navigation("NotificationSettings");
+
+                    b.Navigation("SecuritySettings");
                 });
 #pragma warning restore 612, 618
         }

@@ -66,6 +66,10 @@
               "target": "Package",
               "version": "[8.*, )"
             },
+            "Microsoft.Extensions.Identity.Core": {
+              "target": "Package",
+              "version": "[8.*, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.4.0, )"
@@ -161,6 +165,10 @@
             "FluentValidation": {
               "target": "Package",
               "version": "[11.*, )"
+            },
+            "Microsoft.Extensions.Identity.Core": {
+              "target": "Package",
+              "version": "[8.*, )"
             }
           },
           "imports": [

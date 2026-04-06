@@ -6,6 +6,7 @@ using GapSense.Application.Services;
 using GapSense.Application.Validators;
 using GapSense.Infrastructure.Persistence;
 using GapSense.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GapSense.API.Extensions;
@@ -14,6 +15,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddGapSense(this IServiceCollection services, IConfiguration config)
     {
+        services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
+
         services.AddDbContext<GapSenseDbContext>(opt =>
         {
             opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
@@ -26,14 +29,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReadinessResultRepository, ReadinessResultRepository>();
         services.AddScoped<IReadinessResultService, ReadinessResultService>();
 
-        // Validation
+        services.AddScoped<ILecturerProfileRepository, LecturerProfileRepository>();
+        services.AddScoped<ILecturerProfileService, LecturerProfileService>();
+        services.AddScoped<ILecturerAcademicSettingsRepository, LecturerAcademicSettingsRepository>();
+        services.AddScoped<ILecturerAcademicSettingsService, LecturerAcademicSettingsService>();
+        services.AddScoped<ILecturerNotificationSettingsRepository, LecturerNotificationSettingsRepository>();
+        services.AddScoped<ILecturerNotificationSettingsService, LecturerNotificationSettingsService>();
+        services.AddScoped<ILecturerSecuritySettingsRepository, LecturerSecuritySettingsRepository>();
+        services.AddScoped<ILecturerSecuritySettingsService, LecturerSecuritySettingsService>();
+        services.AddScoped<IInAppNotificationRepository, InAppNotificationRepository>();
+        services.AddScoped<IInAppNotificationService, InAppNotificationService>();
+
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssemblyContaining<CreateRiskThresholdRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<UpdateRiskThresholdRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<CreateRecommendationRuleRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<UpdateRecommendationRuleRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<CreateReadinessResultRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<UpdateReadinessResultRequestValidator>();
 
         return services;
     }

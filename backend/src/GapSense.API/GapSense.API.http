@@ -1,6 +1,43 @@
 @GapSense.API_HostAddress = http://localhost:5120
+@DemoLecturerId = 00000000-0000-4000-8000-000000000001
 
-GET {{GapSense.API_HostAddress}}/weatherforecast/
+### Health: list risk thresholds
+GET {{GapSense.API_HostAddress}}/api/RiskThresholds
 Accept: application/json
 
 ###
+### Lecturer profiles
+GET {{GapSense.API_HostAddress}}/api/LecturerProfiles
+Accept: application/json
+
+###
+GET {{GapSense.API_HostAddress}}/api/LecturerProfiles/{{DemoLecturerId}}
+Accept: application/json
+
+###
+### Academic settings by lecturer (demo seed)
+GET {{GapSense.API_HostAddress}}/api/LecturerAcademicSettings/by-lecturer/{{DemoLecturerId}}
+Accept: application/json
+
+###
+### Notification preferences (email toggles — not the bell inbox)
+GET {{GapSense.API_HostAddress}}/api/LecturerNotificationSettings/by-lecturer/{{DemoLecturerId}}
+Accept: application/json
+
+###
+### Security settings (password hash not returned)
+GET {{GapSense.API_HostAddress}}/api/LecturerSecuritySettings/by-lecturer/{{DemoLecturerId}}
+Accept: application/json
+
+###
+### In-app notifications (bell / notifications page)
+GET {{GapSense.API_HostAddress}}/api/Notifications?lecturerProfileId={{DemoLecturerId}}
+Accept: application/json
+
+###
+GET {{GapSense.API_HostAddress}}/api/Notifications/unread-count?lecturerProfileId={{DemoLecturerId}}
+Accept: application/json
+
+###
+### Swagger UI
+GET {{GapSense.API_HostAddress}}/swagger/index.html

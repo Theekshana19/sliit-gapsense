@@ -27,6 +27,7 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             var (statusCode, message) = ex switch
             {
                 ValidationException => (HttpStatusCode.BadRequest, "Validation failed."),
+                InvalidOperationException iox => (HttpStatusCode.BadRequest, iox.Message),
                 DbUpdateException { InnerException: SqlException } => (HttpStatusCode.Conflict, "Database update failed."),
                 _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred."),
             };

@@ -12,6 +12,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<GapSense.API.Middlewares.ExceptionHandlingMiddleware>();
 builder.Services.AddGapSense(builder.Configuration);
 
+builder.Services.AddCors(o =>
+{
+    o.AddDefaultPolicy(p =>
+        p.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,6 +30,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<GapSense.API.Middlewares.ExceptionHandlingMiddleware>();
+app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

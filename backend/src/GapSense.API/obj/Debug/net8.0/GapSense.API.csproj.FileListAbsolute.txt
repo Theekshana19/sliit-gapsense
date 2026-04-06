@@ -154,3 +154,6 @@ H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\ru\Microso
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+H:\Gap sense\sliit-gapsense\backend\src\GapSense.API\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll

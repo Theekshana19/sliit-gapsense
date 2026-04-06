@@ -13,6 +13,7 @@
           "GapSense.Domain": "1.0.0",
           "GapSense.Infrastructure": "1.0.0",
           "Microsoft.EntityFrameworkCore.Design": "8.0.25",
+          "Microsoft.Extensions.Identity.Core": "8.0.25",
           "Swashbuckle.AspNetCore": "6.4.0"
         },
         "runtime": {
@@ -83,6 +84,25 @@
           "lib/net6.0/Humanizer.dll": {
             "assemblyVersion": "2.14.0.0",
             "fileVersion": "2.14.1.48190"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Cryptography.Internal/8.0.25": {
+        "runtime": {
+          "lib/net8.0/Microsoft.AspNetCore.Cryptography.Internal.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.2526.11225"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Cryptography.KeyDerivation/8.0.25": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Cryptography.Internal": "8.0.25"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.2526.11225"
           }
         }
       },
@@ -457,6 +477,19 @@
           "lib/net8.0/Microsoft.Extensions.DependencyModel.dll": {
             "assemblyVersion": "8.0.0.2",
             "fileVersion": "8.0.1024.46610"
+          }
+        }
+      },
+      "Microsoft.Extensions.Identity.Core/8.0.25": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Cryptography.KeyDerivation": "8.0.25",
+          "Microsoft.Extensions.Logging": "8.0.1",
+          "Microsoft.Extensions.Options": "8.0.2"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Identity.Core.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.2526.11225"
           }
         }
       },
@@ -867,7 +900,8 @@
       "GapSense.Application/1.0.0": {
         "dependencies": {
           "FluentValidation": "11.12.0",
-          "GapSense.Domain": "1.0.0"
+          "GapSense.Domain": "1.0.0",
+          "Microsoft.Extensions.Identity.Core": "8.0.25"
         },
         "runtime": {
           "GapSense.Application.dll": {
@@ -946,6 +980,20 @@
       "sha512": "sha512-lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.Cryptography.Internal/8.0.25": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IoE2tChwISkEiyv1Oq+C+xA87+3xME+xnmjw+r8OqrPVdzC5ZkQeAr+YybCpTIo6SZ7//gmGHQ+mp/Y6SUSCNA==",
+      "path": "microsoft.aspnetcore.cryptography.internal/8.0.25",
+      "hashPath": "microsoft.aspnetcore.cryptography.internal.8.0.25.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation/8.0.25": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PSOLzI+yra39A+zZT/PRqYafnNBCfWQaGOOS1qb5NvgONnHndVbmxSWMFCaoGNS1RrlyeJToW3K1dBhgz4gNsg==",
+      "path": "microsoft.aspnetcore.cryptography.keyderivation/8.0.25",
+      "hashPath": "microsoft.aspnetcore.cryptography.keyderivation.8.0.25.nupkg.sha512"
     },
     "Microsoft.Bcl.AsyncInterfaces/6.0.0": {
       "type": "package",
@@ -1058,6 +1106,13 @@
       "sha512": "sha512-mUBDZZRgZrSyFOsJ2qJJ9fXfqd/kXJwf3AiDoqLD9m6TjY5OO/vLNOb9fb4juC0487eq4hcGN/M2Rh/CKS7QYw==",
       "path": "microsoft.extensions.dependencymodel/8.0.2",
       "hashPath": "microsoft.extensions.dependencymodel.8.0.2.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Identity.Core/8.0.25": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XLIzBCO7i0S+ODGovqnVNNhXCx0IyQ5OweuOx+cDgGCnOZJmGB0A+u1roO5WjkaTEQ4vp6QYkPlaKW7SmuplEA==",
+      "path": "microsoft.extensions.identity.core/8.0.25",
+      "hashPath": "microsoft.extensions.identity.core.8.0.25.nupkg.sha512"
     },
     "Microsoft.Extensions.Logging/8.0.1": {
       "type": "package",
