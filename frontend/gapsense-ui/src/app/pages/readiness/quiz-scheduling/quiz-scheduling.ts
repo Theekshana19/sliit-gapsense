@@ -1,7 +1,8 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../services/readiness.service';
 import { ToastService } from '../../../services/toast.service';
@@ -12,12 +13,13 @@ import { Quiz, QuizSchedule, ResultVisibility } from '../../../models/readiness/
 @Component({
   selector: 'app-quiz-scheduling',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent, FormsModule],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, FormsModule],
   templateUrl: './quiz-scheduling.html',
 })
 export class QuizSchedulingComponent implements OnInit {
   private readinessService = inject(ReadinessService);
   private toastService = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   isLoading = signal(true);
   schedules = signal<QuizSchedule[]>([]);
@@ -37,11 +39,17 @@ export class QuizSchedulingComponent implements OnInit {
   get draftCount() { return this.schedules().filter(s => s.status === 'Draft').length; }
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe((params) => {
+      const id = params.get('quizId');
+      if (id) this.selectedQuizId.set(id);
+    });
+
     this.loadSchedules();
-    // load quizzes for the dropdown
     this.readinessService.getQuizzes().subscribe({
       next: (data) => this.quizzes.set(data),
-      error: () => console.error('Failed to load quizzes'),
+      error: () => {
+        this.toastService.error('Failed to load quizzes');
+      },
     });
   }
 
@@ -80,14 +88,16 @@ export class QuizSchedulingComponent implements OnInit {
     }
 
     // create a new schedule for the selected quiz
-    this.readinessService.createSchedule({
-      quizId: this.selectedQuizId(),
-      startDate: this.startDate(),
-      endDate: this.endDate(),
-      maxAttempts: this.attemptLimit(),
-      resultVisibility: this.resultVisibility(),
-      status: 'Published',
-    } as any).subscribe({
+    this.readinessService
+      .createSchedule({
+        quizId: this.selectedQuizId(),
+        startDate: this.startDate(),
+        endDate: this.endDate(),
+        maxAttempts: this.attemptLimit(),
+        resultVisibility: this.resultVisibility(),
+        status: 'Published',
+      })
+      .subscribe({
       next: () => {
         this.toastService.success('Quiz scheduled and published!');
         this.onDiscard();

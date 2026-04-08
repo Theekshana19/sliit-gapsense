@@ -1,0 +1,24 @@
+@let t = tone();
+<div
+  class="p-6 rounded-xl border-l-4 flex gap-4"
+  [class.bg-red-50]="t === 'warning'"
+  [class.border-red-600]="t === 'warning'"
+  [class.bg-amber-50]="t === 'info'"
+  [class.border-amber-500]="t === 'info'"
+  [class.bg-emerald-50]="t === 'success'"
+  [class.border-emerald-600]="t === 'success'">
+  @if (t === 'warning') {
+    <span class="material-symbols-outlined shrink-0 text-red-600">warning</span>
+  } @else if (t === 'info') {
+    <span class="material-symbols-outlined shrink-0 text-amber-600">info</span>
+  } @else {
+    <span class="material-symbols-outlined shrink-0 text-emerald-600">check_circle</span>
+  }
+  <p
+    class="text-sm font-semibold leading-relaxed"
+    [class.text-red-900]="t === 'warning'"
+    [class.text-amber-900]="t === 'info'"
+    [class.text-emerald-900]="t === 'success'">
+    {{ message() }}
+  </p>
+</div>

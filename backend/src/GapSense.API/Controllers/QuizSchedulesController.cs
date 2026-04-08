@@ -1,6 +1,8 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GapSense.Infrastructure.Data;
+using GapSense.Infrastructure.Persistence;
 using GapSense.Domain.Entities;
 using GapSense.Application.DTOs.Common;
 using GapSense.Application.DTOs.Readiness;
@@ -10,25 +12,41 @@ namespace GapSense.API.Controllers;
 // handles quiz scheduling - when quizzes are available for students
 // base route: /api/quiz-schedules
 [ApiController]
+[Authorize]
 [Route("api/quiz-schedules")]
 public class QuizSchedulesController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public QuizSchedulesController(AppDbContext db)
+    public QuizSchedulesController(ApplicationDbContext db)
     {
         _db = db;
     }
 
-    // GET /api/quiz-schedules - get all schedules
+    // GET /api/quiz-schedules — lecturers/admins see all; students only see open windows (published/scheduled/active, today in range)
     [HttpGet]
     public async Task<ActionResult<ApiResponseDto<List<QuizScheduleDto>>>> GetSchedules()
     {
-        var schedules = await _db.QuizSchedules
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        var isStudent = string.Equals(role, "student", StringComparison.OrdinalIgnoreCase);
+        var todayUtc = DateTime.UtcNow.Date;
+
+        var query = _db.QuizSchedules
             .Include(qs => qs.Quiz)
                 .ThenInclude(q => q.Module)
             .Include(qs => qs.Quiz)
                 .ThenInclude(q => q.QuizQuestions)
+            .AsQueryable();
+
+        if (isStudent)
+        {
+            query = query.Where(qs =>
+                (qs.Status == "Published" || qs.Status == "Scheduled" || qs.Status == "Active")
+                && qs.StartDate.Date <= todayUtc
+                && qs.EndDate.Date >= todayUtc);
+        }
+
+        var schedules = await query
             .OrderByDescending(qs => qs.CreatedAt)
             .Select(qs => new QuizScheduleDto
             {

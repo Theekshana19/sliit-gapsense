@@ -1,5 +1,5 @@
 <!-- topic weight configuration page -->
-<app-main-layout pageTitle="Topic Weight Configuration" breadcrumb="Curriculum > Weight Config" [showSearch]="false">
+<app-member-shell>
   <div class="grid grid-cols-12 gap-6">
 
     <!-- LEFT SIDEBAR - module info and validation (4 cols) -->
@@ -116,7 +116,7 @@
                     </div>
                   </td>
                   <td class="py-4 px-5">
-                    <app-status-badge [label]="entry.importanceLevel" [variant]="getImportanceVariant(entry.importanceLevel)" />
+                    <app-pill-badge [label]="entry.importanceLevel" [variant]="getImportanceVariant(entry.importanceLevel)" />
                   </td>
                   <td class="py-4 px-5">
                     <span class="text-xs text-on-surface-variant">{{ entry.lastUpdated }}</span>
@@ -143,4 +143,4 @@
       }
     </div>
   </div>
-</app-main-layout>
+</app-member-shell>

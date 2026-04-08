@@ -5,6 +5,7 @@
   <div class="flex items-center gap-4">
     @for (step of [1, 2, 3]; track step) {
       <button
+        type="button"
         (click)="goToStep(step)"
         class="flex items-center gap-2"
       >
@@ -46,15 +47,22 @@
   <!-- step navigation buttons -->
   <div class="flex gap-3">
     <button
+      type="button"
+      (click)="saveDraft()"
+      [disabled]="isSaving()"
       class="px-4 py-2 rounded-xl text-sm font-medium bg-surface-container-high
-             text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+             text-on-surface-variant hover:bg-surface-container-highest transition-colors
+             disabled:opacity-50 disabled:pointer-events-none"
     >
       Save Draft
     </button>
     @if (currentStep() < 3) {
       <button
+        type="button"
         (click)="nextStep()"
-        class="px-5 py-2 rounded-xl text-sm font-bold btn-primary-gradient"
+        [disabled]="isSaving()"
+        class="px-5 py-2 rounded-xl text-sm font-bold btn-primary-gradient
+               disabled:opacity-50 disabled:pointer-events-none"
       >
         Next Step
       </button>
@@ -104,7 +112,7 @@
           [class]="moduleError() ? 'ring-2 ring-error/30' : 'focus:ring-primary/20'"
         >
           <option value="">Select module</option>
-          @for (mod of moduleList; track mod.id) {
+          @for (mod of moduleList(); track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
@@ -188,7 +196,7 @@
 
               <!-- difficulty badge -->
               <td class="py-3 px-4">
-                <app-status-badge [label]="question.difficulty" [variant]="getDifficultyVariant(question.difficulty)" />
+                <app-pill-badge [label]="question.difficulty" [variant]="getDifficultyVariant(question.difficulty)" />
               </td>
 
               <!-- marks -->
@@ -275,8 +283,11 @@
     <!-- submit button -->
     <div class="mt-8 flex justify-end">
       <button
+        type="button"
         (click)="onSubmit()"
-        class="px-6 py-3 rounded-xl text-sm font-bold btn-primary-gradient"
+        [disabled]="isSaving()"
+        class="px-6 py-3 rounded-xl text-sm font-bold btn-primary-gradient
+               disabled:opacity-50 disabled:pointer-events-none"
       >
         <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">publish</span>
         Create Quiz

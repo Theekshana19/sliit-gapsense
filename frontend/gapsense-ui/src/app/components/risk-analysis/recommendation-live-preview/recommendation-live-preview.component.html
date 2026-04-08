@@ -1,0 +1,45 @@
+<div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+  <div class="bg-blue-900 px-8 py-5">
+    <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-white/80">Rule Live Preview</h4>
+  </div>
+  <div class="p-8 space-y-8">
+    <div class="flex items-start gap-5">
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-900 shrink-0">
+        <span class="material-symbols-outlined text-3xl">lightbulb</span>
+      </div>
+      <div class="space-y-1 min-w-0">
+        <p class="text-[10px] font-extrabold text-blue-900 uppercase tracking-widest">Recommended Action</p>
+        <p class="text-base font-bold text-slate-900 leading-tight break-words">
+          @if (recommendationTitle()) {
+            Prompt: {{ recommendationTitle() }}
+          } @else {
+            <span class="text-slate-400 font-medium">Enter a recommendation title</span>
+          }
+        </p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Trigger</p>
+        <p class="text-sm font-extrabold text-blue-900">{{ triggerLabel() || '—' }}</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Priority</p>
+        <p class="text-sm font-extrabold text-slate-700">{{ priorityLabel() || '—' }}</p>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-100 flex items-center gap-3">
+      <div class="flex -space-x-2">
+        <div class="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600">
+          {{ moduleCode().slice(0, 2) || '—' }}
+        </div>
+        <div class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-700">
+          {{ topicAbbrev() }}
+        </div>
+      </div>
+      <span class="text-[10px] font-bold text-slate-400">
+        Target: {{ moduleCode() || '—' }} / {{ topicLabel() || '—' }}
+      </span>
+    </div>
+  </div>
+</div>

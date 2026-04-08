@@ -1,10 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
-import { ModalComponent } from '../../../components/ui/modal/modal';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
+import { CurriculumOverlayModalComponent } from '../../../components/ui/curriculum-overlay-modal/curriculum-overlay-modal.component';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
 import { SemesterOffering, OfferingStats } from '../../../models/curriculum/semester-offering.model';
@@ -14,7 +14,14 @@ import { Module } from '../../../models/curriculum/module.model';
 @Component({
   selector: 'app-semester-offerings',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent, ConfirmDialogComponent, ModalComponent, FormsModule],
+  imports: [
+    MemberShellComponent,
+    PillBadgeComponent,
+    LoadingSpinnerComponent,
+    ConfirmPromptDialogComponent,
+    CurriculumOverlayModalComponent,
+    FormsModule,
+  ],
   templateUrl: './semester-offerings.html',
 })
 export class SemesterOfferingsComponent implements OnInit {

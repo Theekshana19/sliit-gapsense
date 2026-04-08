@@ -165,12 +165,17 @@
           (change)="onModuleSelect($any($event.target).value)"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
                  focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          [class.ring-2]="moduleError()"
+          [class.ring-error]="moduleError()"
         >
           <option value="">Select module</option>
-          @for (mod of moduleList; track mod.id) {
+          @for (mod of moduleList(); track mod.id) {
             <option [value]="mod.id">{{ mod.moduleCode }} - {{ mod.moduleName }}</option>
           }
         </select>
+        @if (moduleError()) {
+          <p class="text-[11px] text-error font-medium mt-1">{{ moduleError() }}</p>
+        }
       </div>
 
       <!-- topic input -->
@@ -269,16 +274,24 @@
     <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
       <!-- save button -->
       <button
+        type="button"
         (click)="onSubmit()"
-        class="w-full py-3 rounded-xl text-sm font-bold btn-primary-gradient mb-3"
-        [class.opacity-50]="submitted() && !isFormValid()"
+        [disabled]="isSubmitting()"
+        class="w-full py-3.5 rounded-xl text-sm font-bold btn-primary-gradient mb-3 inline-flex items-center justify-center gap-2 min-h-[48px]"
+        [class.opacity-50]="(submitted() && !isFormValid()) || isSubmitting()"
       >
-        <span class="material-symbols-outlined mr-1" style="font-size: 18px; vertical-align: middle;">save</span>
-        Save Question
+        @if (isSubmitting()) {
+          <span class="inline-block size-4 rounded-full border-2 border-on-primary/30 border-t-on-primary animate-spin" aria-hidden="true"></span>
+          Saving…
+        } @else {
+          <span class="material-symbols-outlined" style="font-size: 20px;">save</span>
+          Save question
+        }
       </button>
 
       <!-- cancel button -->
       <button
+        type="button"
         (click)="onCancel()"
         class="w-full py-3 rounded-xl text-sm font-semibold bg-surface-container-high
                text-on-surface-variant hover:bg-surface-container-highest transition-colors"
@@ -286,9 +299,8 @@
         Cancel Changes
       </button>
 
-      <!-- last saved timestamp -->
-      <p class="text-[10px] text-on-surface-variant text-center mt-3">
-        Last saved: just now
+      <p class="text-[10px] text-on-surface-variant text-center mt-3 leading-relaxed">
+        Choose a module, fill options, mark the correct answer, then save. You will return to the question list when it succeeds.
       </p>
     </div>
 

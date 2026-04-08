@@ -1,0 +1,70 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-8 min-h-screen bg-slate-50/50">
+  @if (profileSvc.exportNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">download</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ profileSvc.exportNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissExportNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (profileSvc.notifyNotice()) {
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-emerald-800 shrink-0">mail</span>
+      <p class="text-sm font-semibold text-emerald-900 flex-1">{{ profileSvc.notifyNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-emerald-100 rounded shrink-0" (click)="dismissNotifyNotice()">
+        <span class="material-symbols-outlined text-emerald-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="max-w-7xl mx-auto">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Student Readiness Profile</h1>
+        <p class="text-slate-600 font-medium">
+          Deep analysis of academic preparedness and risk trajectory.
+        </p>
+      </div>
+      <app-student-profile-header-actions
+        (exportPdf)="onExportPdf()"
+        (notifyStudent)="onNotifyStudent()" />
+    </header>
+
+    <div class="mb-8">
+      <app-student-profile-filter-bar />
+    </div>
+
+    @if (profileSvc.profile(); as vm) {
+      <div class="grid grid-cols-12 gap-6">
+        <section class="col-span-12 lg:col-span-4">
+          <app-student-profile-summary-card [summary]="vm.summary" />
+        </section>
+        <section class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <app-student-risk-level-card [riskLevel]="vm.riskLevel" />
+          <app-student-academic-credentials [credentials]="vm.credentials" />
+          <div class="col-span-1 md:col-span-2">
+            <app-student-topic-mastery-overview
+              [overallPercent]="vm.topicMastery.overallPercent"
+              [proficientLabel]="vm.topicMastery.proficientLabel"
+              [lastAssessmentText]="vm.topicMastery.lastAssessmentText"
+              [items]="vm.topicMastery.items" />
+          </div>
+        </section>
+        <section class="col-span-12">
+          <app-student-assessment-trajectory
+            [items]="vm.assessmentTrajectory.items"
+            [canNavigatePrev]="vm.assessmentTrajectory.canNavigatePrev"
+            [canNavigateNext]="vm.assessmentTrajectory.canNavigateNext"
+            (navigatePrev)="onNavigatePrev()"
+            (navigateNext)="onNavigateNext()" />
+        </section>
+      </div>
+    } @else {
+      <p class="text-sm text-slate-600 py-8">Select semester, batch, group, and student to load the profile.</p>
+    }
+  </div>
+</main>
+<app-footer />

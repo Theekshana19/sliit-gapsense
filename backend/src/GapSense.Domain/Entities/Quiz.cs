@@ -5,7 +5,7 @@ namespace GapSense.Domain.Entities;
 
 // represents a readiness quiz that students take before starting a module
 // a quiz contains multiple questions selected from the question bank
-[Table("Quizzes")]
+// Table name is ReadinessQuizzes (configured in EF) so LegacyQuizzes can own the old Quizzes rows.
 public class Quiz
 {
     [Key]

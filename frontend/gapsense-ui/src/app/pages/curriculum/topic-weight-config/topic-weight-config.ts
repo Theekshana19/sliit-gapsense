@@ -1,8 +1,8 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
@@ -14,7 +14,7 @@ import { Module } from '../../../models/curriculum/module.model';
 @Component({
   selector: 'app-topic-weight-config',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent, FormsModule],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, FormsModule],
   templateUrl: './topic-weight-config.html',
 })
 export class TopicWeightConfigComponent implements OnInit {

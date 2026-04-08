@@ -1,0 +1,75 @@
+<div class="flex flex-wrap gap-4 items-end">
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">Semester</label>
+    <div class="relative">
+      <select
+        class="appearance-none bg-slate-100 border-0 rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-blue-800 min-w-[200px] cursor-pointer"
+        [value]="svc.semesterId() ?? ''"
+        (change)="onSemesterChange($any($event.target).value)">
+        @for (s of svc.allSemesters; track s.id) {
+          <option [value]="s.id">{{ s.label }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-500 pointer-events-none text-lg">expand_more</span>
+    </div>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">Batch / Intake</label>
+    <div class="relative">
+      <select
+        class="appearance-none bg-slate-100 border-0 rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-blue-800 min-w-[180px] cursor-pointer disabled:opacity-50"
+        [disabled]="svc.batchOptions().length === 0"
+        [value]="svc.batchId() ?? ''"
+        (change)="onBatchChange($any($event.target).value)">
+        @for (b of svc.batchOptions(); track b.id) {
+          <option [value]="b.id">{{ b.label }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-500 pointer-events-none text-lg">expand_more</span>
+    </div>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">Group</label>
+    <div class="relative">
+      <select
+        class="appearance-none bg-slate-100 border-0 rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-blue-800 min-w-[140px] cursor-pointer disabled:opacity-50"
+        [disabled]="svc.groupOptions().length === 0"
+        [value]="svc.groupId() ?? ''"
+        (change)="onGroupChange($any($event.target).value)">
+        @for (g of svc.groupOptions(); track g.id) {
+          <option [value]="g.id">{{ g.label }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-500 pointer-events-none text-lg">expand_more</span>
+    </div>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">Student</label>
+    <div class="relative">
+      <select
+        class="appearance-none bg-slate-100 border-0 rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-blue-800 min-w-[240px] cursor-pointer disabled:opacity-50"
+        [disabled]="svc.studentOptions().length === 0"
+        [value]="svc.studentId() ?? ''"
+        (change)="onStudentChange($any($event.target).value)">
+        @for (st of svc.studentOptions(); track st.id) {
+          <option [value]="st.id">{{ st.label }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-500 pointer-events-none text-lg">expand_more</span>
+    </div>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">Module</label>
+    <div class="relative">
+      <select
+        class="appearance-none bg-slate-100 border-0 rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-blue-800 min-w-[200px] cursor-pointer"
+        [value]="svc.moduleId() ?? ''"
+        (change)="onModuleChange($any($event.target).value)">
+        @for (m of svc.allModules; track m.id) {
+          <option [value]="m.id">{{ m.label }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-500 pointer-events-none text-lg">expand_more</span>
+    </div>
+  </div>
+</div>

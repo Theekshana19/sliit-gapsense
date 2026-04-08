@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PrerequisiteFormComponent } from '../../../components/curriculum/prerequisite-form/prerequisite-form';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
@@ -10,7 +10,7 @@ import { Prerequisite } from '../../../models/curriculum/prerequisite.model';
 @Component({
   selector: 'app-prerequisite-mapping',
   standalone: true,
-  imports: [MainLayoutComponent, PrerequisiteFormComponent],
+  imports: [MemberShellComponent, PrerequisiteFormComponent],
   templateUrl: './prerequisite-mapping.html',
 })
 export class PrerequisiteMappingComponent {

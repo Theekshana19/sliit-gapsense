@@ -1,0 +1,15 @@
+<div class="bg-white rounded-xl p-8 flex flex-col justify-between border border-slate-200/80 shadow-sm min-h-[180px]">
+  <div class="flex justify-between items-start mb-6">
+    <span class="text-slate-600 font-semibold text-sm uppercase tracking-wider">Weak Topics</span>
+    <span class="material-symbols-outlined text-slate-500">spellcheck</span>
+  </div>
+  <div class="flex items-center gap-6 flex-wrap">
+    <span class="text-7xl font-extrabold text-slate-900 tabular-nums">{{ summary().count }}</span>
+    <div class="space-y-1 min-w-0">
+      <p class="text-xs font-bold text-red-700 bg-red-100/80 px-2 py-0.5 rounded w-fit">
+        {{ summary().severityLabel }}
+      </p>
+      <p class="text-xs text-slate-600 font-medium">{{ summary().helperText }}</p>
+    </div>
+  </div>
+</div>

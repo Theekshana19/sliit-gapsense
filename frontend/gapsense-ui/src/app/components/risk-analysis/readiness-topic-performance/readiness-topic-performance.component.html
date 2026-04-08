@@ -1,0 +1,25 @@
+<div class="bg-white rounded-xl p-8 border border-slate-200/80 shadow-sm h-full">
+  <h3 class="font-bold text-xl mb-6 flex items-center gap-2 text-slate-900">
+    <span class="material-symbols-outlined text-blue-800">list_alt</span>
+    Topic Performance Distribution
+  </h3>
+  <div class="space-y-6">
+    @for (row of items(); track row.topicName) {
+      <div>
+        <div class="flex justify-between mb-2 gap-2">
+          <span class="text-sm font-bold text-slate-900">{{ row.topicName }}</span>
+          <span class="text-sm font-bold tabular-nums shrink-0" [class]="percentLabelClass(row)">
+            {{ row.percent }}%
+          </span>
+        </div>
+        <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+          <div
+            class="h-full rounded-full transition-[width] duration-300"
+            [class]="barClass(row)"
+            [class.opacity-60]="row.barVariant !== 'critical'"
+            [style.width.%]="row.percent"></div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-slate-50/50">
+  @if (analysisSvc.exportNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">info</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ analysisSvc.exportNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissExportNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (analysisSvc.deployNotice()) {
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-emerald-800 shrink-0">rocket_launch</span>
+      <p class="text-sm font-semibold text-emerald-900 flex-1">{{ analysisSvc.deployNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-emerald-100 rounded shrink-0" (click)="dismissDeployNotice()">
+        <span class="material-symbols-outlined text-emerald-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <header class="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-10">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Weak Topic Analysis</h1>
+      <p class="text-slate-600 font-medium max-w-2xl">
+        Granular breakdown of pedagogical gaps based on real-time student performance and risk vectors.
+      </p>
+    </div>
+    <app-weak-topic-filter-bar />
+  </header>
+
+  @if (analysisSvc.analysis(); as vm) {
+    <app-weak-topic-summary-cards [summary]="vm.summary" />
+    <app-weak-topic-matrix-table [rows]="vm.matrixRows" (exportDetailedPdf)="onExportMatrixPdf()" />
+    <section class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <app-weak-topic-intervention-strategy
+        [intervention]="vm.intervention"
+        (deployRecommendations)="onDeployRecommendations()" />
+      <app-weak-topic-projection-panel
+        [projection]="vm.projection"
+        [studentLabel]="analysisSvc.selectedStudentLabel()" />
+    </section>
+  } @else {
+    <p class="text-sm text-slate-600">Select semester, batch, group, student, and module to load the analysis.</p>
+  }
+</main>

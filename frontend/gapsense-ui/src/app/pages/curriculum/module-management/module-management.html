@@ -1,10 +1,5 @@
 <!-- module management page -->
-<app-main-layout
-  pageTitle="Module Management"
-  breadcrumb="Curriculum > Modules"
-  searchPlaceholder="Search modules..."
-  (searchChange)="onSearch($event)"
->
+<app-member-shell>
   <!-- stats cards -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <!-- total credit hours -->
@@ -101,7 +96,7 @@
               <td class="py-4 px-5"><span class="text-xs text-on-surface">{{ mod.semester }}</span></td>
               <td class="py-4 px-5"><span class="text-sm font-bold text-on-surface">{{ mod.credits }}</span></td>
               <td class="py-4 px-5">
-                <app-status-badge [label]="mod.status" [variant]="getStatusVariant(mod.status)" />
+                <app-pill-badge [label]="mod.status" [variant]="getStatusVariant(mod.status)" />
               </td>
               <td class="py-4 px-5">
                 <div class="flex items-center gap-1">
@@ -135,8 +130,8 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Archive Module"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Archive Module"
     message="Are you sure you want to archive this module? It will be hidden from active listings."
     confirmLabel="Archive" [danger]="true" icon="archive"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
-</app-main-layout>
+</app-member-shell>

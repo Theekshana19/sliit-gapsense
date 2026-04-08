@@ -1,0 +1,56 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 pt-24 px-8 pb-24 min-h-screen bg-slate-50/50">
+  @if (pathSvc.downloadPdfNotice()) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">download</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ pathSvc.downloadPdfNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissDownloadNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+  @if (pathSvc.retakeNotice()) {
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-emerald-800 shrink-0">quiz</span>
+      <p class="text-sm font-semibold text-emerald-900 flex-1">{{ pathSvc.retakeNotice() }}</p>
+      <button type="button" class="p-1 hover:bg-emerald-100 rounded shrink-0" (click)="dismissRetakeNotice()">
+        <span class="material-symbols-outlined text-emerald-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="max-w-5xl mx-auto">
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Personalized Learning Path</h1>
+      <p class="text-slate-600 font-medium">
+        Curated academic journey to bridge knowledge gaps based on your risk profile.
+      </p>
+    </header>
+
+    @let vm = pathSvc.viewModel();
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="md:col-span-2">
+        <app-learning-path-summary-card [summary]="vm.summary" />
+      </div>
+      <div>
+        <app-learning-path-resume-card
+          [item]="vm.resumeItem"
+          (continue)="onContinueLearning()" />
+      </div>
+    </div>
+
+    <app-learning-path-timeline
+      [steps]="vm.steps"
+      (viewPerformanceSummary)="onViewPerformanceSummary($event)"
+      (resumeResource)="onResumeResource($event)" />
+
+    <div class="mt-16">
+      <app-learning-path-footer-actions
+        [config]="vm.footerActions"
+        (downloadPdf)="onDownloadPdf()"
+        (retakeTest)="onRetakeTest()" />
+    </div>
+  </div>
+</main>
+<app-learning-path-fab (help)="onFabHelp()" />

@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { TopicFormComponent } from '../../../components/curriculum/topic-form/topic-form';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { CurriculumService } from '../../../services/curriculum.service';
@@ -11,7 +11,7 @@ import { Topic } from '../../../models/curriculum/topic.model';
 @Component({
   selector: 'app-add-edit-topic',
   standalone: true,
-  imports: [MainLayoutComponent, TopicFormComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, TopicFormComponent, LoadingSpinnerComponent],
   templateUrl: './add-edit-topic.html',
 })
 export class AddEditTopicComponent implements OnInit {

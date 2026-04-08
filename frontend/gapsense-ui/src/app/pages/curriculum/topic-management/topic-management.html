@@ -1,5 +1,5 @@
 <!-- topic management page -->
-<app-main-layout pageTitle="Topic Management" [breadcrumb]="'Curriculum > ' + (module()?.moduleCode || 'Module') + ' > Topics'" searchPlaceholder="Search topics...">
+<app-member-shell>
 
   <!-- module header card with gradient -->
   @if (module()) {
@@ -85,7 +85,7 @@
                 </div>
               </td>
               <td class="py-4 px-5">
-                <app-status-badge [label]="topic.status" [variant]="getStatusVariant(topic.status)" />
+                <app-pill-badge [label]="topic.status" [variant]="getStatusVariant(topic.status)" />
               </td>
               <td class="py-4 px-5">
                 <div class="flex items-center gap-1">
@@ -135,8 +135,8 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Delete Topic"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Delete Topic"
     message="Are you sure you want to delete this topic? This will affect readiness evaluations."
     confirmLabel="Delete" [danger]="true" icon="delete"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
-</app-main-layout>
+</app-member-shell>

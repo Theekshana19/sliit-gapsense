@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { DependencyNode, DependencyEdge } from '../../../models/curriculum/prerequisite.model';
@@ -9,7 +9,7 @@ import { DependencyNode, DependencyEdge } from '../../../models/curriculum/prere
 @Component({
   selector: 'app-dependency-visualization',
   standalone: true,
-  imports: [MainLayoutComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, LoadingSpinnerComponent],
   templateUrl: './dependency-visualization.html',
 })
 export class DependencyVisualizationComponent implements OnInit {

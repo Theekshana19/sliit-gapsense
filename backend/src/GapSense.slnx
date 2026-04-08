@@ -1,6 +1,6 @@
 <Solution>
-  <Project Path="GapSense.API\GapSense.API.csproj" />
-  <Project Path="GapSense.Application\GapSense.Application.csproj" />
-  <Project Path="GapSense.Domain\GapSense.Domain.csproj" />
-  <Project Path="GapSense.Infrastructure\GapSense.Infrastructure.csproj" />
+  <Project Path="GapSense.API/GapSense.API.csproj" />
+  <Project Path="GapSense.Application/GapSense.Application.csproj" />
+  <Project Path="GapSense.Domain/GapSense.Domain.csproj" />
+  <Project Path="GapSense.Infrastructure/GapSense.Infrastructure.csproj" />
 </Solution>

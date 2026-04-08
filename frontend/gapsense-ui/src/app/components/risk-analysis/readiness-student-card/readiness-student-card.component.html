@@ -1,0 +1,33 @@
+<div class="bg-white rounded-xl p-8 relative overflow-hidden border border-slate-200/80 shadow-sm">
+  <div class="absolute top-0 right-0 w-32 h-32 bg-blue-900/5 rounded-bl-full -mr-8 -mt-8"></div>
+  <div class="relative z-10">
+    <div class="flex items-center gap-4 mb-8">
+      <div
+        class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200/60">
+        <span class="text-blue-900 font-bold text-2xl">{{ summary().initials }}</span>
+      </div>
+      <div class="min-w-0">
+        <h2 class="text-2xl font-bold text-slate-900 truncate">{{ summary().studentName }}</h2>
+        <span class="text-slate-600 text-sm font-medium">ID: {{ summary().studentId }}</span>
+      </div>
+    </div>
+    <div class="space-y-0">
+      <div class="flex justify-between items-center py-3 border-b border-slate-200/60">
+        <span class="text-slate-600 text-sm">Module</span>
+        <span class="text-slate-900 font-bold">{{ summary().moduleCode }}</span>
+      </div>
+      <div class="flex justify-between items-center py-3 border-b border-slate-200/60">
+        <span class="text-slate-600 text-sm">Semester</span>
+        <span class="text-slate-900 font-bold text-right">{{ summary().semesterLabel }}</span>
+      </div>
+      <div class="flex justify-between items-center py-3 border-b border-slate-200/60">
+        <span class="text-slate-600 text-sm">Attempt #</span>
+        <span class="text-slate-900 font-bold">{{ summary().attemptLabel }}</span>
+      </div>
+      <div class="flex justify-between items-center py-3">
+        <span class="text-slate-600 text-sm">Analysis Date</span>
+        <span class="text-slate-900 font-bold">{{ summary().analysisDateLabel }}</span>
+      </div>
+    </div>
+  </div>
+</div>

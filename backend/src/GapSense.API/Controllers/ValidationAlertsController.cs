@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GapSense.Infrastructure.Data;
+using GapSense.Infrastructure.Persistence;
 using GapSense.Application.DTOs.Common;
 using GapSense.Application.DTOs.Curriculum;
 
@@ -10,12 +11,13 @@ namespace GapSense.API.Controllers;
 // these are system-detected issues like circular dependencies, missing weights, etc.
 // base route: /api/validation-alerts
 [ApiController]
+[Authorize]
 [Route("api/validation-alerts")]
 public class ValidationAlertsController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public ValidationAlertsController(AppDbContext db)
+    public ValidationAlertsController(ApplicationDbContext db)
     {
         _db = db;
     }

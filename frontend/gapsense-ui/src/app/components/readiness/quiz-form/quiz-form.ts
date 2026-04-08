@@ -1,9 +1,10 @@
 import { Component, input, output, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ReadinessService } from '../../../services/readiness.service';
+import { ToastService } from '../../../services/toast.service';
 import { Question } from '../../../models/readiness/question.model';
-import { Quiz } from '../../../models/readiness/quiz.model';
-import { StatusBadgeComponent } from '../../ui/status-badge/status-badge';
+import { Quiz, QuizStatus } from '../../../models/readiness/quiz.model';
+import { PillBadgeComponent } from '../../ui/pill-badge/pill-badge.component';
 
 // quiz form - multi-step wizard used in the quiz builder page
 // step 1: quiz info (title, module, intake)
@@ -12,17 +13,21 @@ import { StatusBadgeComponent } from '../../ui/status-badge/status-badge';
 @Component({
   selector: 'app-quiz-form',
   standalone: true,
-  imports: [FormsModule, StatusBadgeComponent],
+  imports: [FormsModule, PillBadgeComponent],
   templateUrl: './quiz-form.html',
 })
 export class QuizFormComponent implements OnInit {
   private readinessService = inject(ReadinessService);
+  private toastService = inject(ToastService);
 
   // pass an existing quiz to edit, or null for new
   quiz = input<Quiz | null>(null);
 
+  /** Disable Create Quiz while the parent API call runs */
+  isSaving = input(false);
+
   // emitted when the quiz is submitted
-  formSubmit = output<Partial<Quiz>>();
+  formSubmit = output<Partial<Quiz> & { moduleId?: string }>();
 
   // current step (1, 2, or 3)
   currentStep = signal(1);
@@ -43,8 +48,8 @@ export class QuizFormComponent implements OnInit {
   totalAttempts = signal(1);
   passThreshold = signal(40);
 
-  // real module list from API (with GUIDs)
-  moduleList: { id: string; moduleCode: string; moduleName: string }[] = [];
+  // real module list from API (with GUIDs) — signal + deferred updates avoid NG0100 after HTTP
+  moduleList = signal<{ id: string; moduleCode: string; moduleName: string }[]>([]);
 
   // track if user tried to go next or submit (shows errors)
   stepSubmitted = signal(false);
@@ -95,15 +100,25 @@ export class QuizFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    // load real modules from API
+    // Defer signal updates to the next microtask so dev-mode CD verification does not see
+    // module/options appear mid-check (NG0100 on <option [value]="mod.id">).
     this.readinessService.getModuleList().subscribe({
-      next: (mods) => { this.moduleList = mods; },
-      error: () => { console.error('Failed to load modules'); },
+      next: (mods) => {
+        queueMicrotask(() => this.moduleList.set(mods));
+      },
+      error: () => {
+        console.error('Failed to load modules');
+      },
     });
 
-    // load available questions
-    this.readinessService.getQuestions().subscribe((questions) => {
-      this.availableQuestions.set(questions.filter((q) => q.status === 'Active'));
+    this.readinessService.getQuestions().subscribe({
+      next: (questions) => {
+        const active = questions.filter((q) => q.status === 'Active');
+        queueMicrotask(() => this.availableQuestions.set(active));
+      },
+      error: () => {
+        this.toastService.error('Could not load questions. Check the API and try again.');
+      },
     });
 
     // if editing, fill the form
@@ -126,7 +141,7 @@ export class QuizFormComponent implements OnInit {
   // when user selects a module from the dropdown
   onModuleSelect(id: string) {
     this.moduleId.set(id);
-    const mod = this.moduleList.find((m) => m.id === id);
+    const mod = this.moduleList().find((m) => m.id === id);
     if (mod) {
       this.module.set(mod.moduleName);
       this.moduleCode.set(mod.moduleCode);
@@ -189,6 +204,15 @@ export class QuizFormComponent implements OnInit {
     }
   }
 
+  /** Save Draft: same payload as create, status Draft (only after all steps are valid) */
+  saveDraft() {
+    if (this.currentStep() < 3) {
+      this.toastService.info('Use Next Step to add questions and rules. You can save a draft on step 3.');
+      return;
+    }
+    this.emitQuizPayload('Draft');
+  }
+
   // navigate to previous step
   prevStep() {
     if (this.currentStep() > 1) {
@@ -203,21 +227,31 @@ export class QuizFormComponent implements OnInit {
 
   // submit the quiz - validate step 3 first
   onSubmit() {
+    this.emitQuizPayload('Published');
+  }
+
+  private emitQuizPayload(status: QuizStatus) {
     this.stepSubmitted.set(true);
-    if (!this.isStep3Valid()) return;
-    // build the questions array with order and marks
+    if (!this.isStep1Valid() || !this.isStep2Valid() || !this.isStep3Valid()) {
+      if (status === 'Draft') {
+        this.toastService.error('Fix the highlighted fields before saving a draft.');
+      }
+      return;
+    }
+
     const questions = Array.from(this.selectedQuestionIds()).map((id, index) => {
       const q = this.availableQuestions().find((aq) => aq.id === id);
+      const m = q?.marks ?? 5;
       return {
         questionId: id,
         order: index + 1,
-        marks: q?.marks || 0,
+        marks: Math.max(1, Math.min(100, m)),
       };
     });
 
-    const data: any = {
+    const data: Partial<Quiz> & { moduleId: string } = {
       title: this.title(),
-      moduleId: this.moduleId(), // GUID - backend needs this
+      moduleId: this.moduleId(),
       module: this.module(),
       moduleCode: this.moduleCode(),
       intake: this.intake(),
@@ -228,6 +262,9 @@ export class QuizFormComponent implements OnInit {
       passingMarks: Math.round((this.passThreshold() / 100) * this.totalMarks),
       timeLimitMinutes: this.timeLimit(),
       maxAttempts: this.totalAttempts(),
+      shuffleQuestions: false,
+      shuffleOptions: false,
+      status,
     };
 
     this.formSubmit.emit(data);

@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GapSense.Infrastructure.Data;
+using GapSense.Infrastructure.Persistence;
 using GapSense.Domain.Entities;
 using GapSense.Application.DTOs.Common;
 using GapSense.Application.DTOs.Readiness;
@@ -10,12 +11,13 @@ namespace GapSense.API.Controllers;
 // handles learning resources that students can access to prepare for quizzes
 // base route: /api/resources
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ResourcesController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public ResourcesController(AppDbContext db)
+    public ResourcesController(ApplicationDbContext db)
     {
         _db = db;
     }

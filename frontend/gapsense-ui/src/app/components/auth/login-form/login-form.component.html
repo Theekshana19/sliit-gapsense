@@ -1,0 +1,38 @@
+<form class="space-y-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <app-auth-input
+    inputId="login-email"
+    label="Email address"
+    placeholder="name@sliit.lk"
+    type="email"
+    autocomplete="email"
+    [control]="form.controls.email" />
+
+  <div class="space-y-1.5">
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-xs font-bold uppercase tracking-wide text-slate-600">Password</span>
+      <a routerLink="/auth/login" fragment="forgot" class="text-xs font-semibold text-blue-800 hover:underline">Forgot password?</a>
+    </div>
+    <app-auth-password-input
+      inputId="login-password"
+      label=""
+      placeholder="••••••••"
+      autocomplete="current-password"
+      [control]="form.controls.password" />
+  </div>
+
+  <label class="flex items-center gap-2 cursor-pointer select-none">
+    <input type="checkbox" formControlName="rememberMe" class="rounded border-slate-300 text-blue-800 focus:ring-blue-800" />
+    <span class="text-sm font-medium text-slate-700">Remember me for 30 days</span>
+  </label>
+
+  <app-auth-button
+    type="submit"
+    label="Login to Portal"
+    [disabled]="form.invalid"
+    [showArrow]="false" />
+
+</form>
+<p class="mt-6 text-center text-sm text-slate-600">
+  Institutional access only.
+  <a routerLink="/auth/signup" class="font-semibold text-blue-800 hover:underline">Request portal access</a>
+</p>

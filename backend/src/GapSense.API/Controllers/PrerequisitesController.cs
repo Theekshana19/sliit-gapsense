@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GapSense.Infrastructure.Data;
+using GapSense.Infrastructure.Persistence;
 using GapSense.Domain.Entities;
 using GapSense.Application.DTOs.Common;
 using GapSense.Application.DTOs.Curriculum;
@@ -10,12 +11,13 @@ namespace GapSense.API.Controllers;
 // handles all API requests related to prerequisite mappings between modules
 // base route: /api/prerequisites
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class PrerequisitesController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public PrerequisitesController(AppDbContext db)
+    public PrerequisitesController(ApplicationDbContext db)
     {
         _db = db;
     }

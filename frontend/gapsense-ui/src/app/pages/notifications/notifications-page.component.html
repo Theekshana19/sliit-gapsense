@@ -1,0 +1,62 @@
+<div class="w-full space-y-8 pb-12 font-body text-on-surface">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="mb-2 font-headline text-3xl font-extrabold tracking-tight text-[#003f87]">Notifications</h1>
+      <p class="font-medium text-slate-500">Stay updated with alerts, academic changes, and reminders</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        (click)="markAllRead()"
+        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+      >
+        Mark all as read
+      </button>
+      <button
+        type="button"
+        (click)="clearAll()"
+        class="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-bold text-rose-700 shadow-sm transition hover:bg-rose-50"
+      >
+        Clear all
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-wrap gap-2">
+    @for (tab of filters; track tab.id) {
+      <button
+        type="button"
+        (click)="setFilter(tab.id)"
+        [ngClass]="{
+          'bg-[#003f87] text-white shadow-md': filter() === tab.id,
+          'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50': filter() !== tab.id,
+        }"
+        class="rounded-xl px-4 py-2 text-sm font-semibold transition"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  @if (!hasAny()) {
+    <div
+      class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 shadow-sm"
+    >
+      <span class="material-symbols-outlined mb-3 text-5xl text-slate-300">notifications_off</span>
+      <p class="text-base font-semibold text-slate-600">No notifications</p>
+      <p class="mt-1 text-sm text-slate-400">You are all caught up.</p>
+    </div>
+  } @else {
+    @if (filtered().length === 0) {
+      <p class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+        No notifications in this category.
+      </p>
+    } @else {
+      <div class="space-y-3">
+        @for (n of filtered(); track n.id) {
+          <app-notification-item [item]="n" [compact]="false" />
+        }
+      </div>
+    }
+  }
+</div>

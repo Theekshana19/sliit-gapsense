@@ -1,13 +1,9 @@
 <!-- attempt history page -->
-<app-main-layout
-  pageTitle="Attempt History"
-  breadcrumb="Academic Management / Attempt History"
-  searchPlaceholder="Search history..."
->
+<app-member-shell>
   <!-- page header -->
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h2 class="font-headline text-2xl font-extrabold text-on-surface">Overview of Student Progress</h2>
+      <h2 class="font-headline text-2xl font-extrabold text-on-surface">{{ pageSubtitle() }}</h2>
     </div>
     <div class="flex gap-2">
       <button class="px-4 py-2 rounded-lg text-xs font-semibold bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors">
@@ -116,7 +112,7 @@
               <!-- status with icon -->
               <td class="py-4 px-5">
                 <div class="flex items-center gap-1.5">
-                  <app-status-badge [label]="attempt.status" [variant]="getStatusVariant(attempt.status)" />
+                  <app-pill-badge [label]="attempt.status" [variant]="getStatusVariant(attempt.status)" />
                 </div>
               </td>
 
@@ -176,4 +172,4 @@
       </div>
     </div>
   }
-</app-main-layout>
+</app-member-shell>

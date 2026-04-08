@@ -1,5 +1,5 @@
 <!-- prerequisite management page -->
-<app-main-layout pageTitle="Prerequisite Management" breadcrumb="Curriculum > Prerequisites" searchPlaceholder="Search prerequisites...">
+<app-member-shell>
 
   <!-- stats cards -->
   <div class="grid grid-cols-4 gap-4 mb-6">
@@ -70,13 +70,13 @@
                 </div>
               </td>
               <td class="py-4 px-5">
-                <app-status-badge [label]="prereq.relationshipType" [variant]="getTypeVariant(prereq.relationshipType)" />
+                <app-pill-badge [label]="prereq.relationshipType" [variant]="getTypeVariant(prereq.relationshipType)" />
               </td>
               <td class="py-4 px-5">
                 <span class="text-sm font-bold text-on-surface">{{ prereq.relevanceWeight }}%</span>
               </td>
               <td class="py-4 px-5">
-                <app-status-badge [label]="prereq.status" [variant]="getStatusVariant(prereq.status)" />
+                <app-pill-badge [label]="prereq.status" [variant]="getStatusVariant(prereq.status)" />
               </td>
               <td class="py-4 px-5">
                 <div class="flex gap-1">
@@ -116,8 +116,8 @@
     </div>
   }
 
-  <app-confirm-dialog [isOpen]="showDeleteDialog()" title="Remove Prerequisite"
+  <app-confirm-prompt [isOpen]="showDeleteDialog()" title="Remove Prerequisite"
     message="Are you sure you want to remove this prerequisite mapping?"
     confirmLabel="Remove" [danger]="true" icon="link_off"
     (confirmed)="onDeleteConfirmed()" (cancelled)="onDeleteCancelled()" />
-</app-main-layout>
+</app-member-shell>

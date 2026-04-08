@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { ModuleFormComponent } from '../../../components/curriculum/module-form/module-form';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { CurriculumService } from '../../../services/curriculum.service';
@@ -11,7 +11,7 @@ import { Module } from '../../../models/curriculum/module.model';
 @Component({
   selector: 'app-add-edit-module',
   standalone: true,
-  imports: [MainLayoutComponent, ModuleFormComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, ModuleFormComponent, LoadingSpinnerComponent],
   templateUrl: './add-edit-module.html',
 })
 export class AddEditModuleComponent implements OnInit {

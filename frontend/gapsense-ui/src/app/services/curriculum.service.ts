@@ -13,6 +13,7 @@ import {
   DependencyEdge,
 } from '../models/curriculum/prerequisite.model';
 import { SemesterOffering, OfferingStats } from '../models/curriculum/semester-offering.model';
+import { API_BASE_URL } from '../config/api.config';
 
 // API response wrapper - matches the backend ApiResponseDto
 interface ApiResponse<T> {
@@ -34,8 +35,7 @@ interface ApiResponse<T> {
 export class CurriculumService {
   private http = inject(HttpClient);
 
-  // backend API base URL
-  private apiUrl = 'http://localhost:5172/api';
+  private readonly apiUrl = `${API_BASE_URL}/api`;
 
   // ---------- MODULE METHODS ----------
 
@@ -282,9 +282,9 @@ export class CurriculumService {
 
   // get all validation alerts
   getValidationAlerts(): Observable<ValidationAlert[]> {
-    return this.http
-      .get<ApiResponse<ValidationAlert[]>>(`${this.apiUrl}/validation-alerts`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<ValidationAlert[]>>(`${this.apiUrl}/validation-alerts`).pipe(
+      map((res) => (res.success && res.data ? res.data : []))
+    );
   }
 
   // get validation stats

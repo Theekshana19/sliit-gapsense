@@ -11,6 +11,7 @@ import {
   AttemptStats,
 } from '../models/readiness/submission.model';
 import { Resource } from '../models/readiness/resource.model';
+import { API_BASE_URL } from '../config/api.config';
 
 // API response wrapper - matches the backend ApiResponseDto
 interface ApiResponse<T> {
@@ -45,8 +46,7 @@ interface TopicInfo {
 export class ReadinessService {
   private http = inject(HttpClient);
 
-  // backend API base URL
-  private apiUrl = 'http://localhost:5172/api';
+  private readonly apiUrl = `${API_BASE_URL}/api`;
 
   // ---------- QUESTION METHODS ----------
 
@@ -61,7 +61,7 @@ export class ReadinessService {
 
     return this.http
       .get<ApiResponse<Question[]>>(`${this.apiUrl}/questions`, { params })
-      .pipe(map((res) => res.data));
+      .pipe(map((res) => ReadinessService.normalizeQuestionList(res?.data)));
   }
 
   // get a single question by id
@@ -73,6 +73,16 @@ export class ReadinessService {
 
   // create a new question - moduleId must be a GUID from getModuleList()
   createQuestion(question: Partial<Question> & { moduleId?: string; topicId?: string }): Observable<Question> {
+    const trimmedOptions =
+      question.options
+        ?.filter((o) => (o.optionText || '').trim().length > 0)
+        .map((o) => ({
+          optionText: o.optionText.trim(),
+          isCorrect: o.isCorrect,
+        })) ?? [];
+
+    const correctOptionIndex = trimmedOptions.findIndex((o) => o.isCorrect);
+
     const body = {
       title: question.title,
       questionText: question.questionText,
@@ -80,42 +90,60 @@ export class ReadinessService {
       difficulty: question.difficulty,
       moduleId: question.moduleId || '', // GUID from modules API
       topicId: question.topicId || null,
-      explanation: question.explanation,
+      explanation: question.explanation ?? '',
       marks: question.marks,
       status: question.status,
-      options: question.options?.map((o) => ({
-        optionText: o.optionText,
-        isCorrect: o.isCorrect,
-      })) || [],
-      correctOptionIndex: question.options?.findIndex((o) => o.isCorrect) ?? 0,
+      options: trimmedOptions,
+      correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
     };
 
     return this.http
       .post<ApiResponse<Question>>(`${this.apiUrl}/questions`, body)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not create question');
+          }
+          return res.data;
+        })
+      );
   }
 
   // update a question
   updateQuestion(id: string, updates: Partial<Question> & { topicId?: string | null }): Observable<Question> {
+    const trimmedOptions =
+      updates.options
+        ?.filter((o) => (o.optionText || '').trim().length > 0)
+        .map((o) => ({
+          optionText: o.optionText.trim(),
+          isCorrect: o.isCorrect,
+        })) ?? [];
+
+    const correctOptionIndex = trimmedOptions.findIndex((o) => o.isCorrect);
+
     const body = {
       title: updates.title,
       questionText: updates.questionText,
       questionType: updates.questionType,
       difficulty: updates.difficulty,
-      topicId: updates.topicId || null, // pass actual topic ID
-      explanation: updates.explanation,
+      topicId: updates.topicId || null,
+      explanation: updates.explanation ?? '',
       marks: updates.marks,
       status: updates.status,
-      options: updates.options?.map((o) => ({
-        optionText: o.optionText,
-        isCorrect: o.isCorrect,
-      })) || [],
-      correctOptionIndex: updates.options?.findIndex((o) => o.isCorrect) ?? 0,
+      options: trimmedOptions,
+      correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
     };
 
     return this.http
       .put<ApiResponse<Question>>(`${this.apiUrl}/questions/${id}`, body)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not update question');
+          }
+          return res.data;
+        })
+      );
   }
 
   // delete a question
@@ -127,9 +155,39 @@ export class ReadinessService {
 
   // get modules from curriculum API for dropdowns (returns real data from backend)
   getModuleList(): Observable<ModuleInfo[]> {
-    return this.http
-      .get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`).pipe(
+      map((res) => ReadinessService.normalizeModuleList(res?.data))
+    );
+  }
+
+  /** Ensures each question has API `id` (GUID) and display `questionId` after JSON binding. */
+  private static normalizeQuestionList(data: unknown): Question[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map((row) => {
+        const r = row as Record<string, unknown>;
+        const q = row as Question;
+        const id = String(r['id'] ?? r['Id'] ?? q.id ?? '');
+        const questionId = String(r['questionId'] ?? r['QuestionId'] ?? q.questionId ?? '');
+        return { ...q, id, questionId };
+      })
+      .filter((q) => q.id.length > 0);
+  }
+
+  /** Ensures stable `id` strings (camelCase or PascalCase JSON) and drops invalid rows. */
+  private static normalizeModuleList(data: unknown): ModuleInfo[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map((row: Record<string, unknown>) => ({
+        id: String(row['id'] ?? row['Id'] ?? ''),
+        moduleCode: String(row['moduleCode'] ?? row['ModuleCode'] ?? ''),
+        moduleName: String(row['moduleName'] ?? row['ModuleName'] ?? ''),
+      }))
+      .filter((m) => m.id.length > 0);
   }
 
   // get topics from curriculum API for dropdowns
@@ -174,47 +232,105 @@ export class ReadinessService {
 
   // get all quizzes
   getQuizzes(): Observable<Quiz[]> {
-    return this.http
-      .get<ApiResponse<Quiz[]>>(`${this.apiUrl}/quizzes`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Quiz[]>>(`${this.apiUrl}/quizzes`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
   // get a single quiz by id
   getQuizById(id: string): Observable<Quiz | undefined> {
-    return this.http
-      .get<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes/${id}`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes/${id}`).pipe(
+      map((res) => {
+        if (!res?.success) return undefined;
+        return res.data ?? undefined;
+      })
+    );
   }
 
   // get questions for a specific quiz (for the quiz attempt page)
   // note: backend hides correct answers so students can't cheat
   getQuizQuestions(quizId: string): Observable<Question[]> {
-    return this.http
-      .get<ApiResponse<Question[]>>(`${this.apiUrl}/quizzes/${quizId}/questions`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Question[]>>(`${this.apiUrl}/quizzes/${quizId}/questions`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
-  // create a new quiz
-  createQuiz(quiz: Partial<Quiz>): Observable<Quiz> {
-    return this.http
-      .post<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes`, quiz)
-      .pipe(map((res) => res.data));
+  // create a new quiz — body matches CreateQuizDto (moduleId + questions required)
+  createQuiz(quiz: Partial<Quiz> & { moduleId?: string }): Observable<Quiz> {
+    const questions = (quiz.questions ?? [])
+      .map((q, index) => {
+        const row = q as Quiz['questions'][number] & { id?: string };
+        const rawId = String(row.id ?? row.questionId ?? '').trim();
+        const m = q.marks ?? 5;
+        return {
+          questionId: rawId,
+          order: q.order ?? index + 1,
+          marks: Math.max(1, Math.min(100, m)),
+        };
+      })
+      .filter((x) => x.questionId.length > 0);
+
+    const body = {
+      title: (quiz.title ?? '').trim(),
+      description: quiz.description ?? '',
+      moduleId: quiz.moduleId ?? '',
+      intake: quiz.intake ?? '',
+      passingPercentage: quiz.passingPercentage ?? 40,
+      timeLimitMinutes: quiz.timeLimitMinutes ?? 60,
+      maxAttempts: quiz.maxAttempts ?? 1,
+      shuffleQuestions: quiz.shuffleQuestions ?? false,
+      shuffleOptions: quiz.shuffleOptions ?? false,
+      status: quiz.status ?? 'Draft',
+      questions,
+    };
+
+    return this.http.post<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes`, body).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) {
+          throw new Error(res?.message || 'Could not create quiz');
+        }
+        return res.data;
+      })
+    );
   }
 
   // ---------- SCHEDULE METHODS ----------
 
-  // get all quiz schedules
+  // get all quiz schedules (students receive only open-window schedules from the API)
   getSchedules(): Observable<QuizSchedule[]> {
-    return this.http
-      .get<ApiResponse<QuizSchedule[]>>(`${this.apiUrl}/quiz-schedules`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<QuizSchedule[]>>(`${this.apiUrl}/quiz-schedules`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
-  // create a new schedule
-  createSchedule(schedule: Partial<QuizSchedule>): Observable<QuizSchedule> {
+  // create a new schedule — body matches CreateQuizScheduleDto
+  createSchedule(schedule: {
+    quizId: string;
+    startDate: string;
+    endDate: string;
+    maxAttempts: number;
+    resultVisibility: string;
+    status: string;
+  }): Observable<QuizSchedule> {
     return this.http
       .post<ApiResponse<QuizSchedule>>(`${this.apiUrl}/quiz-schedules`, schedule)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not create schedule');
+          }
+          return res.data;
+        })
+      );
   }
 
   // update a schedule
@@ -246,43 +362,55 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
-  // submit a quiz (student answers) - backend auto-calculates score
-  // TODO: replace hardcoded student info with auth service when login is integrated
+  // submit a quiz (student answers) — identity must match profile StudentId for attempt history
   submitQuiz(
     quizId: string,
-    answers: { questionId: string; selectedOptionId: string }[]
+    answers: { questionId: string; selectedOptionId: string }[],
+    identity: { studentId: string; studentName: string; studentAvatar: string; avatarColor: string }
   ): Observable<Submission> {
     const body = {
       quizId,
-      studentId: 'IT23201996', // hardcoded for now - will come from auth later
-      studentName: 'Test Student',
-      studentAvatar: 'TS',
-      avatarColor: 'bg-primary-fixed',
+      studentId: identity.studentId,
+      studentName: identity.studentName,
+      studentAvatar: identity.studentAvatar,
+      avatarColor: identity.avatarColor,
       answers: answers.map((a) => ({
         questionId: a.questionId,
         selectedOptionId: a.selectedOptionId || null,
       })),
     };
 
-    return this.http
-      .post<ApiResponse<Submission>>(`${this.apiUrl}/submissions`, body)
-      .pipe(map((res) => res.data));
+    return this.http.post<ApiResponse<Submission>>(`${this.apiUrl}/submissions`, body).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) {
+          throw new Error(res?.message || 'Could not submit quiz');
+        }
+        return res.data;
+      })
+    );
   }
 
   // ---------- ATTEMPT HISTORY METHODS ----------
 
   // get attempt history (all past attempts)
   getAttemptHistory(): Observable<AttemptSummary[]> {
-    return this.http
-      .get<ApiResponse<AttemptSummary[]>>(`${this.apiUrl}/submissions/history`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<AttemptSummary[]>>(`${this.apiUrl}/submissions/history`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return [];
+        return res.data;
+      })
+    );
   }
 
   // get attempt history statistics
   getAttemptStats(): Observable<AttemptStats> {
-    return this.http
-      .get<ApiResponse<AttemptStats>>(`${this.apiUrl}/submissions/history/stats`)
-      .pipe(map((res) => res.data));
+    const empty: AttemptStats = { totalAttempts: 0, avgSuccessRate: 0, flaggedAttempts: 0, changePercentage: 0 };
+    return this.http.get<ApiResponse<AttemptStats>>(`${this.apiUrl}/submissions/history/stats`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return empty;
+        return res.data;
+      })
+    );
   }
 
   // ---------- RESOURCE METHODS ----------

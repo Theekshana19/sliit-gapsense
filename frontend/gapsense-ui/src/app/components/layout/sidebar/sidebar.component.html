@@ -1,0 +1,43 @@
+<!-- Fixed below the top bar so <main> is not pushed down by a full-viewport in-flow sidebar. -->
+<aside
+  class="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-64 flex-col gap-2 overflow-hidden border-r border-slate-200/50 bg-slate-50/95 py-4 opacity-95 backdrop-blur-xl"
+>
+  <div class="mb-4 shrink-0 px-6">
+    <h2 class="text-lg font-bold text-blue-800">GapSense Engine</h2>
+    <p class="text-xs font-medium text-slate-500">Risk &amp; Recommendations</p>
+  </div>
+  <nav class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-0">
+    @for (item of navItems(); track item.routerLink + item.label) {
+      <a
+        [routerLink]="item.routerLink"
+        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        [routerLinkActiveOptions]="
+          item.routerLink === '/dashboard' ? { exact: true } : { exact: false }
+        "
+        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+      >
+        <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+
+  <div class="mt-auto shrink-0 border-t border-slate-200/50 px-4 pt-4">
+    <a
+      routerLink="/profile"
+      routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
+      class="mb-1 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 transition-all hover:bg-blue-50/50 hover:text-blue-600"
+    >
+      <span class="material-symbols-outlined text-xl">manage_accounts</span>
+      Profile
+    </a>
+    <button
+      type="button"
+      (click)="logout()"
+      class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-rose-600 transition-all hover:bg-rose-50"
+    >
+      <span class="material-symbols-outlined text-xl">logout</span>
+      Logout
+    </button>
+  </div>
+</aside>

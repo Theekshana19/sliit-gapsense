@@ -1,10 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
-import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state.component';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { ReadinessService } from '../../../services/readiness.service';
 import { ToastService } from '../../../services/toast.service';
 import { Question, QuestionFilter, DifficultyLevel, QuestionStatus } from '../../../models/readiness/question.model';
@@ -15,11 +15,11 @@ import { Question, QuestionFilter, DifficultyLevel, QuestionStatus } from '../..
   selector: 'app-question-bank',
   standalone: true,
   imports: [
-    MainLayoutComponent,
-    StatusBadgeComponent,
+    MemberShellComponent,
+    PillBadgeComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    ConfirmDialogComponent,
+    ConfirmPromptDialogComponent,
   ],
   templateUrl: './question-bank.html',
 })
@@ -39,7 +39,6 @@ export class QuestionBankComponent implements OnInit {
   filterTopic = signal('');
   filterDifficulty = signal<DifficultyLevel | ''>('');
   filterStatus = signal<QuestionStatus | ''>('');
-  searchText = signal('');
 
   // dropdown options
   modules: string[] = [];
@@ -64,7 +63,6 @@ export class QuestionBankComponent implements OnInit {
     this.isLoading.set(true);
 
     const filter: QuestionFilter = {
-      search: this.searchText(),
       module: this.filterModule(),
       topic: this.filterTopic(),
       difficulty: this.filterDifficulty() || undefined,
@@ -75,13 +73,6 @@ export class QuestionBankComponent implements OnInit {
       this.questions.set(data);
       this.isLoading.set(false);
     });
-  }
-
-  // search handler from top bar
-  onSearch(text: string) {
-    this.searchText.set(text);
-    this.currentPage.set(1);
-    this.loadQuestions();
   }
 
   // filter change handlers

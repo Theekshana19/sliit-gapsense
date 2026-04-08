@@ -1,6 +1,8 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../../components/layout/main-layout/main-layout';
+import { finalize } from 'rxjs';
+import { MemberShellComponent } from '../../../../components/layout/member-shell/member-shell.component';
 import { QuestionFormComponent } from '../../../../components/readiness/question-form/question-form';
 import { LoadingSpinnerComponent } from '../../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../../services/readiness.service';
@@ -13,7 +15,7 @@ import { Question } from '../../../../models/readiness/question.model';
 @Component({
   selector: 'app-add-edit-question',
   standalone: true,
-  imports: [MainLayoutComponent, QuestionFormComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, QuestionFormComponent, LoadingSpinnerComponent],
   templateUrl: './add-edit-question.html',
 })
 export class AddEditQuestionComponent implements OnInit {
@@ -33,6 +35,9 @@ export class AddEditQuestionComponent implements OnInit {
 
   // loading state - don't show form until data is ready
   isLoading = signal(false);
+
+  /** True while create/update request is running */
+  isSaving = signal(false);
 
   ngOnInit() {
     // check if there's an id in the route - means we're editing
@@ -66,25 +71,56 @@ export class AddEditQuestionComponent implements OnInit {
   // handle form submission
   onFormSubmit(data: Partial<Question>) {
     if (this.isEditMode()) {
-      // update existing question
       const id = this.route.snapshot.paramMap.get('id')!;
-      this.readinessService.updateQuestion(id, data).subscribe({
-        next: () => {
-          this.toastService.success('Question updated successfully');
-          this.router.navigate(['/readiness/question-bank']);
-        },
-        error: (err: any) => {
-          const msg = err?.error?.message || 'Failed to update question';
-          this.toastService.error(msg);
-        },
-      });
+      this.isSaving.set(true);
+      this.readinessService
+        .updateQuestion(id, data)
+        .pipe(finalize(() => this.isSaving.set(false)))
+        .subscribe({
+          next: () => {
+            this.toastService.success('Question updated. Returning to the list.');
+            this.router.navigate(['/readiness/question-bank']);
+          },
+          error: (err: unknown) => {
+            this.toastService.error(this.apiErrorMessage(err, 'Failed to update question'));
+          },
+        });
     } else {
-      // create new question
-      this.readinessService.createQuestion(data).subscribe(() => {
-        this.toastService.success('Question created successfully');
-        this.router.navigate(['/readiness/question-bank']);
-      });
+      this.isSaving.set(true);
+      this.readinessService
+        .createQuestion(data)
+        .pipe(finalize(() => this.isSaving.set(false)))
+        .subscribe({
+          next: (created) => {
+            const label = created?.questionId || created?.title || 'Question';
+            this.toastService.success(`Saved: ${label}. Opening question list…`);
+            this.router.navigate(['/readiness/question-bank']);
+          },
+          error: (err: unknown) => {
+            this.toastService.error(this.apiErrorMessage(err, 'Could not save question'));
+          },
+        });
     }
+  }
+
+  private apiErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      const body = err.error;
+      if (body && typeof body === 'object') {
+        const msg = (body as { message?: string }).message;
+        if (msg) return msg;
+        const errors = (body as { errors?: Record<string, string[]> }).errors;
+        if (errors) {
+          const first = Object.values(errors).flat()[0];
+          if (first) return first;
+        }
+      }
+      if (err.status === 0) return 'Network error — is the API running?';
+      if (err.status === 401) return 'Please sign in again.';
+      if (err.status === 403) return 'You are not allowed to create questions.';
+    }
+    if (err instanceof Error && err.message) return err.message;
+    return fallback;
   }
 
   // handle cancel - go back to question bank

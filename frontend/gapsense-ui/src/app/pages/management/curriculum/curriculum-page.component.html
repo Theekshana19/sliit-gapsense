@@ -1,0 +1,147 @@
+<app-top-bar />
+<app-sidebar />
+<main class="ml-64 min-h-0 pt-20 px-6 pb-10 sm:px-8 sm:pb-12 md:pt-20 bg-slate-50/50">
+  <div class="mx-auto max-w-7xl">
+  @if (notice(); as n) {
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-blue-800 shrink-0">info</span>
+      <p class="text-sm font-semibold text-blue-900 flex-1">{{ n }}</p>
+      <button type="button" class="p-1 hover:bg-blue-100 rounded shrink-0" (click)="dismissNotice()">
+        <span class="material-symbols-outlined text-blue-800 text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <header class="mb-8 scroll-mt-24 sm:mb-10">
+    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Curriculum and follow-up</h1>
+    <p class="text-slate-600 font-medium max-w-3xl">
+      Course catalogue, lecturer module assignments, and student intervention notes (management).
+    </p>
+  </header>
+
+  <div class="grid gap-10 lg:grid-cols-2">
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+      <h2 class="text-lg font-bold text-slate-900 mb-4">Course modules</h2>
+      <ul class="divide-y divide-slate-100 mb-6 max-h-64 overflow-y-auto">
+        @for (m of modules(); track m.id) {
+          <li class="py-3 flex justify-between gap-4 text-sm">
+            <div>
+              <p class="font-semibold text-slate-900">{{ m.code }} — {{ m.title }}</p>
+              @if (m.description) {
+                <p class="text-slate-600 mt-0.5">{{ m.description }}</p>
+              }
+            </div>
+            <span class="text-slate-400 shrink-0">#{{ m.sortOrder }}</span>
+          </li>
+        }
+      </ul>
+      <div class="border-t border-slate-100 pt-4 space-y-3">
+        <p class="text-sm font-semibold text-slate-700">Add module</p>
+        <input
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          [(ngModel)]="newModuleCode"
+          placeholder="Code (e.g. IT3040)"
+        />
+        <input
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          [(ngModel)]="newModuleTitle"
+          placeholder="Title"
+        />
+        <input
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          [(ngModel)]="newModuleDescription"
+          placeholder="Description (optional)"
+        />
+        <input
+          type="number"
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          [(ngModel)]="newModuleSortOrder"
+        />
+        <button
+          type="button"
+          class="rounded-lg bg-blue-800 text-white text-sm font-semibold px-4 py-2 hover:bg-blue-900"
+          (click)="addModule()">
+          Save module
+        </button>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+      <h2 class="text-lg font-bold text-slate-900 mb-4">My module assignments</h2>
+      <ul class="divide-y divide-slate-100 mb-6 max-h-48 overflow-y-auto">
+        @for (a of assignments(); track a.id) {
+          <li class="py-2 text-sm">
+            <span class="font-semibold text-slate-900">{{ a.moduleCode }}</span>
+            <span class="text-slate-600"> — {{ a.moduleTitle }}</span>
+            @if (isAdmin()) {
+              <span class="block text-xs text-slate-400 mt-0.5">Lecturer: {{ a.lecturerUserId }}</span>
+            }
+          </li>
+        }
+      </ul>
+      <div class="border-t border-slate-100 pt-4 space-y-3">
+        <p class="text-sm font-semibold text-slate-700">Assign module to {{ isAdmin() ? 'selected lecturer (API)' : 'me' }}</p>
+        <select
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
+          [(ngModel)]="selectedModuleForAssign">
+          <option value="">Choose module…</option>
+          @for (m of modules(); track m.id) {
+            <option [value]="m.id">{{ m.code }} — {{ m.title }}</option>
+          }
+        </select>
+        <button
+          type="button"
+          class="rounded-lg bg-slate-800 text-white text-sm font-semibold px-4 py-2 hover:bg-slate-900"
+          (click)="assignSelectedModule()">
+          Assign
+        </button>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 lg:col-span-2">
+      <h2 class="text-lg font-bold text-slate-900 mb-4">Student follow-ups</h2>
+      <ul class="divide-y divide-slate-100 mb-6 max-h-56 overflow-y-auto">
+        @for (i of interventions(); track i.id) {
+          <li class="py-3 text-sm">
+            <p class="font-semibold text-slate-900">{{ i.title }}</p>
+            <p class="text-slate-600 text-xs mt-0.5">
+              Student {{ i.studentUserId }} · {{ i.status }} · {{ i.createdAtUtc | date: 'medium' }}
+            </p>
+            @if (i.notes) {
+              <p class="text-slate-600 mt-1">{{ i.notes }}</p>
+            }
+          </li>
+        }
+      </ul>
+      <div class="grid md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-slate-700">Record follow-up</p>
+          <input
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            [(ngModel)]="interventionStudentId"
+            placeholder="Student user Id (guid)"
+          />
+          <input
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            [(ngModel)]="interventionTitle"
+            placeholder="Title"
+          />
+          <textarea
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            rows="2"
+            [(ngModel)]="interventionNotes"
+            placeholder="Notes (optional)"></textarea>
+          <button
+            type="button"
+            class="rounded-lg bg-emerald-800 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-900"
+            (click)="addIntervention()">
+            Save follow-up
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <app-footer class="mt-10 block sm:mt-12" />
+  </div>
+</main>

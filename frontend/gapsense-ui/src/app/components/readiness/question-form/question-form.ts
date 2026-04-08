@@ -18,6 +18,9 @@ export class QuestionFormComponent implements OnInit {
   // pass a question to edit, or null for creating a new one
   question = input<Question | null>(null);
 
+  /** Parent sets true while POST/PUT is in flight to prevent double submit */
+  isSubmitting = input(false);
+
   // emitted when the form is submitted with the data
   formSubmit = output<Partial<Question>>();
 
@@ -49,7 +52,7 @@ export class QuestionFormComponent implements OnInit {
   correctOptionId = signal('');
 
   // available modules and topics for dropdowns (real data from API)
-  moduleList: { id: string; moduleCode: string; moduleName: string }[] = [];
+  moduleList = signal<{ id: string; moduleCode: string; moduleName: string }[]>([]);
   topics: string[] = [];
 
   // status toggle - true means Active, false means Draft
@@ -101,10 +104,18 @@ export class QuestionFormComponent implements OnInit {
     return '';
   });
 
+  // curriculum module GUID required for API
+  moduleError = computed(() => {
+    if (!this.submitted()) return '';
+    if (!this.moduleId().trim()) return 'Select a module — required to save';
+    return '';
+  });
+
   // check if the whole form is valid
   isFormValid = computed(() => {
     const filledOptions = this.options().filter((o) => o.optionText.trim() !== '');
     return (
+      this.moduleId().trim() !== '' &&
       this.title().trim().length >= 5 &&
       this.questionText().trim() !== '' &&
       filledOptions.length >= 2 &&
@@ -115,21 +126,27 @@ export class QuestionFormComponent implements OnInit {
   });
 
   ngOnInit() {
-    // load modules from the real API (not static list)
+    const q = this.question();
+
     this.readinessService.getModuleList().subscribe({
       next: (mods) => {
-        this.moduleList = mods;
+        queueMicrotask(() => {
+          this.moduleList.set(mods);
+          if (q) {
+            const found = mods.find((m) => m.moduleCode === q.moduleCode);
+            if (found) {
+              this.moduleId.set(found.id);
+            }
+          }
+        });
       },
       error: () => {
         console.error('Failed to load modules for dropdown');
       },
     });
 
-    // load topics
     this.topics = this.readinessService.getTopics();
 
-    // if editing an existing question, fill the form with its data
-    const q = this.question();
     if (q) {
       this.title.set(q.title);
       this.questionText.set(q.questionText);
@@ -144,14 +161,6 @@ export class QuestionFormComponent implements OnInit {
       this.correctOptionId.set(q.correctOptionId);
       this.isActive.set(q.status === 'Active');
 
-      // find the moduleId GUID from the module code (for editing)
-      // we set it after modules load
-      this.readinessService.getModuleList().subscribe((mods) => {
-        const found = mods.find((m) => m.moduleCode === q.moduleCode);
-        if (found) this.moduleId.set(found.id);
-      });
-
-      // copy the options
       if (q.options.length > 0) {
         this.options.set([...q.options]);
       }
@@ -161,7 +170,7 @@ export class QuestionFormComponent implements OnInit {
   // when user selects a module from the dropdown, save the GUID
   onModuleSelect(id: string) {
     this.moduleId.set(id);
-    const mod = this.moduleList.find((m) => m.id === id);
+    const mod = this.moduleList().find((m) => m.id === id);
     if (mod) {
       this.module.set(mod.moduleName);
       this.moduleCode.set(mod.moduleCode);

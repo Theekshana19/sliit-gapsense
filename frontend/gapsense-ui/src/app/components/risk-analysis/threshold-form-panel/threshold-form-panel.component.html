@@ -1,0 +1,141 @@
+@if (open()) {
+  <div class="fixed inset-0 z-[100] flex justify-end">
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" (click)="onBackdropClick()"></div>
+    <div class="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col p-8 overflow-y-auto border-l border-slate-200 animate-slide-in">
+      <div class="flex justify-between items-center mb-10">
+        <h3 class="text-2xl font-bold text-slate-900 font-manrope">{{ title }}</h3>
+        <button type="button" class="p-2 hover:bg-slate-100 rounded-full transition-colors" (click)="onCancel()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6 flex flex-col flex-1">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Rule Name</label>
+          <input formControlName="ruleName"
+                 class="w-full bg-slate-50 border-b-2 px-4 py-3 rounded-t-lg transition-colors outline-none"
+                 [class.border-red-500]="getRuleNameError()"
+                 [class.border-slate-200]="!getRuleNameError()"
+                 [class.focus:border-blue-600]="!getRuleNameError()"
+                 [class.focus:border-red-500]="getRuleNameError()"
+                 placeholder="e.g. Foundation Readiness"
+                 type="text" />
+          @if (getRuleNameError()) {
+            <p class="text-[11px] text-red-600 mt-2 flex items-center gap-1 font-medium">
+              <span class="material-symbols-outlined text-[14px]">error</span> {{ getRuleNameError() }}
+            </p>
+          }
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Low Risk Min %</label>
+          <div class="relative">
+            <input formControlName="lowRiskMin"
+                   class="w-full bg-slate-50 border-b-2 px-4 py-3 rounded-t-lg transition-colors outline-none"
+                   [class.border-red-500]="getPercentageError('lowRiskMin')"
+                   [class.border-slate-200]="!getPercentageError('lowRiskMin')"
+                   type="number"
+                   min="0"
+                   max="100" />
+            <span class="absolute right-4 top-3 text-slate-500">%</span>
+          </div>
+          @if (getPercentageError('lowRiskMin')) {
+            <p class="text-[10px] text-red-600 mt-1 font-medium">{{ getPercentageError('lowRiskMin') }}</p>
+          }
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Med Risk Min %</label>
+            <div class="relative">
+              <input formControlName="mediumRiskMin"
+                     class="w-full bg-slate-50 border-b-2 px-4 py-3 rounded-t-lg transition-colors outline-none"
+                     [class.border-red-500]="getPercentageError('mediumRiskMin')"
+                     [class.border-slate-200]="!getPercentageError('mediumRiskMin')"
+                     type="number"
+                     min="0"
+                     max="100" />
+              <span class="absolute right-4 top-3 text-slate-500">%</span>
+            </div>
+            @if (getPercentageError('mediumRiskMin')) {
+              <p class="text-[10px] text-red-600 mt-1 font-medium">{{ getPercentageError('mediumRiskMin') }}</p>
+            }
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Med Risk Max %</label>
+            <div class="relative">
+              <input formControlName="mediumRiskMax"
+                     class="w-full bg-slate-50 border-b-2 px-4 py-3 rounded-t-lg transition-colors outline-none"
+                     [class.border-red-500]="getPercentageError('mediumRiskMax')"
+                     [class.border-slate-200]="!getPercentageError('mediumRiskMax')"
+                     type="number"
+                     min="0"
+                     max="100" />
+              <span class="absolute right-4 top-3 text-slate-500">%</span>
+            </div>
+            @if (getPercentageError('mediumRiskMax')) {
+              <p class="text-[10px] text-red-600 mt-1 font-medium leading-tight">{{ getPercentageError('mediumRiskMax') }}</p>
+            }
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">High Risk Max %</label>
+          <div class="relative">
+            <input formControlName="highRiskMax"
+                   class="w-full bg-slate-50 border-b-2 px-4 py-3 rounded-t-lg transition-colors outline-none"
+                   [class.border-red-500]="getPercentageError('highRiskMax')"
+                   [class.border-slate-200]="!getPercentageError('highRiskMax')"
+                   type="number"
+                   min="0"
+                   max="100" />
+            <span class="absolute right-4 top-3 text-slate-500">%</span>
+          </div>
+          @if (getPercentageError('highRiskMax')) {
+            <p class="text-[10px] text-red-600 mt-1 font-medium">{{ getPercentageError('highRiskMax') }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Initial Status</label>
+          <div class="flex gap-4">
+            <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-95 shadow-sm"
+                   [class.bg-white]="form.get('status')?.value === 'active'"
+                   [class.border-blue-700]="form.get('status')?.value === 'active'"
+                   [class.bg-slate-50]="form.get('status')?.value !== 'active'"
+                   [class.border-transparent]="form.get('status')?.value !== 'active'"
+                   [class.hover:border-slate-300]="form.get('status')?.value !== 'active'">
+              <input formControlName="status" class="hidden" type="radio" value="active" />
+              <span class="material-symbols-outlined text-[20px]" [class.text-blue-700]="form.get('status')?.value === 'active'" [class.text-slate-400]="form.get('status')?.value !== 'active'">check_circle</span>
+              <span class="text-sm font-bold" [class.text-blue-700]="form.get('status')?.value === 'active'" [class.text-slate-500]="form.get('status')?.value !== 'active'">Active</span>
+            </label>
+            <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-95"
+                   [class.bg-white]="form.get('status')?.value === 'inactive'"
+                   [class.border-blue-700]="form.get('status')?.value === 'inactive'"
+                   [class.bg-slate-50]="form.get('status')?.value !== 'inactive'"
+                   [class.border-transparent]="form.get('status')?.value !== 'inactive'"
+                   [class.hover:border-slate-300]="form.get('status')?.value !== 'inactive'">
+              <input formControlName="status" class="hidden" type="radio" value="inactive" />
+              <span class="material-symbols-outlined text-[20px]" [class.text-blue-700]="form.get('status')?.value === 'inactive'" [class.text-slate-400]="form.get('status')?.value !== 'inactive'">cancel</span>
+              <span class="text-sm font-bold" [class.text-blue-700]="form.get('status')?.value === 'inactive'" [class.text-slate-500]="form.get('status')?.value !== 'inactive'">Inactive</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Internal Notes</label>
+          <textarea formControlName="notes"
+                    class="w-full bg-slate-50 border-b-2 border-slate-200 focus:border-blue-600 px-4 py-3 rounded-t-lg transition-colors outline-none resize-none"
+                    placeholder="Provide context for this threshold..."
+                    rows="4"></textarea>
+        </div>
+        <div class="pt-8 border-t border-slate-200 flex gap-4 mt-auto">
+          <button type="button"
+                  class="flex-1 px-6 py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
+                  (click)="onCancel()">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="flex-1 px-6 py-3 rounded-xl bg-blue-700 text-white font-bold shadow-lg hover:bg-blue-800 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                  [disabled]="form.invalid || form.pending">
+            Save Rule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

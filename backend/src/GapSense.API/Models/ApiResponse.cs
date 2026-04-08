@@ -1,16 +1,14 @@
 namespace GapSense.API.Models;
 
-// standard API response wrapper - matches the Application layer DTOs
-// kept here for controllers that need a quick response without DTOs
-public class ApiResponse<T>
+public record ApiResponse<T>
 {
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public T? Data { get; set; }
+    public bool Success { get; init; }
+    public string Message { get; init; } = string.Empty;
+    public T? Data { get; init; }
 
-    public static ApiResponse<T> Ok(T data, string message = "Success")
-        => new() { Success = true, Data = data, Message = message };
+    public static ApiResponse<T> Ok(T? data, string message = "Success") =>
+        new() { Success = true, Message = message, Data = data };
 
-    public static ApiResponse<T> Fail(string message)
-        => new() { Success = false, Message = message };
+    public static ApiResponse<T> Fail(string message) =>
+        new() { Success = false, Message = message, Data = default };
 }

@@ -1,5 +1,5 @@
 <!-- add/edit module page -->
-<app-main-layout [pageTitle]="pageTitle()" breadcrumb="Curriculum > Module Editor" [showSearch]="false">
+<app-member-shell>
   @if (isLoading()) {
     <div class="py-20 flex justify-center">
       <app-loading-spinner size="lg" />
@@ -8,4 +8,4 @@
   @if (!isLoading()) {
     <app-module-form [module]="module()" (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
   }
-</app-main-layout>
+</app-member-shell>

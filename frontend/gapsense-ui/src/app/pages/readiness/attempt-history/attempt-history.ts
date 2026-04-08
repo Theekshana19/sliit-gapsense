@@ -1,9 +1,11 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
+import { AuthUiService } from '../../../services/auth-ui.service';
 import { ReadinessService } from '../../../services/readiness.service';
+import { ToastService } from '../../../services/toast.service';
 import { AttemptSummary, AttemptStats } from '../../../models/readiness/submission.model';
 
 // attempt history page - view all past quiz attempts with statistics
@@ -11,15 +13,23 @@ import { AttemptSummary, AttemptStats } from '../../../models/readiness/submissi
 @Component({
   selector: 'app-attempt-history',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent, DecimalPipe],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, DecimalPipe],
   templateUrl: './attempt-history.html',
 })
 export class AttemptHistoryComponent implements OnInit {
   private readinessService = inject(ReadinessService);
+  private authUi = inject(AuthUiService);
+  private toastService = inject(ToastService);
 
   isLoading = signal(true);
   attempts = signal<AttemptSummary[]>([]);
   stats = signal<AttemptStats>({ totalAttempts: 0, avgSuccessRate: 0, flaggedAttempts: 0, changePercentage: 0 });
+
+  readonly pageSubtitle = computed(() =>
+    this.authUi.currentUser()?.role === 'student'
+      ? 'Your submitted readiness quiz attempts'
+      : 'Overview of student progress'
+  );
 
   ngOnInit() {
     this.loadData();
@@ -28,13 +38,20 @@ export class AttemptHistoryComponent implements OnInit {
   loadData() {
     this.isLoading.set(true);
 
-    this.readinessService.getAttemptHistory().subscribe((data) => {
-      this.attempts.set(data);
-      this.isLoading.set(false);
+    this.readinessService.getAttemptHistory().subscribe({
+      next: (data) => {
+        this.attempts.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to load attempt history');
+        this.isLoading.set(false);
+      },
     });
 
-    this.readinessService.getAttemptStats().subscribe((s) => {
-      this.stats.set(s);
+    this.readinessService.getAttemptStats().subscribe({
+      next: (s) => this.stats.set(s),
+      error: () => this.toastService.error('Failed to load attempt stats'),
     });
   }
 

@@ -1,0 +1,32 @@
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-blue-800">
+    <div class="flex items-center gap-4 mb-3">
+      <div class="p-2 bg-blue-100 rounded-lg">
+        <span class="material-symbols-outlined text-blue-900">topic</span>
+      </div>
+      <span class="text-slate-600 font-semibold text-sm">Total Topics Evaluated</span>
+    </div>
+    <div class="text-4xl font-extrabold text-slate-900 tabular-nums">{{ summary().totalTopicsEvaluated }}</div>
+    <div class="mt-2 text-xs text-slate-600">{{ summary().totalTopicsHelper }}</div>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-slate-500">
+    <div class="flex items-center gap-4 mb-3">
+      <div class="p-2 bg-slate-200 rounded-lg">
+        <span class="material-symbols-outlined text-slate-700">warning</span>
+      </div>
+      <span class="text-slate-600 font-semibold text-sm">Weak Topics Identified</span>
+    </div>
+    <div class="text-4xl font-extrabold text-slate-900 tabular-nums">{{ summary().weakTopicsIdentified }}</div>
+    <div class="mt-2 text-xs text-slate-600">{{ summary().weakTopicsHelper }}</div>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200/80 border-l-4 border-l-red-600">
+    <div class="flex items-center gap-4 mb-3">
+      <div class="p-2 bg-red-100 rounded-lg">
+        <span class="material-symbols-outlined text-red-800">priority_high</span>
+      </div>
+      <span class="text-slate-600 font-semibold text-sm">Critical Weak Areas</span>
+    </div>
+    <div class="text-4xl font-extrabold text-red-600 tabular-nums">{{ summary().criticalWeakAreas }}</div>
+    <div class="mt-2 text-xs text-slate-600">{{ summary().criticalHelper }}</div>
+  </div>
+</section>

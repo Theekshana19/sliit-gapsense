@@ -1,9 +1,9 @@
 <!-- quiz attempt page - student takes the quiz here (NO sidebar) -->
 <app-assessment-layout
-  [quizTitle]="quiz()?.moduleCode + ' ' + quiz()?.title"
+  [quizTitle]="quizHeading()"
   [timerDisplay]="timerDisplay()"
-  studentName="K.B.C Dilshani"
-  studentInitials="CD"
+  [studentName]="displayStudentName()"
+  [studentInitials]="displayStudentInitials()"
 >
   <!-- loading -->
   @if (isLoading()) {
@@ -166,7 +166,7 @@
   }
 
   <!-- submit confirmation dialog -->
-  <app-confirm-dialog
+  <app-confirm-prompt
     [isOpen]="showSubmitDialog()"
     title="Final Submission"
     [message]="'You have answered ' + answeredCount + ' out of ' + totalQuestions + ' questions. Once submitted, you cannot change your answers.'"

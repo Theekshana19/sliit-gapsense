@@ -1,9 +1,5 @@
 <!-- submission tracking page -->
-<app-main-layout
-  pageTitle="Submission Tracking"
-  breadcrumb="Faculty of Computing > Year 3"
-  searchPlaceholder="Search students..."
->
+<app-member-shell>
   <!-- filter section -->
   <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-6">
     <div class="flex items-center gap-3">
@@ -110,7 +106,7 @@
 
               <!-- status -->
               <td class="py-4 px-5">
-                <app-status-badge
+                <app-pill-badge
                   [label]="sub.status"
                   [variant]="getStatusVariant(sub.status)"
                   [showDot]="true"
@@ -193,4 +189,4 @@
       </div>
     </div>
   }
-</app-main-layout>
+</app-member-shell>

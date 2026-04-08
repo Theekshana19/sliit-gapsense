@@ -1,5 +1,5 @@
 <!-- validation alerts page -->
-<app-main-layout pageTitle="Validation Alerts" breadcrumb="Curriculum > Alerts" searchPlaceholder="Search alerts...">
+<app-member-shell>
 
   <!-- stats cards -->
   <div class="grid grid-cols-3 gap-4 mb-6">
@@ -84,10 +84,10 @@
                     </span>
                   </td>
                   <td class="py-4 px-5">
-                    <app-status-badge [label]="alert.severity" [variant]="getSeverityVariant(alert.severity)" />
+                    <app-pill-badge [label]="alert.severity" [variant]="getSeverityVariant(alert.severity)" />
                   </td>
                   <td class="py-4 px-5">
-                    <app-status-badge [label]="alert.status" [variant]="getStatusVariant(alert.status)" [showDot]="true" />
+                    <app-pill-badge [label]="alert.status" [variant]="getStatusVariant(alert.status)" [showDot]="true" />
                   </td>
                   <td class="py-4 px-5">
                     <div class="flex gap-1">
@@ -156,4 +156,4 @@
       </div>
     </div>
   }
-</app-main-layout>
+</app-member-shell>

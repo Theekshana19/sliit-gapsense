@@ -1,0 +1,10 @@
+<div class="flex items-center gap-4 mb-6">
+  <h2 class="text-xl font-bold text-slate-900">{{ config().title }}</h2>
+  <div class="h-px flex-1 bg-slate-300/40"></div>
+  <span
+    class="text-xs font-bold px-2 py-1 rounded-lg"
+    [class]="badgeClass(config().badgeTone)">
+    {{ config().badgeLabel }}
+  </span>
+</div>
+<ng-content />

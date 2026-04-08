@@ -1,10 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
-import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state';
-import { ConfirmDialogComponent } from '../../../components/ui/confirm-dialog/confirm-dialog';
+import { EmptyStateComponent } from '../../../components/ui/empty-state/empty-state.component';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
 import { Module, ModuleFilter, ModuleStats } from '../../../models/curriculum/module.model';
@@ -14,7 +14,7 @@ import { Module, ModuleFilter, ModuleStats } from '../../../models/curriculum/mo
 @Component({
   selector: 'app-module-management',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent, EmptyStateComponent, ConfirmDialogComponent],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent, EmptyStateComponent, ConfirmPromptDialogComponent],
   templateUrl: './module-management.html',
 })
 export class ModuleManagementComponent implements OnInit {
@@ -30,7 +30,6 @@ export class ModuleManagementComponent implements OnInit {
   filterProgram = signal('');
   filterSemester = signal('');
   filterStatus = signal('');
-  searchText = signal('');
 
   // dropdown options
   programs: string[] = [];
@@ -54,7 +53,6 @@ export class ModuleManagementComponent implements OnInit {
     this.isLoading.set(true);
 
     const filter: ModuleFilter = {
-      search: this.searchText(),
       program: this.filterProgram() as any,
       semester: this.filterSemester() as any,
       status: this.filterStatus() as any,
@@ -66,12 +64,6 @@ export class ModuleManagementComponent implements OnInit {
     });
 
     this.curriculumService.getModuleStats().subscribe((s) => this.stats.set(s));
-  }
-
-  onSearch(text: string) {
-    this.searchText.set(text);
-    this.currentPage.set(1);
-    this.loadData();
   }
 
   onFilterChange() {

@@ -1,0 +1,28 @@
+<div class="space-y-1.5">
+  <label [for]="inputId()" class="block text-xs font-bold uppercase tracking-wide text-slate-600">{{ label() }}</label>
+  <div class="relative">
+    @if (icon()) {
+      <span
+        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"
+        >{{ icon() }}</span
+      >
+    }
+    <input
+      [id]="inputId()"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [autocomplete]="autocomplete()"
+      [formControl]="control()"
+      class="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-800 focus:ring-2 focus:ring-blue-800/20 outline-none transition-shadow"
+      [class.pl-11]="icon()"
+      [class.px-4]="!icon()" />
+  </div>
+  @if (control().invalid && control().touched) {
+    @if (control().errors?.['required']) {
+      <p class="text-xs font-semibold text-red-600">This field is required.</p>
+    }
+    @if (control().errors?.['email']) {
+      <p class="text-xs font-semibold text-red-600">Enter a valid email address.</p>
+    }
+  }
+</div>

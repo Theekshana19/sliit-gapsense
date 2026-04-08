@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GapSense.Infrastructure.Data;
+using GapSense.Infrastructure.Persistence;
 using GapSense.Domain.Entities;
 using GapSense.Application.DTOs.Common;
 using GapSense.Application.DTOs.Curriculum;
@@ -10,12 +11,13 @@ namespace GapSense.API.Controllers;
 // handles all API requests related to semester module offerings
 // base route: /api/semester-offerings
 [ApiController]
+[Authorize]
 [Route("api/semester-offerings")]
 public class SemesterOfferingsController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ApplicationDbContext _db;
 
-    public SemesterOfferingsController(AppDbContext db)
+    public SemesterOfferingsController(ApplicationDbContext db)
     {
         _db = db;
     }

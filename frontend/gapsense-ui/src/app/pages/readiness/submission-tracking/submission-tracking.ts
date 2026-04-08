@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../services/readiness.service';
 import { Submission, SubmissionStats } from '../../../models/readiness/submission.model';
@@ -10,7 +10,7 @@ import { Submission, SubmissionStats } from '../../../models/readiness/submissio
 @Component({
   selector: 'app-submission-tracking',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent],
   templateUrl: './submission-tracking.html',
 })
 export class SubmissionTrackingComponent implements OnInit {

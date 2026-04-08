@@ -1,9 +1,5 @@
 <!-- add/edit question page -->
-<app-main-layout
-  [pageTitle]="pageTitle()"
-  breadcrumb="Question Bank > Question Editor"
-  [showSearch]="false"
->
+<app-member-shell>
   <!-- show loading spinner while fetching question data -->
   @if (isLoading()) {
     <div class="py-20 flex justify-center">
@@ -15,8 +11,9 @@
   @if (!isLoading()) {
     <app-question-form
       [question]="question()"
+      [isSubmitting]="isSaving()"
       (formSubmit)="onFormSubmit($event)"
       (formCancel)="onFormCancel()"
     />
   }
-</app-main-layout>
+</app-member-shell>

@@ -1,9 +1,5 @@
 <!-- quiz scheduling page -->
-<app-main-layout
-  pageTitle="Quiz Scheduling"
-  breadcrumb="Academic Management"
-  searchPlaceholder="Search assessments..."
->
+<app-member-shell>
   <!-- stats cards row -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <!-- total assessments -->
@@ -91,7 +87,7 @@
                 <span class="text-sm font-semibold text-on-surface">{{ schedule.maxAttempts }}</span>
               </td>
               <td class="py-4 px-5">
-                <app-status-badge
+                <app-pill-badge
                   [label]="schedule.status"
                   [variant]="getStatusVariant(schedule.status)"
                   [showDot]="schedule.status === 'Published'"
@@ -278,4 +274,4 @@
       </div>
     </div>
   }
-</app-main-layout>
+</app-member-shell>

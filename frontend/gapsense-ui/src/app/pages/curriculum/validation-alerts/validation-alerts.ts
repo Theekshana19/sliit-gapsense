@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { MainLayoutComponent } from '../../../components/layout/main-layout/main-layout';
-import { StatusBadgeComponent } from '../../../components/ui/status-badge/status-badge';
+import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
+import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { CurriculumService } from '../../../services/curriculum.service';
 import { ToastService } from '../../../services/toast.service';
@@ -11,7 +11,7 @@ import { ValidationAlert, ValidationStats } from '../../../models/curriculum/pre
 @Component({
   selector: 'app-validation-alerts',
   standalone: true,
-  imports: [MainLayoutComponent, StatusBadgeComponent, LoadingSpinnerComponent],
+  imports: [MemberShellComponent, PillBadgeComponent, LoadingSpinnerComponent],
   templateUrl: './validation-alerts.html',
 })
 export class ValidationAlertsComponent implements OnInit {

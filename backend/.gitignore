@@ -3,3 +3,8 @@ obj/
 .vs/
 *.user
 *.suo
+*.cache
+
+# Local uploads (folder tracked via .gitkeep only)
+src/GapSense.API/wwwroot/uploads/recommendation-rules/*
+!src/GapSense.API/wwwroot/uploads/recommendation-rules/.gitkeep
