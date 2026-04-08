@@ -66,6 +66,11 @@ public class PrerequisitesController : ControllerBase
             .Where(p => p.MainModuleId == moduleId)
             .ToListAsync();
 
+        // calculate the depth - how many levels deep the prerequisite chain goes
+        // we walk up the tree from this module to find the max depth
+        var allPrereqs = await _db.Prerequisites.ToListAsync();
+        var depth = CalculateDepth(moduleId, allPrereqs, new HashSet<Guid>());
+
         var stats = new PrerequisiteStatsDto
         {
             ActivePrerequisites = prereqs.Count,
@@ -73,14 +78,36 @@ public class PrerequisitesController : ControllerBase
             AvgRelevanceScore = prereqs.Count > 0
                 ? (int)prereqs.Average(p => p.RelevanceWeight)
                 : 0,
-            DepthLevels = 3, // placeholder - would need recursive calculation for real value
+            DepthLevels = depth,
         };
 
         return Ok(ApiResponseDto<PrerequisiteStatsDto>.SuccessResponse(stats));
     }
 
+    // recursively walk the prerequisite chain and find the deepest level
+    // visited set prevents infinite loops if there are circular dependencies
+    private int CalculateDepth(Guid moduleId, List<Prerequisite> allPrereqs, HashSet<Guid> visited)
+    {
+        if (visited.Contains(moduleId)) return 0;
+        visited.Add(moduleId);
+
+        var directPrereqs = allPrereqs.Where(p => p.MainModuleId == moduleId).ToList();
+        if (directPrereqs.Count == 0) return 0;
+
+        // depth = 1 + max depth of any prerequisite
+        var maxChildDepth = 0;
+        foreach (var p in directPrereqs)
+        {
+            var childDepth = CalculateDepth(p.PrerequisiteModuleId, allPrereqs, visited);
+            if (childDepth > maxChildDepth) maxChildDepth = childDepth;
+        }
+        return 1 + maxChildDepth;
+    }
+
     // POST /api/prerequisites - create a new prerequisite mapping
+    // only lecturers and admins can create prerequisites
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<PrerequisiteDto>>> CreatePrerequisite(
         CreatePrerequisiteDto dto)
     {
@@ -146,8 +173,56 @@ public class PrerequisitesController : ControllerBase
             ApiResponseDto<PrerequisiteDto>.SuccessResponse(result, "Prerequisite created successfully"));
     }
 
+    // PUT /api/prerequisites/{id} - update an existing prerequisite mapping
+    // only lecturers and admins can update prerequisites
+    // can change relationship type, weight, notes, and status
+    // cannot change which modules are linked - delete and recreate for that
+    [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
+    public async Task<ActionResult<ApiResponseDto<PrerequisiteDto>>> UpdatePrerequisite(
+        Guid id, UpdatePrerequisiteDto dto)
+    {
+        // load the existing prerequisite with both modules so we can build the response
+        var prerequisite = await _db.Prerequisites
+            .Include(p => p.MainModule)
+            .Include(p => p.PrerequisiteModule)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (prerequisite == null)
+            return NotFound(ApiResponseDto<PrerequisiteDto>.ErrorResponse("Prerequisite not found"));
+
+        // update the editable fields
+        prerequisite.RelationshipType = dto.RelationshipType;
+        prerequisite.RelevanceWeight = dto.RelevanceWeight;
+        prerequisite.Notes = dto.Notes ?? string.Empty;
+        prerequisite.Status = dto.Status ?? "Validated";
+
+        await _db.SaveChangesAsync();
+
+        // build the response with the updated info
+        var result = new PrerequisiteDto
+        {
+            Id = prerequisite.Id,
+            MainModuleId = prerequisite.MainModuleId,
+            MainModuleCode = prerequisite.MainModule.ModuleCode,
+            MainModuleName = prerequisite.MainModule.ModuleName,
+            PrerequisiteModuleId = prerequisite.PrerequisiteModuleId,
+            PrerequisiteModuleCode = prerequisite.PrerequisiteModule.ModuleCode,
+            PrerequisiteModuleName = prerequisite.PrerequisiteModule.ModuleName,
+            RelationshipType = prerequisite.RelationshipType,
+            RelevanceWeight = prerequisite.RelevanceWeight,
+            Notes = prerequisite.Notes,
+            Status = prerequisite.Status,
+            CreatedAt = prerequisite.CreatedAt.ToString("yyyy-MM-dd"),
+        };
+
+        return Ok(ApiResponseDto<PrerequisiteDto>.SuccessResponse(result, "Prerequisite updated successfully"));
+    }
+
     // DELETE /api/prerequisites/{id} - delete a prerequisite mapping
+    // only lecturers and admins can delete prerequisites
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeletePrerequisite(Guid id)
     {
         var prerequisite = await _db.Prerequisites.FindAsync(id);

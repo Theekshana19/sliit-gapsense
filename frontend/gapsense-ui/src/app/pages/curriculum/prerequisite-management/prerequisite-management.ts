@@ -56,10 +56,9 @@ export class PrerequisiteManagementComponent implements OnInit {
     this.router.navigate(['/curriculum/prerequisite-mapping']);
   }
 
-  // navigate to edit a prerequisite (reuses the mapping form page)
+  // navigate to edit a prerequisite - reuses the mapping page in edit mode
   goToEditMapping(prereq: Prerequisite) {
-    // for now, navigate to the mapping page - full edit would need a separate route
-    this.toastService.info('Edit functionality coming soon. Use delete and re-create for now.');
+    this.router.navigate(['/curriculum/prerequisites', prereq.id, 'edit']);
   }
 
   goToVisualization() {

@@ -1,3 +1,25 @@
 <app-member-shell>
-  <app-prerequisite-form (formSubmit)="onFormSubmit($event)" (formCancel)="onFormCancel()" />
+  @if (isLoading()) {
+    <div class="py-20 flex justify-center">
+      <app-loading-spinner size="lg" />
+    </div>
+  }
+
+  @if (!isLoading()) {
+    @if (isEditMode()) {
+      <div class="mb-4 p-4 bg-primary-fixed/40 border-l-4 border-primary rounded-xl flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary" style="font-size: 24px;">edit</span>
+        <div>
+          <p class="text-sm font-bold text-on-surface">Editing Prerequisite Mapping</p>
+          <p class="text-[11px] text-on-surface-variant">Module selection cannot be changed. Update relationship type, weight, or notes.</p>
+        </div>
+      </div>
+    }
+
+    <app-prerequisite-form
+      [prerequisite]="prerequisite()"
+      (formSubmit)="onFormSubmit($event)"
+      (formCancel)="onFormCancel()"
+    />
+  }
 </app-member-shell>

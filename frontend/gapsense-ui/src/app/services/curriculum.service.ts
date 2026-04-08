@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 
 import { Module, ModuleFilter, ModuleStats } from '../models/curriculum/module.model';
 import { Topic, TopicWeightEntry, TopicStats } from '../models/curriculum/topic.model';
@@ -197,6 +197,20 @@ export class CurriculumService {
       .pipe(map((res) => res.data));
   }
 
+  // update an existing prerequisite - can change type, weight, notes, status
+  // cannot change which modules are linked - delete and recreate for that
+  updatePrerequisite(id: string, updates: Partial<Prerequisite>): Observable<Prerequisite> {
+    const body = {
+      relationshipType: updates.relationshipType ?? 'Mandatory',
+      relevanceWeight: updates.relevanceWeight ?? 50,
+      notes: updates.notes ?? '',
+      status: updates.status ?? 'Validated',
+    };
+    return this.http
+      .put<ApiResponse<Prerequisite>>(`${this.apiUrl}/prerequisites/${id}`, body)
+      .pipe(map((res) => res.data));
+  }
+
   // delete a prerequisite
   deletePrerequisite(id: string): Observable<boolean> {
     return this.http
@@ -214,31 +228,113 @@ export class CurriculumService {
   // ---------- DEPENDENCY VISUALIZATION ----------
   // these still use local data because the SVG graph positions are frontend-only
 
+  // get the dependency graph nodes - loads real modules and computes layout
+  // each module becomes a node, level is calculated from prerequisite chain depth
   getDependencyNodes(): Observable<DependencyNode[]> {
-    const nodes: DependencyNode[] = [
-      { id: '1', moduleCode: 'IT1040', moduleName: 'Object Oriented Programming', level: 0, x: 400, y: 60, status: 'valid', prerequisites: [] },
-      { id: '2', moduleCode: 'IT2040', moduleName: 'Data Structures & Algorithms', level: 1, x: 200, y: 200, status: 'valid', prerequisites: ['1'] },
-      { id: '3', moduleCode: 'IT2080', moduleName: 'Web Application Development', level: 1, x: 600, y: 200, status: 'valid', prerequisites: ['1'] },
-      { id: '4', moduleCode: 'IT3030', moduleName: 'Database Management Systems', level: 1, x: 800, y: 200, status: 'valid', prerequisites: ['1'] },
-      { id: '5', moduleCode: 'IT3011', moduleName: 'Software Engineering', level: 2, x: 300, y: 360, status: 'warning', prerequisites: ['2', '3'] },
-      { id: '6', moduleCode: 'IT4020', moduleName: 'Software Quality Assurance', level: 3, x: 400, y: 500, status: 'valid', prerequisites: ['5', '4'] },
-      { id: '9', moduleCode: 'SE3020', moduleName: 'Distributed Systems', level: 2, x: 100, y: 360, status: 'error', prerequisites: ['2'] },
-    ];
-    return of(nodes);
+    return forkJoin({
+      modules: this.getModules(),
+      prerequisites: this.getPrerequisites(),
+    }).pipe(
+      map(({ modules, prerequisites }) => this.buildDependencyNodes(modules, prerequisites))
+    );
   }
 
+  // get the dependency graph edges - one edge per prerequisite relationship
+  // edge type (mandatory/optional) determines if line is solid or dashed in the SVG
   getDependencyEdges(): Observable<DependencyEdge[]> {
-    const edges: DependencyEdge[] = [
-      { from: '1', to: '2', type: 'Mandatory' },
-      { from: '1', to: '3', type: 'Mandatory' },
-      { from: '1', to: '4', type: 'Optional' },
-      { from: '2', to: '5', type: 'Mandatory' },
-      { from: '3', to: '5', type: 'Optional' },
-      { from: '5', to: '6', type: 'Mandatory' },
-      { from: '4', to: '6', type: 'Optional' },
-      { from: '2', to: '9', type: 'Mandatory' },
-    ];
-    return of(edges);
+    return this.getPrerequisites().pipe(
+      map((prereqs) =>
+        prereqs.map((p) => ({
+          from: p.prerequisiteModuleId,
+          to: p.mainModuleId,
+          type: p.relationshipType,
+        }))
+      )
+    );
+  }
+
+  // build the visual graph nodes from real module + prerequisite data
+  // calculates each module's depth level and assigns x/y positions for the SVG
+  private buildDependencyNodes(modules: Module[], prereqs: Prerequisite[]): DependencyNode[] {
+    // build a map of moduleId -> list of prerequisite module ids
+    const prereqMap = new Map<string, string[]>();
+    for (const p of prereqs) {
+      const list = prereqMap.get(p.mainModuleId) ?? [];
+      list.push(p.prerequisiteModuleId);
+      prereqMap.set(p.mainModuleId, list);
+    }
+
+    // calculate level (depth) for each module - starts at 0 for modules with no prerequisites
+    const levelMap = new Map<string, number>();
+    const calculateLevel = (modId: string, visited: Set<string>): number => {
+      if (visited.has(modId)) return 0; // prevent infinite loop on circular deps
+      if (levelMap.has(modId)) return levelMap.get(modId)!;
+      visited.add(modId);
+
+      const prereqIds = prereqMap.get(modId) ?? [];
+      if (prereqIds.length === 0) {
+        levelMap.set(modId, 0);
+        return 0;
+      }
+
+      let maxLevel = 0;
+      for (const pId of prereqIds) {
+        const lvl = calculateLevel(pId, visited);
+        if (lvl > maxLevel) maxLevel = lvl;
+      }
+      const result = maxLevel + 1;
+      levelMap.set(modId, result);
+      return result;
+    };
+
+    for (const mod of modules) {
+      calculateLevel(mod.id, new Set());
+    }
+
+    // group modules by level so we can position them horizontally on each row
+    const byLevel = new Map<number, Module[]>();
+    for (const mod of modules) {
+      const lvl = levelMap.get(mod.id) ?? 0;
+      const list = byLevel.get(lvl) ?? [];
+      list.push(mod);
+      byLevel.set(lvl, list);
+    }
+
+    // assign x/y positions - each level is one row, modules spread horizontally
+    const HORIZONTAL_SPACING = 200;
+    const VERTICAL_SPACING = 140;
+    const Y_OFFSET = 60;
+    const nodes: DependencyNode[] = [];
+
+    for (const [level, levelModules] of byLevel.entries()) {
+      const rowWidth = (levelModules.length - 1) * HORIZONTAL_SPACING;
+      const startX = 500 - rowWidth / 2;
+
+      for (let i = 0; i < levelModules.length; i++) {
+        const mod = levelModules[i];
+        const x = startX + i * HORIZONTAL_SPACING;
+        const y = Y_OFFSET + level * VERTICAL_SPACING;
+
+        // determine status - error if module has unresolved issues
+        // for now: all valid unless module status is Draft or Archived
+        let status: 'valid' | 'warning' | 'error' = 'valid';
+        if (mod.status === 'Draft') status = 'warning';
+        if (mod.status === 'Archived') status = 'error';
+
+        nodes.push({
+          id: mod.id,
+          moduleCode: mod.moduleCode,
+          moduleName: mod.moduleName,
+          level,
+          x,
+          y,
+          status,
+          prerequisites: prereqMap.get(mod.id) ?? [],
+        });
+      }
+    }
+
+    return nodes;
   }
 
   // ---------- SEMESTER OFFERING METHODS ----------

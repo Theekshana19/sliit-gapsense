@@ -92,13 +92,21 @@ public class TopicsController : ControllerBase
             .Where(t => t.ModuleId == moduleId)
             .ToListAsync();
 
+        // alignment percentage = (validated topics + total weight = 100) / total topics
+        // counts as "well aligned" when topic is validated AND total weight equals 100
+        var validatedCount = topics.Count(t => t.Status == "Validated");
+        var totalWeight = topics.Sum(t => t.Weight);
+        var alignment = topics.Count > 0
+            ? (int)Math.Round(((double)validatedCount / topics.Count) * (totalWeight == 100 ? 100 : 50))
+            : 0;
+
         var stats = new TopicStatsDto
         {
             TotalTopics = topics.Count,
-            ValidatedCount = topics.Count(t => t.Status == "Validated"),
+            ValidatedCount = validatedCount,
             DraftCount = topics.Count(t => t.Status == "Draft"),
-            TotalWeight = topics.Sum(t => t.Weight),
-            AlignmentPercentage = topics.Count > 0 ? 92 : 0, // placeholder for now
+            TotalWeight = totalWeight,
+            AlignmentPercentage = alignment,
         };
 
         return Ok(ApiResponseDto<TopicStatsDto>.SuccessResponse(stats));
@@ -121,7 +129,9 @@ public class TopicsController : ControllerBase
     }
 
     // POST /api/topics - create a new topic
+    // only lecturers and admins can create topics
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<TopicDto>>> CreateTopic(CreateTopicDto dto)
     {
         // check if the module exists
@@ -164,7 +174,9 @@ public class TopicsController : ControllerBase
     }
 
     // PUT /api/topics/{id} - update a topic
+    // only lecturers and admins can update topics
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<TopicDto>>> UpdateTopic(Guid id, UpdateTopicDto dto)
     {
         var topic = await _db.Topics.Include(t => t.Module).FirstOrDefaultAsync(t => t.Id == id);
@@ -201,7 +213,9 @@ public class TopicsController : ControllerBase
     }
 
     // PUT /api/topics/weights/{moduleId} - batch update topic weights
+    // only lecturers and admins can update topic weights
     [HttpPut("weights/{moduleId}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> UpdateWeights(
         Guid moduleId, List<TopicWeightUpdateDto> weights)
     {
@@ -228,7 +242,9 @@ public class TopicsController : ControllerBase
     }
 
     // DELETE /api/topics/{id} - delete a topic
+    // only lecturers and admins can delete topics
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteTopic(Guid id)
     {
         var topic = await _db.Topics.FindAsync(id);

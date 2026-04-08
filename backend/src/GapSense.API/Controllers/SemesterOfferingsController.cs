@@ -71,20 +71,30 @@ public class SemesterOfferingsController : ControllerBase
     {
         var offerings = await _db.SemesterOfferings.ToListAsync();
 
+        // efficiency growth = ratio of published vs total this semester compared to last
+        // simple version: % of offerings that are currently active (Published)
+        // since we don't track historical data yet, this gives a meaningful number
+        var publishedCount = offerings.Count(o => o.Status == "Published");
+        var efficiency = offerings.Count > 0
+            ? (int)Math.Round((publishedCount * 100.0) / offerings.Count) - 50
+            : 0;
+
         var stats = new
         {
             CompletionPercentage = offerings.Count > 0
-                ? (int)(offerings.Count(o => o.Status == "Published") * 100.0 / offerings.Count)
+                ? (int)(publishedCount * 100.0 / offerings.Count)
                 : 0,
             AttentionNeeded = offerings.Count(o => o.Status == "Draft" || o.Status == "Inactive"),
-            EfficiencyGrowth = 12, // placeholder
+            EfficiencyGrowth = efficiency,
         };
 
         return Ok(ApiResponseDto<object>.SuccessResponse(stats));
     }
 
     // POST /api/semester-offerings - create a new offering
+    // only lecturers and admins can create offerings
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<SemesterOfferingDto>>> CreateOffering(
         CreateSemesterOfferingDto dto)
     {
@@ -129,7 +139,9 @@ public class SemesterOfferingsController : ControllerBase
     }
 
     // PUT /api/semester-offerings/{id} - update an offering
+    // only lecturers and admins can update offerings
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<SemesterOfferingDto>>> UpdateOffering(
         Guid id, CreateSemesterOfferingDto dto)
     {
@@ -167,7 +179,9 @@ public class SemesterOfferingsController : ControllerBase
     }
 
     // DELETE /api/semester-offerings/{id} - delete an offering
+    // only lecturers and admins can delete offerings
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteOffering(Guid id)
     {
         var offering = await _db.SemesterOfferings.FindAsync(id);

@@ -280,6 +280,14 @@ export const routes: Routes = [
           ),
       },
       {
+        // edit existing prerequisite - reuses prerequisite-mapping page in edit mode
+        path: 'prerequisites/:id/edit',
+        loadComponent: () =>
+          import('./pages/curriculum/prerequisite-mapping/prerequisite-mapping').then(
+            (m) => m.PrerequisiteMappingComponent
+          ),
+      },
+      {
         path: 'prerequisite-management',
         loadComponent: () =>
           import('./pages/curriculum/prerequisite-management/prerequisite-management').then(

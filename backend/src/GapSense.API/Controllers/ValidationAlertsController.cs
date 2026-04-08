@@ -50,20 +50,35 @@ public class ValidationAlertsController : ControllerBase
     {
         var alerts = await _db.ValidationAlerts.ToListAsync();
 
+        // checks passed = number of resolved alerts + total modules with no issues
+        // we count all modules and topics that don't have any unresolved alerts
+        var resolvedAlerts = alerts.Count(a => a.Status == "Resolved");
+        var totalModules = await _db.Modules.CountAsync();
+        var totalTopics = await _db.Topics.CountAsync();
+        // each module and topic counts as one "check" - if no alert exists for it, it passed
+        var modulesWithIssues = alerts
+            .Where(a => a.Status != "Resolved")
+            .Select(a => a.ModuleCode)
+            .Distinct()
+            .Count();
+        var passedChecks = resolvedAlerts + (totalModules - modulesWithIssues) + totalTopics;
+
         var stats = new ValidationStatsDto
         {
             CriticalCount = alerts.Count(a => a.Severity == "Critical" && a.Status != "Resolved"),
             ComplianceScore = alerts.Count > 0
-                ? (int)(alerts.Count(a => a.Status == "Resolved") * 100.0 / alerts.Count)
+                ? (int)(resolvedAlerts * 100.0 / alerts.Count)
                 : 100,
-            ChecksPassed = 156, // placeholder - would calculate from actual checks
+            ChecksPassed = passedChecks,
         };
 
         return Ok(ApiResponseDto<ValidationStatsDto>.SuccessResponse(stats));
     }
 
     // PUT /api/validation-alerts/{id}/status - update alert status
+    // only lecturers and admins can resolve/update alerts
     [HttpPut("{id}/status")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<ValidationAlertDto>>> UpdateStatus(
         Guid id, UpdateAlertStatusDto dto)
     {

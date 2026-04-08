@@ -122,7 +122,9 @@ public class ModulesController : ControllerBase
     }
 
     // POST /api/modules - create a new module
+    // only lecturers and admins can create modules
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<ModuleDto>>> CreateModule(CreateModuleDto dto)
     {
         // check if module code already exists
@@ -167,7 +169,9 @@ public class ModulesController : ControllerBase
     }
 
     // PUT /api/modules/{id} - update an existing module
+    // only lecturers and admins can update modules
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<ModuleDto>>> UpdateModule(Guid id, UpdateModuleDto dto)
     {
         var module = await _db.Modules.FindAsync(id);
@@ -210,7 +214,9 @@ public class ModulesController : ControllerBase
     }
 
     // DELETE /api/modules/{id} - delete a module
+    // only lecturers and admins can delete modules
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteModule(Guid id)
     {
         var module = await _db.Modules.FindAsync(id);
