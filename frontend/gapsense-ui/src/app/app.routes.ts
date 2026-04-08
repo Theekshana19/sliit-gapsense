@@ -359,6 +359,13 @@ export const routes: Routes = [
           import('./pages/readiness/quiz-builder/quiz-builder').then((m) => m.QuizBuilderComponent),
       },
       {
+        // edit existing quiz - reuses the quiz-builder component in edit mode
+        path: 'quizzes/:id/edit',
+        canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
+        loadComponent: () =>
+          import('./pages/readiness/quiz-builder/quiz-builder').then((m) => m.QuizBuilderComponent),
+      },
+      {
         path: 'quiz-scheduling',
         canActivate: [roleGuard(ADMIN_AND_LECTURER_ROLES)],
         loadComponent: () =>
@@ -369,6 +376,18 @@ export const routes: Routes = [
         canActivate: [roleGuard(LECTURER_OR_STUDENT_ROLES)],
         loadComponent: () =>
           import('./pages/readiness/quiz-attempt/quiz-attempt').then((m) => m.QuizAttemptComponent),
+      },
+      {
+        // submission detail page - view a specific quiz submission with answers
+        path: 'submissions/:id',
+        loadComponent: () =>
+          import('./pages/readiness/submission-detail/submission-detail').then((m) => m.SubmissionDetailComponent),
+      },
+      {
+        // resource library - browse learning materials
+        path: 'resources',
+        loadComponent: () =>
+          import('./pages/readiness/resource-library/resource-library').then((m) => m.ResourceLibraryComponent),
       },
       {
         path: 'available-quizzes',

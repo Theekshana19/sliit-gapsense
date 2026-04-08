@@ -64,3 +64,50 @@ export interface AttemptStats {
   flaggedAttempts: number;
   changePercentage: number;
 }
+
+// detailed submission info shown in the submission detail page
+// includes question text, all options, and correct answers
+export interface SubmissionDetail {
+  id: string;
+  quizId: string;
+  quizTitle: string;
+  quizRef: string;
+  moduleCode: string;
+  moduleName: string;
+  studentId: string;
+  studentName: string;
+  studentAvatar: string;
+  avatarColor: string;
+  attemptNumber: number;
+  score: number;
+  totalMarks: number;
+  percentage: number;
+  status: string;
+  isPassed: boolean;
+  passingPercentage: number;
+  startedAt: string;
+  submittedAt: string;
+  timeTakenMinutes: number;
+  answers: SubmissionAnswerDetail[];
+}
+
+// one answer with question text and all options shown
+export interface SubmissionAnswerDetail {
+  questionId: string;
+  questionDisplayId: string;
+  questionText: string;
+  difficulty: string;
+  marks: number;
+  marksAwarded: number;
+  isCorrect: boolean;
+  explanation: string;
+  options: SubmissionOptionDetail[];
+}
+
+// one option with selected/correct flags
+export interface SubmissionOptionDetail {
+  id: string;
+  optionText: string;
+  isCorrect: boolean;
+  isSelected: boolean;
+}

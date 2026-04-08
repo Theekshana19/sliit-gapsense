@@ -235,6 +235,144 @@ public class QuizzesController : ControllerBase
         return Ok(ApiResponseDto<QuizDto>.SuccessResponse(result, "Quiz created successfully"));
     }
 
+    // PUT /api/quizzes/{id} - update an existing quiz with its questions
+    // only lecturers and admins can update quizzes
+    // blocks update if the quiz already has student submissions (data integrity)
+    [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
+    public async Task<ActionResult<ApiResponseDto<QuizDto>>> UpdateQuiz(Guid id, [FromBody] UpdateQuizDto? dto)
+    {
+        if (dto == null)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Request body is required."));
+
+        dto.Questions ??= new List<CreateQuizQuestionDto>();
+
+        // load the existing quiz with its questions
+        var quiz = await _db.Quizzes
+            .Include(q => q.QuizQuestions)
+            .FirstOrDefaultAsync(q => q.Id == id);
+
+        if (quiz == null)
+            return NotFound(ApiResponseDto<QuizDto>.ErrorResponse("Quiz not found"));
+
+        // block edit if any submissions exist - protects historical data
+        var hasSubmissions = await _db.Submissions.AnyAsync(s => s.QuizId == id);
+        if (hasSubmissions)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "Cannot edit this quiz because students have already submitted attempts. Create a new quiz instead."));
+
+        if (dto.ModuleId == Guid.Empty)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("A valid moduleId (GUID) is required."));
+
+        // check module exists
+        var module = await _db.Modules.FindAsync(dto.ModuleId);
+        if (module == null)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Module not found"));
+
+        if (dto.Questions.Count == 0)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("At least one question is required"));
+
+        if (dto.Questions.Select(q => q.QuestionId).Distinct().Count() != dto.Questions.Count)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse("Each question may only appear once in a quiz."));
+
+        var questionIds = dto.Questions.Select(q => q.QuestionId).Distinct().ToList();
+        var existingIds = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id))
+            .Select(q => q.Id)
+            .ToListAsync();
+        if (existingIds.Count != questionIds.Count)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "One or more question IDs are invalid."));
+
+        var wrongModule = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id) && q.ModuleId != dto.ModuleId)
+            .AnyAsync();
+        if (wrongModule)
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "Every selected question must belong to the module you chose for this quiz."));
+
+        var marksByQuestion = await _db.Questions
+            .Where(q => questionIds.Contains(q.Id))
+            .ToDictionaryAsync(q => q.Id, q => q.Marks);
+
+        // update basic quiz fields
+        quiz.Title = dto.Title;
+        quiz.Description = dto.Description ?? string.Empty;
+        quiz.ModuleId = dto.ModuleId;
+        quiz.Intake = dto.Intake ?? string.Empty;
+        quiz.PassingPercentage = dto.PassingPercentage;
+        quiz.TimeLimitMinutes = dto.TimeLimitMinutes;
+        quiz.MaxAttempts = dto.MaxAttempts;
+        quiz.ShuffleQuestions = dto.ShuffleQuestions;
+        quiz.ShuffleOptions = dto.ShuffleOptions;
+        quiz.Status = NormalizeQuizStatus(dto.Status);
+        quiz.UpdatedAt = DateTime.UtcNow;
+
+        // replace all quiz questions - remove old ones first then add new ones
+        var oldQuizQuestions = quiz.QuizQuestions.ToList();
+        _db.QuizQuestions.RemoveRange(oldQuizQuestions);
+        quiz.QuizQuestions.Clear();
+        await _db.SaveChangesAsync();
+
+        // add the new question assignments
+        foreach (var qq in dto.Questions.OrderBy(x => x.Order))
+        {
+            var marks = qq.Marks < 1
+                ? Math.Clamp(marksByQuestion.GetValueOrDefault(qq.QuestionId, 5), 1, 100)
+                : Math.Clamp(qq.Marks, 1, 100);
+
+            _db.QuizQuestions.Add(new QuizQuestion
+            {
+                QuizId = quiz.Id,
+                QuestionId = qq.QuestionId,
+                SortOrder = qq.Order,
+                Marks = marks,
+            });
+        }
+
+        // recalculate total marks from new questions
+        quiz.TotalMarks = dto.Questions.Sum(qq =>
+        {
+            if (qq.Marks < 1) return Math.Clamp(marksByQuestion.GetValueOrDefault(qq.QuestionId, 5), 1, 100);
+            return Math.Clamp(qq.Marks, 1, 100);
+        });
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogWarning(ex, "UpdateQuiz SaveChanges failed");
+            return BadRequest(ApiResponseDto<QuizDto>.ErrorResponse(
+                "Could not save the quiz. Check that the module and questions exist."));
+        }
+
+        // build the response with the updated data
+        var result = new QuizDto
+        {
+            Id = quiz.Id,
+            Title = quiz.Title,
+            Description = quiz.Description,
+            Module = module.ModuleName,
+            ModuleCode = module.ModuleCode,
+            Intake = quiz.Intake,
+            TotalQuestions = dto.Questions.Count,
+            TotalMarks = quiz.TotalMarks,
+            PassingMarks = (int)Math.Round(quiz.TotalMarks * quiz.PassingPercentage / 100.0),
+            PassingPercentage = quiz.PassingPercentage,
+            TimeLimitMinutes = quiz.TimeLimitMinutes,
+            MaxAttempts = quiz.MaxAttempts,
+            ShuffleQuestions = quiz.ShuffleQuestions,
+            ShuffleOptions = quiz.ShuffleOptions,
+            Status = quiz.Status,
+            CreatedAt = quiz.CreatedAt.ToString("yyyy-MM-dd"),
+            UpdatedAt = quiz.UpdatedAt.ToString("yyyy-MM-dd"),
+        };
+
+        return Ok(ApiResponseDto<QuizDto>.SuccessResponse(result, "Quiz updated successfully"));
+    }
+
     // DELETE /api/quizzes/{id} - delete a quiz
     // only lecturers and admins can delete quizzes
     [HttpDelete("{id}")]

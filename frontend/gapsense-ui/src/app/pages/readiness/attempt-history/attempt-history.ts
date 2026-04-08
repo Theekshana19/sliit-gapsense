@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
@@ -20,6 +21,7 @@ export class AttemptHistoryComponent implements OnInit {
   private readinessService = inject(ReadinessService);
   private authUi = inject(AuthUiService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
 
   isLoading = signal(true);
   attempts = signal<AttemptSummary[]>([]);
@@ -72,5 +74,10 @@ export class AttemptHistoryComponent implements OnInit {
       case 'In Progress': return 'pause_circle';
       default: return 'info';
     }
+  }
+
+  // navigate to the submission detail page
+  viewDetails(attemptId: string) {
+    this.router.navigate(['/readiness/submissions', attemptId]);
   }
 }

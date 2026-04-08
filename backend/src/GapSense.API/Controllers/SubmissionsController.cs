@@ -179,6 +179,103 @@ public class SubmissionsController : ControllerBase
         return Ok(ApiResponseDto<AttemptStatsDto>.SuccessResponse(stats));
     }
 
+    // GET /api/submissions/{id} - get a single submission with full details
+    // shows the question text, all options, what student picked, and correct answer
+    // students can only view their own submissions; lecturers/admins can view any
+    // NOTE: this route must come AFTER /stats and /history to avoid conflict
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<ApiResponseDto<SubmissionDetailDto>>> GetSubmissionDetail(Guid id)
+    {
+        // load the submission with everything we need for the detail view
+        var submission = await _db.Submissions
+            .Include(s => s.Quiz)
+                .ThenInclude(q => q.Module)
+            .Include(s => s.Quiz)
+                .ThenInclude(q => q.QuizQuestions)
+                    .ThenInclude(qq => qq.Question)
+                        .ThenInclude(q => q.Options)
+            .Include(s => s.Answers)
+                .ThenInclude(a => a.Question)
+                    .ThenInclude(q => q.Options)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (submission == null)
+            return NotFound(ApiResponseDto<SubmissionDetailDto>.ErrorResponse("Submission not found"));
+
+        // if the user is a student, they can only see their own submissions
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        if (string.Equals(role, "student", StringComparison.OrdinalIgnoreCase))
+        {
+            var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(idValue, out var userId))
+            {
+                var user = await _db.Users
+                    .Include(u => u.StudentProfile)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user?.StudentProfile?.StudentId != submission.StudentId)
+                    return Forbid();
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        // build the detailed answers list
+        var answerDetails = submission.Answers.Select(a =>
+        {
+            var question = a.Question;
+            var options = question.Options.OrderBy(o => o.SortOrder).Select(o => new SubmissionOptionDetailDto
+            {
+                Id = o.Id.ToString(),
+                OptionText = o.OptionText,
+                IsCorrect = o.IsCorrect,
+                IsSelected = a.SelectedOptionId.HasValue && o.Id == a.SelectedOptionId.Value,
+            }).ToList();
+
+            return new SubmissionAnswerDetailDto
+            {
+                QuestionId = question.Id.ToString(),
+                QuestionDisplayId = question.QuestionDisplayId,
+                QuestionText = question.QuestionText,
+                Difficulty = question.Difficulty,
+                Marks = a.Marks,
+                MarksAwarded = a.IsCorrect ? a.Marks : 0,
+                IsCorrect = a.IsCorrect,
+                Explanation = question.Explanation,
+                Options = options,
+            };
+        }).ToList();
+
+        var detail = new SubmissionDetailDto
+        {
+            Id = submission.Id,
+            QuizId = submission.QuizId.ToString(),
+            QuizTitle = submission.Quiz.Title,
+            QuizRef = $"QZ-{submission.Quiz.Module.ModuleCode}-{submission.AttemptNumber:D2}",
+            ModuleCode = submission.Quiz.Module.ModuleCode,
+            ModuleName = submission.Quiz.Module.ModuleName,
+            StudentId = submission.StudentId,
+            StudentName = submission.StudentName,
+            StudentAvatar = submission.StudentAvatar,
+            AvatarColor = submission.AvatarColor,
+            AttemptNumber = submission.AttemptNumber,
+            Score = submission.Score,
+            TotalMarks = submission.TotalMarks,
+            Percentage = submission.Percentage,
+            Status = submission.Status,
+            IsPassed = submission.Percentage >= submission.Quiz.PassingPercentage,
+            PassingPercentage = submission.Quiz.PassingPercentage,
+            StartedAt = submission.StartedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+            SubmittedAt = submission.SubmittedAt?.ToString("yyyy-MM-ddTHH:mm:ss") ?? "",
+            TimeTakenMinutes = submission.TimeTakenMinutes,
+            Answers = answerDetails,
+        };
+
+        return Ok(ApiResponseDto<SubmissionDetailDto>.SuccessResponse(detail));
+    }
+
     // POST /api/submissions - submit a quiz (auto-calculates score)
     // students can only submit as themselves - prevents impersonation
     [HttpPost]

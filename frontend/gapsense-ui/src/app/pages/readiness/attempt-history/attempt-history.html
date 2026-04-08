@@ -120,7 +120,7 @@
               <td class="py-4 px-5">
                 <div class="flex gap-2">
                   @if (attempt.status !== 'In Progress') {
-                    <button class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary-fixed/30 transition-colors">
+                    <button (click)="viewDetails(attempt.id)" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary-fixed/30 transition-colors">
                       View Details
                     </button>
                   } @else {

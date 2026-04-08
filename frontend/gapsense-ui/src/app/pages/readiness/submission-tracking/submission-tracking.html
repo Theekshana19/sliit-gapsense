@@ -113,9 +113,13 @@
                 />
               </td>
 
-              <!-- action icon -->
+              <!-- action icon - behavior depends on submission status -->
               <td class="py-4 px-5">
-                <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors">
+                <button
+                  (click)="onAction(sub)"
+                  [title]="getActionTooltip(sub.status)"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container-high transition-colors"
+                >
                   <span class="material-symbols-outlined text-primary" style="font-size: 18px;">
                     {{ getActionIcon(sub.status) }}
                   </span>

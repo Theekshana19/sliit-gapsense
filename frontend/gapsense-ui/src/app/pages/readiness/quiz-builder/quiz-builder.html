@@ -1,11 +1,35 @@
-<!-- quiz builder page -->
+<!-- quiz builder page - works in both create and edit modes -->
 <app-member-shell>
-  <!-- quiz summary card on the right side -->
-  <div class="grid grid-cols-12 gap-6">
-    <!-- left side - quiz form wizard (8 cols) -->
-    <div class="col-span-12 lg:col-span-8">
-      <app-quiz-form [isSaving]="isSaving()" (formSubmit)="onQuizSubmit($event)" />
+  <!-- show loading spinner while fetching quiz data in edit mode -->
+  @if (isLoading()) {
+    <div class="py-20 flex justify-center">
+      <app-loading-spinner size="lg" />
     </div>
+  }
+
+  <!-- show form once data is loaded (or always in create mode) -->
+  @if (!isLoading()) {
+    <!-- edit mode header -->
+    @if (isEditMode()) {
+      <div class="mb-4 p-4 bg-primary-fixed/40 border-l-4 border-primary rounded-xl flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary" style="font-size: 24px;">edit</span>
+        <div>
+          <p class="text-sm font-bold text-on-surface">Editing Quiz: {{ quiz()?.title }}</p>
+          <p class="text-[11px] text-on-surface-variant">Make your changes and click Update Quiz to save</p>
+        </div>
+      </div>
+    }
+
+    <!-- quiz summary card on the right side -->
+    <div class="grid grid-cols-12 gap-6">
+      <!-- left side - quiz form wizard (8 cols) -->
+      <div class="col-span-12 lg:col-span-8">
+        <app-quiz-form
+          [quiz]="quiz()"
+          [isSaving]="isSaving()"
+          (formSubmit)="onQuizSubmit($event)"
+        />
+      </div>
 
     <!-- right side - summary and quick actions (4 cols) -->
     <div class="col-span-12 lg:col-span-4 space-y-5">
@@ -97,4 +121,5 @@
       </div>
     </div>
   </div>
+  }
 </app-member-shell>

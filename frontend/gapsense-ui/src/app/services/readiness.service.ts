@@ -9,6 +9,7 @@ import {
   AttemptSummary,
   SubmissionStats,
   AttemptStats,
+  SubmissionDetail,
 } from '../models/readiness/submission.model';
 import { Resource } from '../models/readiness/resource.model';
 import { API_BASE_URL } from '../config/api.config';
@@ -300,6 +301,53 @@ export class ReadinessService {
     );
   }
 
+  // update an existing quiz - sends same body shape as create
+  // backend will block this if the quiz already has student submissions
+  updateQuiz(id: string, quiz: Partial<Quiz> & { moduleId?: string }): Observable<Quiz> {
+    const questions = (quiz.questions ?? [])
+      .map((q, index) => {
+        const row = q as Quiz['questions'][number] & { id?: string };
+        const rawId = String(row.id ?? row.questionId ?? '').trim();
+        const m = q.marks ?? 5;
+        return {
+          questionId: rawId,
+          order: q.order ?? index + 1,
+          marks: Math.max(1, Math.min(100, m)),
+        };
+      })
+      .filter((x) => x.questionId.length > 0);
+
+    const body = {
+      title: (quiz.title ?? '').trim(),
+      description: quiz.description ?? '',
+      moduleId: quiz.moduleId ?? '',
+      intake: quiz.intake ?? '',
+      passingPercentage: quiz.passingPercentage ?? 40,
+      timeLimitMinutes: quiz.timeLimitMinutes ?? 60,
+      maxAttempts: quiz.maxAttempts ?? 1,
+      shuffleQuestions: quiz.shuffleQuestions ?? false,
+      shuffleOptions: quiz.shuffleOptions ?? false,
+      status: quiz.status ?? 'Draft',
+      questions,
+    };
+
+    return this.http.put<ApiResponse<Quiz>>(`${this.apiUrl}/quizzes/${id}`, body).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) {
+          throw new Error(res?.message || 'Could not update quiz');
+        }
+        return res.data;
+      })
+    );
+  }
+
+  // delete a quiz
+  deleteQuiz(id: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.apiUrl}/quizzes/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
   // ---------- SCHEDULE METHODS ----------
 
   // get all quiz schedules (students receive only open-window schedules from the API)
@@ -340,6 +388,13 @@ export class ReadinessService {
       .pipe(map((res) => res.data));
   }
 
+  // delete a schedule
+  deleteSchedule(id: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.apiUrl}/quiz-schedules/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
   // ---------- SUBMISSION METHODS ----------
 
   // get all submissions, optionally filtered by quiz
@@ -350,6 +405,19 @@ export class ReadinessService {
     return this.http
       .get<ApiResponse<Submission[]>>(`${this.apiUrl}/submissions`, { params })
       .pipe(map((res) => res.data));
+  }
+
+  // get a single submission with full details (questions, answers, correct options)
+  // backend filters by user role - students can only see their own submissions
+  getSubmissionDetail(id: string): Observable<SubmissionDetail | undefined> {
+    return this.http
+      .get<ApiResponse<SubmissionDetail>>(`${this.apiUrl}/submissions/${id}`)
+      .pipe(
+        map((res) => {
+          if (!res?.success) return undefined;
+          return res.data ?? undefined;
+        })
+      );
   }
 
   // get submission statistics

@@ -1,8 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { MemberShellComponent } from '../../../components/layout/member-shell/member-shell.component';
 import { PillBadgeComponent } from '../../../components/ui/pill-badge/pill-badge.component';
 import { LoadingSpinnerComponent } from '../../../components/ui/loading-spinner/loading-spinner';
 import { ReadinessService } from '../../../services/readiness.service';
+import { ToastService } from '../../../services/toast.service';
 import { Submission, SubmissionStats } from '../../../models/readiness/submission.model';
 
 // submission tracking page - monitor who submitted, who's in progress, who hasn't attempted
@@ -15,6 +17,8 @@ import { Submission, SubmissionStats } from '../../../models/readiness/submissio
 })
 export class SubmissionTrackingComponent implements OnInit {
   private readinessService = inject(ReadinessService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
 
   isLoading = signal(true);
   submissions = signal<Submission[]>([]);
@@ -97,6 +101,32 @@ export class SubmissionTrackingComponent implements OnInit {
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage.set(page);
+    }
+  }
+
+  // handle action button click - behavior depends on submission status
+  // submitted -> view details page
+  // in progress -> show info toast (cant view incomplete attempts)
+  // not attempted -> "send reminder" toast (placeholder until notification system exists)
+  onAction(submission: Submission) {
+    if (submission.status === 'Submitted' || submission.status === 'Graded') {
+      // navigate to detail page to see student's answers
+      this.router.navigate(['/readiness/submissions', submission.id]);
+    } else if (submission.status === 'In Progress') {
+      this.toastService.info(`${submission.studentName} is still taking this quiz. Try again after they submit.`);
+    } else if (submission.status === 'Not Attempted') {
+      this.toastService.success(`Reminder sent to ${submission.studentName}`);
+    }
+  }
+
+  // get tooltip text for the action button based on status
+  getActionTooltip(status: string): string {
+    switch (status) {
+      case 'Submitted': return 'View submission details';
+      case 'Graded': return 'View submission details';
+      case 'In Progress': return 'Quiz in progress';
+      case 'Not Attempted': return 'Send reminder';
+      default: return '';
     }
   }
 }
