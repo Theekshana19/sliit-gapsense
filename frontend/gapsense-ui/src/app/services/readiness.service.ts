@@ -69,11 +69,27 @@ export class ReadinessService {
   getQuestionById(id: string): Observable<Question | undefined> {
     return this.http
       .get<ApiResponse<Question>>(`${this.apiUrl}/questions/${id}`)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          const data = res?.data as unknown;
+          if (!data || typeof data !== 'object') return undefined;
+          const r = data as Record<string, unknown>;
+          // handle PascalCase or camelCase JSON
+          const normalized = {
+            ...(data as Question),
+            id: String(r['id'] ?? r['Id'] ?? ''),
+            questionId: String(r['questionId'] ?? r['QuestionId'] ?? ''),
+            moduleId: String(r['moduleId'] ?? r['ModuleId'] ?? ''),
+            topicId: (r['topicId'] ?? r['TopicId'] ?? null) as string | null,
+            moduleCode: String(r['moduleCode'] ?? r['ModuleCode'] ?? ''),
+          } as Question;
+          return normalized;
+        })
+      );
   }
 
   // create a new question - moduleId must be a GUID from getModuleList()
-  createQuestion(question: Partial<Question> & { moduleId?: string; topicId?: string }): Observable<Question> {
+  createQuestion(question: Partial<Question>): Observable<Question> {
     const trimmedOptions =
       question.options
         ?.filter((o) => (o.optionText || '').trim().length > 0)
@@ -111,7 +127,7 @@ export class ReadinessService {
   }
 
   // update a question
-  updateQuestion(id: string, updates: Partial<Question> & { topicId?: string | null }): Observable<Question> {
+  updateQuestion(id: string, updates: Partial<Question>): Observable<Question> {
     const trimmedOptions =
       updates.options
         ?.filter((o) => (o.optionText || '').trim().length > 0)

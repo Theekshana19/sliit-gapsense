@@ -169,7 +169,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (question of availableQuestions(); track question.id) {
+          @for (question of filteredQuestions(); track question.id) {
             <tr
               class="hover:bg-surface-container-low transition-colors cursor-pointer"
               (click)="toggleQuestion(question.id)"
@@ -207,6 +207,15 @@
           }
         </tbody>
       </table>
+      @if (filteredQuestions().length === 0) {
+        <div class="py-8 text-center text-sm text-on-surface-variant">
+          @if (!moduleId()) {
+            Pick a module in step 1 first.
+          } @else {
+            No active questions found for this module. Add some in the Question Bank.
+          }
+        </div>
+      }
     </div>
   </div>
 }

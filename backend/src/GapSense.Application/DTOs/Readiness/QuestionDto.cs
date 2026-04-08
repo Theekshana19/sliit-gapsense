@@ -10,6 +10,8 @@ public class QuestionDto
     public string QuestionType { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
     public string Topic { get; set; } = string.Empty;
+    public Guid ModuleId { get; set; } // GUID of the linked module - needed for edit forms
+    public Guid? TopicId { get; set; } // GUID of the linked topic - nullable
     public string Module { get; set; } = string.Empty;
     public string ModuleCode { get; set; } = string.Empty;
     public List<QuestionOptionDto> Options { get; set; } = new();

@@ -43,6 +43,14 @@ export class QuizFormComponent implements OnInit {
   availableQuestions = signal<Question[]>([]);
   selectedQuestionIds = signal<Set<string>>(new Set());
 
+  // questions filtered by the currently selected module (step 1)
+  // students should only see questions that belong to their chosen module
+  filteredQuestions = computed(() => {
+    const modId = this.moduleId();
+    if (!modId) return [];
+    return this.availableQuestions().filter((q) => q.moduleId === modId);
+  });
+
   // step 3 - examination rules
   timeLimit = signal(60);
   totalAttempts = signal(1);

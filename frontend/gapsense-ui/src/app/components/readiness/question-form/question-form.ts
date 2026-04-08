@@ -128,17 +128,26 @@ export class QuestionFormComponent implements OnInit {
   ngOnInit() {
     const q = this.question();
 
+    // if editing, set the module id immediately from the question itself
+    // backend now returns moduleId directly so we don't need to lookup by code
+    if (q?.moduleId) {
+      this.moduleId.set(q.moduleId);
+    }
+
     this.readinessService.getModuleList().subscribe({
       next: (mods) => {
-        queueMicrotask(() => {
-          this.moduleList.set(mods);
-          if (q) {
-            const found = mods.find((m) => m.moduleCode === q.moduleCode);
-            if (found) {
-              this.moduleId.set(found.id);
-            }
-          }
-        });
+        this.moduleList.set(mods);
+        // fallback for old questions that don't have moduleId yet - lookup by code
+        if (q && !q.moduleId && q.moduleCode) {
+          const found = mods.find((m) => m.moduleCode === q.moduleCode);
+          if (found) this.moduleId.set(found.id);
+        }
+        // re-assign so the <select> re-binds after the <option> elements exist
+        // (Angular [value] on a select doesn't auto-pick when options arrive later)
+        const current = this.moduleId();
+        if (current) {
+          queueMicrotask(() => this.moduleId.set(current));
+        }
       },
       error: () => {
         console.error('Failed to load modules for dropdown');

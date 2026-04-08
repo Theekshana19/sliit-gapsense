@@ -263,8 +263,13 @@ END
 ");
 
             migrationBuilder.Sql(@"
-IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'LecturerModuleAssignments' AND i.name = N'IX_LecturerModuleAssignments_CourseModuleId')
-    CREATE INDEX [IX_LecturerModuleAssignments_CourseModuleId] ON [LecturerModuleAssignments] ([CourseModuleId]);
+-- only create LecturerModuleAssignments index if the table actually exists
+-- this table is added in a later migration so on a fresh DB it doesn't exist yet
+IF EXISTS (SELECT 1 FROM sys.tables WHERE name = N'LecturerModuleAssignments')
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'LecturerModuleAssignments' AND i.name = N'IX_LecturerModuleAssignments_CourseModuleId')
+        EXEC('CREATE INDEX [IX_LecturerModuleAssignments_CourseModuleId] ON [LecturerModuleAssignments] ([CourseModuleId])');
+END
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'Modules' AND i.name = N'IX_Modules_ModuleCode')
     CREATE UNIQUE INDEX [IX_Modules_ModuleCode] ON [Modules] ([ModuleCode]);

@@ -91,7 +91,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
 
   // —— Lecturer ——
   { label: 'Dashboard', routerLink: '/dashboard', icon: 'dashboard', roles: ['lecturer'] },
-  { label: 'Question_Bank 1', routerLink: '/readiness/question-bank', icon: 'quiz', roles: ['lecturer'] },
+  { label: 'Question Bank', routerLink: '/readiness/question-bank', icon: 'quiz', roles: ['lecturer'] },
   {
     label: 'Add edit questions page',
     routerLink: '/readiness/questions/new',

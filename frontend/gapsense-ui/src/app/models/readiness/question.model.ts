@@ -25,8 +25,10 @@ export interface Question {
   questionType: QuestionType;
   difficulty: DifficultyLevel;
   topic: string;
-  module: string;
-  moduleCode: string; // like "IT2040"
+  moduleId: string; // GUID of the linked module - needed for edit forms
+  topicId?: string | null; // GUID of the linked topic (optional)
+  module: string; // module name (display only)
+  moduleCode: string; // like "IT2040" (display only)
   options: QuestionOption[];
   correctOptionId: string;
   explanation: string;
