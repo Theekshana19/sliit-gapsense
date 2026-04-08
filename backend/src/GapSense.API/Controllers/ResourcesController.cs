@@ -48,7 +48,9 @@ public class ResourcesController : ControllerBase
     }
 
     // POST /api/resources - create a new resource
+    // only lecturers and admins can create resources
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<ResourceDto>>> CreateResource(CreateResourceDto dto)
     {
         var module = await _db.Modules.FindAsync(dto.ModuleId);
@@ -87,7 +89,9 @@ public class ResourcesController : ControllerBase
     }
 
     // PUT /api/resources/{id} - update a resource
+    // only lecturers and admins can update resources
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<ResourceDto>>> UpdateResource(Guid id, CreateResourceDto dto)
     {
         var resource = await _db.Resources.Include(r => r.Module).FirstOrDefaultAsync(r => r.Id == id);
@@ -126,7 +130,9 @@ public class ResourcesController : ControllerBase
     }
 
     // DELETE /api/resources/{id} - delete a resource
+    // only lecturers and admins can delete resources
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteResource(Guid id)
     {
         var resource = await _db.Resources.FindAsync(id);

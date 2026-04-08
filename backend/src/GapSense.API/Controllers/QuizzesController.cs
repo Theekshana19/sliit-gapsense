@@ -111,7 +111,9 @@ public class QuizzesController : ControllerBase
     }
 
     // POST /api/quizzes - create a new quiz with questions
+    // only lecturers and admins can create quizzes
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<QuizDto>>> CreateQuiz([FromBody] CreateQuizDto? dto)
     {
         if (dto == null)
@@ -234,7 +236,9 @@ public class QuizzesController : ControllerBase
     }
 
     // DELETE /api/quizzes/{id} - delete a quiz
+    // only lecturers and admins can delete quizzes
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteQuiz(Guid id)
     {
         var quiz = await _db.Quizzes.FindAsync(id);

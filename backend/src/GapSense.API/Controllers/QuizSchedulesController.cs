@@ -68,7 +68,9 @@ public class QuizSchedulesController : ControllerBase
     }
 
     // POST /api/quiz-schedules - create a new schedule
+    // only lecturers and admins can create schedules
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<QuizScheduleDto>>> CreateSchedule(CreateQuizScheduleDto dto)
     {
         // check quiz exists
@@ -117,7 +119,9 @@ public class QuizSchedulesController : ControllerBase
     }
 
     // PUT /api/quiz-schedules/{id} - update a schedule
+    // only lecturers and admins can update schedules
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<QuizScheduleDto>>> UpdateSchedule(Guid id, UpdateQuizScheduleDto dto)
     {
         var schedule = await _db.QuizSchedules
@@ -160,7 +164,9 @@ public class QuizSchedulesController : ControllerBase
     }
 
     // DELETE /api/quiz-schedules/{id} - delete a schedule
+    // only lecturers and admins can delete schedules
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteSchedule(Guid id)
     {
         var schedule = await _db.QuizSchedules.FindAsync(id);

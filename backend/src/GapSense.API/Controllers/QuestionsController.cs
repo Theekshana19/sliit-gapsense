@@ -83,7 +83,9 @@ public class QuestionsController : ControllerBase
     }
 
     // POST /api/questions - create a new question with options
+    // only lecturers and admins can create questions
     [HttpPost]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<QuestionDto>>> CreateQuestion(CreateQuestionDto dto)
     {
         // check module exists
@@ -141,7 +143,9 @@ public class QuestionsController : ControllerBase
     }
 
     // PUT /api/questions/{id} - update a question and its options
+    // only lecturers and admins can update questions
     [HttpPut("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<QuestionDto>>> UpdateQuestion(Guid id, UpdateQuestionDto dto)
     {
         var question = await _db.Questions
@@ -196,7 +200,9 @@ public class QuestionsController : ControllerBase
     }
 
     // DELETE /api/questions/{id} - delete a question
+    // only lecturers and admins can delete questions
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin,lecturer")]
     public async Task<ActionResult<ApiResponseDto<bool>>> DeleteQuestion(Guid id)
     {
         var question = await _db.Questions.FindAsync(id);

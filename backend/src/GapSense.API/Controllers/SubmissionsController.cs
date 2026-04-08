@@ -180,9 +180,33 @@ public class SubmissionsController : ControllerBase
     }
 
     // POST /api/submissions - submit a quiz (auto-calculates score)
+    // students can only submit as themselves - prevents impersonation
     [HttpPost]
     public async Task<ActionResult<ApiResponseDto<SubmissionDto>>> SubmitQuiz(CreateSubmissionDto dto)
     {
+        // if the user is a student, force the submission to use their own student id
+        // this prevents one student from submitting a quiz as another student
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        if (string.Equals(role, "student", StringComparison.OrdinalIgnoreCase))
+        {
+            var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(idValue, out var userId))
+                return Unauthorized(ApiResponseDto<SubmissionDto>.ErrorResponse("Invalid user token"));
+
+            // load the student profile to get their real student id
+            var user = await _db.Users
+                .Include(u => u.StudentProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user?.StudentProfile?.StudentId == null)
+                return BadRequest(ApiResponseDto<SubmissionDto>.ErrorResponse(
+                    "Your account is missing a Student ID. Update your profile first."));
+
+            // override whatever the client sent with the real authenticated student info
+            dto.StudentId = user.StudentProfile.StudentId;
+            dto.StudentName = user.FullName;
+        }
+
         // get the quiz with its questions and correct answers
         var quiz = await _db.Quizzes
             .Include(q => q.Module)
