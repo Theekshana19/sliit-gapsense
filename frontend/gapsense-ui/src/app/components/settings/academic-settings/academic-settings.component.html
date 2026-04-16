@@ -14,6 +14,9 @@
         @for (opt of semesterOptions; track opt) {
           <option [value]="opt">{{ opt }}</option>
         }
+        @if (!semesterOptions.length) {
+          <option value="">No semesters available</option>
+        }
       </select>
     </div>
     <div>
@@ -26,6 +29,9 @@
       >
         @for (opt of yearOptions; track opt) {
           <option [value]="opt">{{ opt }}</option>
+        }
+        @if (!yearOptions.length) {
+          <option value="">No years available</option>
         }
       </select>
     </div>
@@ -52,9 +58,10 @@
     <div class="pt-2">
       <button
         type="submit"
+        [disabled]="loading || saving"
         class="inline-flex items-center justify-center rounded-xl bg-[#003f87] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110"
       >
-        Save Changes
+        {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
     </div>
   </form>

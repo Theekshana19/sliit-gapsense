@@ -143,7 +143,7 @@ export class SidebarComponent {
 
   logout(): void {
     this.auth.logout();
-    void this.router.navigateByUrl('/auth/login');
+    void this.router.navigateByUrl('/dashboard');
   }
 }
 

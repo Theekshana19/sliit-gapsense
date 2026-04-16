@@ -20,6 +20,12 @@ public sealed class ReadinessResultRepository : IReadinessResultRepository
     public async Task<IReadOnlyList<ReadinessResult>> ListAsync(CancellationToken ct) =>
         await _db.ReadinessResults.AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync(ct);
 
+    public async Task<IReadOnlyList<ReadinessResult>> ListForTrendBySemesterAsync(Guid semesterId, CancellationToken ct) =>
+        await _db.ReadinessResults.AsNoTracking()
+            .Where(x => x.IsActive && x.SemesterId == semesterId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
     public async Task AddAsync(ReadinessResult entity, CancellationToken ct)
     {
         _db.ReadinessResults.Add(entity);

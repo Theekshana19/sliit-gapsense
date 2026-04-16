@@ -12,6 +12,7 @@ public static class ReadinessResultMappings
             e.ModuleCode,
             e.Batch,
             e.Semester,
+            e.SemesterId,
             e.ReadinessScore,
             e.Status,
             e.IsActive,

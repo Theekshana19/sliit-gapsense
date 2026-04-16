@@ -1,41 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { InterventionPlan } from '../models/monitoring/monitoring.model';
 
-const seed: InterventionPlan[] = [
-  {
-    id: 'ip-1',
-    title: 'Peer tutoring — ER modeling',
-    studentRef: 'STU-1042',
-    courseCode: 'IT3010',
-    actions: 'Schedule two guided labs; review ER exercises.',
-    dueDate: new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 10),
-    status: 'active',
-    riskGroup: 'medium',
-    interventionType: 'tutorial',
-  },
-  {
-    id: 'ip-2',
-    title: 'Binary trees — remedial lab',
-    studentRef: 'STU-2201',
-    courseCode: 'IT3020',
-    actions: 'Focus on traversal exercises.',
-    dueDate: new Date(Date.now() + 86400000 * 14).toISOString().slice(0, 10),
-    status: 'planned',
-    riskGroup: 'high',
-    interventionType: 'remedial',
-  },
-  {
-    id: 'ip-3',
-    title: 'SQL workshop follow-up',
-    studentRef: 'STU-0891',
-    courseCode: 'IT3010',
-    actions: 'Mandatory workshop attendance.',
-    dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10),
-    status: 'active',
-    riskGroup: 'high',
-    interventionType: 'workshop',
-  },
-];
+/** @deprecated Intervention plans are loaded from the API via {@link InterventionPlanningService}. */
+const seed: InterventionPlan[] = [];
 
 @Injectable({ providedIn: 'root' })
 export class MonitoringService {

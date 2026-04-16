@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GapSense.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14394955e629f6c1ca574671558caf5521ffd386")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2661b4a11f67293462432d460f74d08247a4e2c")]
 [assembly: System.Reflection.AssemblyProductAttribute("GapSense.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GapSense.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

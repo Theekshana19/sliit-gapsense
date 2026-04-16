@@ -1,0 +1,9 @@
+namespace GapSense.Domain.Enums;
+
+public enum FollowUpStatus
+{
+    Pending = 0,
+    InProgress = 1,
+    Completed = 2,
+    Cancelled = 3,
+}

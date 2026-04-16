@@ -1,9 +1,5 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './components/layout/main-layout.component';
-import { authChildGuard, authGuard } from './guards/auth.guard';
-import { guestGuard } from './guards/guest.guard';
-import { LoginPageComponent } from './pages/auth/login/login.component';
-import { RegisterPageComponent } from './pages/auth/register/register.component';
 import { DashboardPageComponent } from './pages/dashboard/dashboard/dashboard.component';
 import { CurriculumAddPageComponent } from './pages/curriculum/add/add.component';
 import { CurriculumListPageComponent } from './pages/curriculum/list/list.component';
@@ -19,18 +15,12 @@ import { SettingsPageComponent } from './pages/settings/settings.component';
 export const appRoutes: Routes = [
   {
     path: 'auth',
-    canActivate: [guestGuard],
-    children: [
-      { path: 'login', component: LoginPageComponent },
-      { path: 'register', component: RegisterPageComponent },
-      { path: '', pathMatch: 'full', redirectTo: 'login' },
-    ],
+    pathMatch: 'full',
+    redirectTo: 'dashboard',
   },
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuard],
-    canActivateChild: [authChildGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: DashboardPageComponent },
@@ -49,5 +39,5 @@ export const appRoutes: Routes = [
       { path: 'notifications', component: NotificationsPageComponent },
     ],
   },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', pathMatch: 'full', redirectTo: 'dashboard' },
 ];

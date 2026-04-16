@@ -14,3 +14,38 @@ H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\Ga
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\refint\GapSense.Application.dll
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.pdb
 H:\Gap sense\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\ref\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.deps.json
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Application.pdb
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Domain.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\GapSense.Domain.pdb
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.csproj.AssemblyReference.cache
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.GeneratedMSBuildEditorConfig.editorconfig
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.AssemblyInfoInputs.cache
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.AssemblyInfo.cs
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.csproj.CoreCompileInputs.cache
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.sourcelink.json
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.2820646A.Up2Date
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\refint\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\GapSense.Application.pdb
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\obj\Debug\net8.0\ref\GapSense.Application.dll
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Black.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-BlackItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Bold.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-BoldItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-ExtraBold.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-ExtraBoldItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-ExtraLight.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-ExtraLightItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Italic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Light.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-LightItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Medium.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-MediumItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Regular.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-SemiBold.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-SemiBoldItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-Thin.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\Lato-ThinItalic.ttf
+H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Application\bin\Debug\net8.0\LatoFont\OFL.txt

@@ -1,13 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import type { BatchReadinessFilterOptions } from '../../../models/batch-readiness/batch-readiness.model';
 import { ToastService } from '../../../components/ui/toast/toast.service';
-import {
-  InterventionStatus,
-  InterventionType,
-  RiskGroup,
-} from '../../../models/monitoring/monitoring.model';
-import { MonitoringService } from '../../../services/monitoring.service';
+import { InterventionStatus, RiskGroup } from '../../../models/monitoring/monitoring.model';
+import { BatchReadinessService } from '../../../services/batch-readiness.service';
+import { InterventionPlanningService } from '../../../services/intervention-planning.service';
 import { controlInvalid } from '../../../validators/form-utils';
 import { futureOrTodayDateValidator } from '../../../validators/forms.validators';
 
@@ -62,9 +60,15 @@ type PlanMode = 'draft' | 'publish';
                       [class.border-slate-200]="!showError('courseCode')"
                     >
                       <option value="" disabled>Select Module</option>
-                      <option value="IT1010">Introduction to Programming (IT1010)</option>
-                      <option value="IT2020">Data Structures (IT2020)</option>
-                      <option value="IT3010">Software Engineering (IT3010)</option>
+                      @if (optionsLoading()) {
+                        <option value="" disabled>Loading modules...</option>
+                      } @else if (filterOptions().modules.length === 0) {
+                        <option value="" disabled>No modules available</option>
+                      } @else {
+                        @for (m of filterOptions().modules; track m.id) {
+                          <option [value]="m.moduleCode">{{ m.moduleName }} ({{ m.moduleCode }})</option>
+                        }
+                      }
                     </select>
                     @if (showError('courseCode')) {
                       <p class="text-xs font-medium text-rose-600">Select a module.</p>
@@ -81,9 +85,15 @@ type PlanMode = 'draft' | 'publish';
                       [class.border-slate-200]="!showError('studentRef')"
                     >
                       <option value="" disabled>Select Batch</option>
-                      <option value="Y1S1-2024">Year 1 Semester 1 (2024)</option>
-                      <option value="Y2S2-2023">Year 2 Semester 2 (2023)</option>
-                      <option value="Y3S1-2022">Year 3 Semester 1 (2022)</option>
+                      @if (optionsLoading()) {
+                        <option value="" disabled>Loading batches...</option>
+                      } @else if (filterOptions().intakes.length === 0) {
+                        <option value="" disabled>No batches available</option>
+                      } @else {
+                        @for (i of filterOptions().intakes; track i.batchCode) {
+                          <option [value]="i.batchCode">{{ i.displayLabel }}</option>
+                        }
+                      }
                     </select>
                     @if (showError('studentRef')) {
                       <p class="text-xs font-medium text-rose-600">Select a batch.</p>
@@ -212,6 +222,22 @@ type PlanMode = 'draft' | 'publish';
                       <option value="completed">Completed</option>
                     </select>
                   </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold text-slate-700" for="assignedLecturer">Assigned Lecturer</label>
+                    <input
+                      id="assignedLecturer"
+                      type="text"
+                      formControlName="assignedLecturer"
+                      autocomplete="name"
+                      placeholder="Optional — leave blank if unassigned"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
+                      [class.border-rose-500]="showError('assignedLecturer')"
+                    />
+                    @if (showError('assignedLecturer')) {
+                      <p class="text-xs font-medium text-rose-600">{{ fieldError('assignedLecturer') }}</p>
+                    }
+                  </div>
                 </div>
               </section>
 
@@ -252,14 +278,16 @@ type PlanMode = 'draft' | 'publish';
             <div class="flex flex-wrap gap-3 sm:justify-end">
               <button
                 type="button"
-                class="rounded-xl border border-sky-200 bg-sky-50 px-6 py-3 text-sm font-bold text-[#0047AB] shadow-sm transition hover:bg-sky-100"
+                class="rounded-xl border border-sky-200 bg-sky-50 px-6 py-3 text-sm font-bold text-[#0047AB] shadow-sm transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
                 (click)="saveDraft()"
+                [disabled]="submitting()"
               >
                 Save as Draft
               </button>
               <button
                 type="submit"
-                class="inline-flex items-center gap-2 rounded-xl bg-[#0047AB] px-8 py-3 text-sm font-bold text-white shadow-md shadow-[#0047AB]/30 transition hover:bg-[#003a8f]"
+                class="inline-flex items-center gap-2 rounded-xl bg-[#0047AB] px-8 py-3 text-sm font-bold text-white shadow-md shadow-[#0047AB]/30 transition hover:bg-[#003a8f] disabled:cursor-not-allowed disabled:opacity-60"
+                [disabled]="submitting()"
               >
                 <span class="material-symbols-outlined text-lg">save</span>
                 Save Intervention Plan
@@ -282,11 +310,16 @@ type PlanMode = 'draft' | 'publish';
     </div>
   `,
 })
-export class InterventionPlanPageComponent {
+export class InterventionPlanPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly monitoring = inject(MonitoringService);
+  private readonly planning = inject(InterventionPlanningService);
+  private readonly batchReadiness = inject(BatchReadinessService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+
+  readonly submitting = signal(false);
+  readonly optionsLoading = signal(false);
+  readonly filterOptions = signal<BatchReadinessFilterOptions>({ semesters: [], modules: [], intakes: [] });
 
   mode: PlanMode = 'publish';
 
@@ -304,11 +337,16 @@ export class InterventionPlanPageComponent {
     interventionType: ['', [Validators.required]],
     dueDate: ['', [Validators.required, futureOrTodayDateValidator]],
     status: this.fb.nonNullable.control<InterventionStatus>('planned', { validators: [Validators.required] }),
+    assignedLecturer: ['', [Validators.maxLength(200)]],
     actions: [''],
   });
 
   constructor() {
     this.applyPublishValidators();
+  }
+
+  ngOnInit(): void {
+    this.loadOptions();
   }
 
   showError(name: keyof typeof this.form.controls): boolean {
@@ -347,11 +385,7 @@ export class InterventionPlanPageComponent {
       this.mode = 'publish';
       return;
     }
-    this.persistPlan();
-    this.toast.show('Draft saved locally.', 'success');
-    this.applyPublishValidators();
-    this.mode = 'publish';
-    void this.router.navigateByUrl('/monitoring/plans');
+    this.submitToApi(true);
   }
 
   submitPublish(): void {
@@ -362,27 +396,49 @@ export class InterventionPlanPageComponent {
       this.toast.show('Complete required fields and notes before publishing.', 'error');
       return;
     }
-    this.persistPlan();
-    this.toast.show('Intervention plan saved.', 'success');
-    void this.router.navigateByUrl('/monitoring/plans');
+    this.submitToApi(false);
   }
 
-  private persistPlan(): void {
+  private submitToApi(isDraft: boolean): void {
     const v = this.form.getRawValue();
     const titleTrim = v.title.trim();
-    const title = titleTrim || (this.mode === 'draft' ? 'Untitled draft' : titleTrim);
-    const actionsTrim = v.actions.trim();
-    const actions = actionsTrim || (this.mode === 'draft' ? '—' : actionsTrim);
-    this.monitoring.add({
-      title,
-      studentRef: v.studentRef.trim(),
-      courseCode: v.courseCode.trim().toUpperCase(),
-      dueDate: v.dueDate,
-      actions,
-      status: v.status,
-      riskGroup: v.riskGroup,
-      interventionType: v.interventionType as InterventionType,
-    });
+    const weakTopic = titleTrim || (isDraft ? 'Untitled draft' : titleTrim);
+    const notes =
+      v.actions.trim() ||
+      (isDraft ? 'Draft saved from workspace — expand notes before final publish.' : '');
+    const lec = v.assignedLecturer?.trim();
+
+    this.submitting.set(true);
+    this.planning
+      .createPlan({
+        moduleCode: v.courseCode.trim().toUpperCase(),
+        batch: v.studentRef.trim(),
+        riskGroup: v.riskGroup,
+        weakTopic,
+        interventionType: v.interventionType,
+        plannedDate: v.dueDate,
+        status: v.status,
+        assignedLecturer: lec ? lec : null,
+        notes,
+        isDraft,
+      })
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.toast.show(isDraft ? 'Draft saved.' : 'Intervention plan saved.', 'success');
+          this.applyPublishValidators();
+          this.mode = 'publish';
+          void this.router.navigateByUrl('/monitoring/plans');
+        },
+        error: (e: Error) => {
+          this.submitting.set(false);
+          this.toast.show(e.message, 'error');
+          if (isDraft) {
+            this.applyPublishValidators();
+            this.mode = 'publish';
+          }
+        },
+      });
   }
 
   private applyDraftValidators(): void {
@@ -405,5 +461,30 @@ export class InterventionPlanPageComponent {
     ]);
     this.form.controls.title.updateValueAndValidity({ emitEvent: false });
     this.form.controls.actions.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private loadOptions(): void {
+    this.optionsLoading.set(true);
+    this.batchReadiness.getFilterOptions().subscribe({
+      next: (o) => {
+        this.filterOptions.set(o);
+
+        const selectedModule = this.form.controls.courseCode.value;
+        if (!selectedModule || !o.modules.some((m) => m.moduleCode === selectedModule)) {
+          this.form.controls.courseCode.setValue(o.modules[0]?.moduleCode ?? '');
+        }
+
+        const selectedBatch = this.form.controls.studentRef.value;
+        if (!selectedBatch || !o.intakes.some((i) => i.batchCode === selectedBatch)) {
+          this.form.controls.studentRef.setValue(o.intakes[0]?.batchCode ?? '');
+        }
+
+        this.optionsLoading.set(false);
+      },
+      error: (e: Error) => {
+        this.optionsLoading.set(false);
+        this.toast.show(e.message, 'error');
+      },
+    });
   }
 }

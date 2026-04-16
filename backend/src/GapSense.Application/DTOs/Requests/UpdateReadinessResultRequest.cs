@@ -5,8 +5,8 @@ public sealed record UpdateReadinessResultRequest(
     string ModuleCode,
     string Batch,
     string Semester,
+    Guid? SemesterId,
     decimal ReadinessScore,
     string Status,
     bool IsActive
 );
-

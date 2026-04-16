@@ -5,7 +5,7 @@ public sealed record CreateReadinessResultRequest(
     string ModuleCode,
     string Batch,
     string Semester,
+    Guid? SemesterId,
     decimal ReadinessScore,
     string Status
 );
-

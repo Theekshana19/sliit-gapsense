@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import type { SecuritySettings } from '../../../models/settings/settings.model';
 import { ToastService } from '../../ui/toast/toast.service';
 import { SettingsService } from '../../../services/settings.service';
+import { finalize } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -22,15 +23,23 @@ export class SecuritySettingsComponent implements OnInit {
   };
 
   passwordMismatch = false;
+  loading = false;
+  saving = false;
 
   ngOnInit(): void {
-    const s = this.settings.getSettings().security;
-    this.security = {
-      ...s,
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    };
+    this.loading = true;
+    this.settings
+      .getSecurity()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (s) => {
+          this.security = {
+            ...this.security,
+            twoFactorEnabled: s.twoFactorEnabled,
+          };
+        },
+        error: (err: Error) => this.toast.show(err.message || 'Failed to load security settings.', 'error'),
+      });
   }
 
   save(): void {
@@ -40,15 +49,26 @@ export class SecuritySettingsComponent implements OnInit {
       return;
     }
     this.passwordMismatch = false;
-    this.settings.updateSecurity(this.security);
-    this.security.currentPassword = '';
-    this.security.newPassword = '';
-    this.security.confirmPassword = '';
-    this.toast.show('Security settings saved.', 'success');
+    this.saving = true;
+    this.settings
+      .updateSecurity(this.security)
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: (saved) => {
+          this.security.twoFactorEnabled = saved.twoFactorEnabled;
+          this.security.currentPassword = '';
+          this.security.newPassword = '';
+          this.security.confirmPassword = '';
+          this.toast.show('Security settings saved.', 'success');
+        },
+        error: (err: Error) => this.toast.show(err.message || 'Failed to save security settings.', 'error'),
+      });
   }
 
   logoutAllDevices(): void {
-    this.settings.logoutAllDevices();
-    this.toast.show('All other sessions have been signed out (mock).', 'info');
+    this.settings.logoutAllDevices().subscribe({
+      next: () => this.toast.show('All other sessions have been signed out.', 'info'),
+      error: (err: Error) => this.toast.show(err.message || 'Failed to logout active devices.', 'error'),
+    });
   }
 }

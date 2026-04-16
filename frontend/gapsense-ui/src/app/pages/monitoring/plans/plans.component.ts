@@ -1,10 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ConfirmService } from '../../../components/ui/confirm-dialog/confirm.service';
 import { ToastService } from '../../../components/ui/toast/toast.service';
+import {
+  type InterventionPlanningDashboardDto,
+  mapInterventionPlanRowToUi,
+} from '../../../models/intervention-planning/intervention-planning.model';
 import { InterventionPlan } from '../../../models/monitoring/monitoring.model';
-import { MonitoringService } from '../../../services/monitoring.service';
+import { InterventionPlanningService } from '../../../services/intervention-planning.service';
 import { TABLE_FILTER_MAX_LENGTH } from '../../../validators/form-utils';
 import { StatusPillComponent } from '../../../components/ui/status-pill/status-pill.component';
 
@@ -14,12 +19,20 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
   imports: [RouterLink, StatusPillComponent, ReactiveFormsModule],
   template: `
     <div class="mx-auto w-full max-w-7xl space-y-6 pb-8">
+      @if (pageError()) {
+        <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">
+          {{ pageError() }}
+        </div>
+      }
+
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="mb-2 font-headline text-3xl font-extrabold tracking-tight text-[#003f87]">Intervention Planning</h1>
           <p class="mt-1 text-lg text-slate-600">Plan and manage academic support strategies for identified cohorts.</p>
         </div>
-        <a routerLink="/monitoring/intervention-plan" class="rounded-xl bg-indigo-700 px-5 py-3 text-sm font-semibold text-white shadow">Add Intervention Plan</a>
+        <a routerLink="/monitoring/intervention-plan" class="rounded-xl bg-indigo-700 px-5 py-3 text-sm font-semibold text-white shadow"
+          >Add Intervention Plan</a
+        >
       </div>
 
       <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -54,29 +67,42 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              @for (plan of filteredPlans; track plan.id) {
+              @if (tableLoading()) {
                 <tr>
-                  <td class="px-4 py-4 font-medium text-slate-900">{{ plan.courseCode }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.studentRef }}</td>
-                  <td class="px-4 py-4"><app-status-pill [label]="riskLabel(plan)" [tone]="riskTone(plan)" /></td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.title }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ interventionTypeLabel(plan.interventionType) }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.dueDate }}</td>
-                  <td class="px-4 py-4"><app-status-pill [label]="statusLabel(plan)" [tone]="statusTone(plan)" /></td>
-                  <td class="px-4 py-4">
-                    <button type="button" class="text-sm font-semibold text-rose-600" (click)="onRemove(plan.id)">Delete</button>
-                  </td>
+                  <td colspan="8" class="px-4 py-10 text-center text-sm text-slate-500">Loading interventions…</td>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="8" class="px-4 py-10 text-center text-sm text-slate-500">
-                    @if (filterQuery().trim()) {
-                      No interventions match “{{ filterQuery().trim() }}”. Try another module, batch, or keyword.
-                    } @else {
-                      No intervention plans yet.
-                    }
-                  </td>
-                </tr>
+              } @else {
+                @for (plan of filteredPlans; track plan.id) {
+                  <tr>
+                    <td class="px-4 py-4 font-medium text-slate-900">{{ plan.courseCode }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.studentRef }}</td>
+                    <td class="px-4 py-4"><app-status-pill [label]="riskLabel(plan)" [tone]="riskTone(plan)" /></td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.title }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ interventionTypeLabel(plan.interventionType) }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.dueDate }}</td>
+                    <td class="px-4 py-4"><app-status-pill [label]="statusLabel(plan)" [tone]="statusTone(plan)" /></td>
+                    <td class="px-4 py-4">
+                      <button
+                        type="button"
+                        class="text-sm font-semibold text-rose-600 disabled:opacity-50"
+                        (click)="onRemove(plan.id)"
+                        [disabled]="deletingId() === plan.id"
+                      >
+                        {{ deletingId() === plan.id ? 'Removing…' : 'Delete' }}
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="px-4 py-10 text-center text-sm text-slate-500">
+                      @if (filterQuery().trim()) {
+                        No interventions match “{{ filterQuery().trim() }}”. Try another module, batch, or keyword.
+                      } @else {
+                        No intervention plans yet.
+                      }
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -86,25 +112,36 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Intervention Success</p>
-          <p class="mt-2 text-4xl font-bold text-slate-900">78.4%</p>
-          <p class="mt-3 text-sm text-slate-600">Average improvement rate for students who completed a scheduled intervention module this semester.</p>
-          <div class="mt-4 h-3 w-full rounded-full bg-slate-100"><div class="h-3 rounded-full bg-indigo-700" style="width: 78.4%"></div></div>
+          @if (dashboardLoading()) {
+            <p class="mt-2 text-4xl font-bold text-slate-400">…</p>
+          } @else {
+            <p class="mt-2 text-4xl font-bold text-slate-900">{{ successPercentDisplay() }}</p>
+            <p class="mt-3 text-sm text-slate-600">{{ dashboard()?.successSummary ?? '—' }}</p>
+            <div class="mt-4 h-3 w-full rounded-full bg-slate-100">
+              <div class="h-3 rounded-full bg-indigo-700 transition-all" [style.width.%]="successBarWidth()"></div>
+            </div>
+          }
         </div>
         <div class="rounded-2xl border-l-4 border-rose-600 bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pending Actions</p>
-          <p class="mt-2 text-4xl font-bold text-rose-700">12 Required</p>
-          <ul class="mt-4 space-y-2 text-sm text-slate-700">
-            <li>5 High-Risk plans require lecturer assignment</li>
-            <li>7 Follow-ups past their scheduled review date</li>
-          </ul>
+          @if (dashboardLoading()) {
+            <p class="mt-2 text-4xl font-bold text-slate-400">…</p>
+          } @else {
+            <p class="mt-2 text-4xl font-bold text-rose-700">{{ pendingHeadline() }}</p>
+            <ul class="mt-4 space-y-2 text-sm text-slate-700">
+              @for (line of dashboard()?.pendingActionLines ?? []; track line) {
+                <li>{{ line }}</li>
+              }
+            </ul>
+          }
         </div>
       </div>
     </div>
   `,
 })
-export class MonitoringPlansPageComponent {
+export class MonitoringPlansPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly monitoring = inject(MonitoringService);
+  private readonly planning = inject(InterventionPlanningService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
 
@@ -114,7 +151,17 @@ export class MonitoringPlansPageComponent {
     q: ['', [Validators.maxLength(TABLE_FILTER_MAX_LENGTH)]],
   });
 
-  plans: InterventionPlan[] = this.monitoring.list();
+  readonly tableLoading = signal(true);
+  readonly dashboardLoading = signal(true);
+  readonly pageError = signal<string | null>(null);
+  readonly deletingId = signal<string | null>(null);
+  readonly dashboard = signal<InterventionPlanningDashboardDto | null>(null);
+
+  plans: InterventionPlan[] = [];
+
+  ngOnInit(): void {
+    this.reloadAll();
+  }
 
   filterQuery(): string {
     return this.filterForm.controls.q.value;
@@ -126,6 +173,21 @@ export class MonitoringPlansPageComponent {
       return this.plans;
     }
     return this.plans.filter((plan) => this.planMatchesQuery(plan, q));
+  }
+
+  successPercentDisplay(): string {
+    const v = this.dashboard()?.successRatePercent;
+    return v == null ? '—' : `${v}%`;
+  }
+
+  successBarWidth(): number {
+    const v = this.dashboard()?.successRatePercent ?? 0;
+    return Math.min(100, Math.max(0, Number(v)));
+  }
+
+  pendingHeadline(): string {
+    const n = this.dashboard()?.pendingActionsCount ?? 0;
+    return `${n} Required`;
   }
 
   private planMatchesQuery(plan: InterventionPlan, q: string): boolean {
@@ -145,14 +207,22 @@ export class MonitoringPlansPageComponent {
   }
 
   statusLabel(plan: InterventionPlan): string {
-    if (plan.status === 'planned') return 'Scheduled';
-    if (plan.status === 'active') return 'Active';
+    if (plan.status === 'planned') {
+      return 'Scheduled';
+    }
+    if (plan.status === 'active') {
+      return 'Active';
+    }
     return 'Completed';
   }
 
   statusTone(plan: InterventionPlan): 'info' | 'warning' | 'success' {
-    if (plan.status === 'planned') return 'info';
-    if (plan.status === 'active') return 'warning';
+    if (plan.status === 'planned') {
+      return 'info';
+    }
+    if (plan.status === 'active') {
+      return 'warning';
+    }
     return 'success';
   }
 
@@ -162,8 +232,12 @@ export class MonitoringPlansPageComponent {
   }
 
   riskTone(plan: InterventionPlan): 'danger' | 'warning' | 'info' {
-    if (plan.riskGroup === 'high') return 'danger';
-    if (plan.riskGroup === 'medium') return 'warning';
+    if (plan.riskGroup === 'high') {
+      return 'danger';
+    }
+    if (plan.riskGroup === 'medium') {
+      return 'warning';
+    }
     return 'info';
   }
 
@@ -183,13 +257,47 @@ export class MonitoringPlansPageComponent {
   async onRemove(id: string): Promise<void> {
     const ok = await this.confirm.ask({
       title: 'Remove plan?',
-      message: 'This removes the intervention plan from the mock store.',
+      message: 'This will archive the intervention plan. You can add a new plan from the workspace if needed.',
       confirmLabel: 'Remove',
       cancelLabel: 'Keep',
     });
-    if (!ok) return;
-    this.monitoring.remove(id);
-    this.plans = this.monitoring.list();
-    this.toast.show('Plan removed.', 'info');
+    if (!ok) {
+      return;
+    }
+    this.deletingId.set(id);
+    this.planning.deletePlan(id).subscribe({
+      next: () => {
+        this.deletingId.set(null);
+        this.toast.show('Plan removed.', 'success');
+        this.reloadAll();
+      },
+      error: (e: Error) => {
+        this.deletingId.set(null);
+        this.toast.show(e.message, 'error');
+      },
+    });
+  }
+
+  private reloadAll(): void {
+    this.pageError.set(null);
+    this.tableLoading.set(true);
+    this.dashboardLoading.set(true);
+    forkJoin({
+      rows: this.planning.listPlans(),
+      dash: this.planning.getDashboard(),
+    }).subscribe({
+      next: ({ rows, dash }) => {
+        this.plans = rows.map(mapInterventionPlanRowToUi);
+        this.dashboard.set(dash);
+        this.tableLoading.set(false);
+        this.dashboardLoading.set(false);
+      },
+      error: (e: Error) => {
+        this.pageError.set(e.message);
+        this.toast.show(e.message, 'error');
+        this.tableLoading.set(false);
+        this.dashboardLoading.set(false);
+      },
+    });
   }
 }

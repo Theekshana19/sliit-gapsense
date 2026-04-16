@@ -134,7 +134,7 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
               </div>
             }
           } @else {
-            <a routerLink="/auth/login" class="text-sm font-semibold text-[#003f87] hover:underline">Sign in</a>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Guest Session</span>
           }
         </div>
       </div>

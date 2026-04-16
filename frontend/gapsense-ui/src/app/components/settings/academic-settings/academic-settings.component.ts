@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import type { AcademicSettings } from '../../../models/settings/settings.model';
 import { ToastService } from '../../ui/toast/toast.service';
 import { SettingsService } from '../../../services/settings.service';
+import { finalize, forkJoin } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -21,15 +22,39 @@ export class AcademicSettingsComponent implements OnInit {
     assignedFaculty: '',
   };
 
-  readonly semesterOptions = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4'] as const;
-  readonly yearOptions = ['2024/2025', '2025/2026', '2026/2027'] as const;
+  semesterOptions: string[] = [];
+  yearOptions: string[] = [];
+  loading = false;
+  saving = false;
 
   ngOnInit(): void {
-    this.academic = { ...this.settings.getSettings().academic };
+    this.loading = true;
+    forkJoin({
+      academic: this.settings.getAcademic(),
+      options: this.settings.getAcademicOptions(),
+    })
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: ({ academic, options }) => {
+          this.academic = { ...academic };
+          this.semesterOptions = options.semesterOptions;
+          this.yearOptions = options.yearOptions;
+        },
+        error: (err: Error) => this.toast.show(err.message || 'Failed to load academic settings.', 'error'),
+      });
   }
 
   save(): void {
-    this.settings.updateAcademic(this.academic);
-    this.toast.show('Academic settings saved.', 'success');
+    this.saving = true;
+    this.settings
+      .updateAcademic(this.academic)
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: (saved) => {
+          this.academic = { ...saved };
+          this.toast.show('Academic settings saved.', 'success');
+        },
+        error: (err: Error) => this.toast.show(err.message || 'Failed to save academic settings.', 'error'),
+      });
   }
 }

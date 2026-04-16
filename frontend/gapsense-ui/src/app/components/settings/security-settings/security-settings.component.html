@@ -57,9 +57,10 @@
     <div class="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:items-center">
       <button
         type="submit"
+        [disabled]="loading || saving"
         class="inline-flex items-center justify-center rounded-xl bg-[#003f87] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110"
       >
-        Save Changes
+        {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
       <button
         type="button"

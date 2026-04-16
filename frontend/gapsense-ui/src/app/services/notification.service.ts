@@ -1,111 +1,54 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { catchError, map, of, throwError } from 'rxjs';
 import type { NotificationItem } from '../models/notification/notification.model';
+import { environment } from '../../environments/environment';
+import type { NotificationType } from '../models/notification/notification.model';
 
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: 'High-risk student detected',
-    message: 'INTE 3123 — 3 students flagged for follow-up this week.',
-    type: 'risk',
-    time: '2 min ago',
-    read: false,
-  },
-  {
-    id: 'n2',
-    title: 'Low attendance warning',
-    message: 'Batch SE-24 — attendance below 75% threshold.',
-    type: 'risk',
-    time: '18 min ago',
-    read: false,
-  },
-  {
-    id: 'n3',
-    title: 'Low performance alert',
-    message: 'Mid-term average dropped vs last semester in Data Structures.',
-    type: 'risk',
-    time: '1 hour ago',
-    read: true,
-  },
-  {
-    id: 'n4',
-    title: 'Marks uploaded',
-    message: 'Assignment 02 marks published for INTE 3123.',
-    type: 'academic',
-    time: '2 hours ago',
-    read: false,
-  },
-  {
-    id: 'n5',
-    title: 'Assignment submitted',
-    message: '12 new submissions pending review for Week 5 lab.',
-    type: 'academic',
-    time: '3 hours ago',
-    read: false,
-  },
-  {
-    id: 'n6',
-    title: 'Module updated',
-    message: 'Learning outcomes revised for INTE 3123 — please review.',
-    type: 'academic',
-    time: 'Yesterday',
-    read: true,
-  },
-  {
-    id: 'n7',
-    title: 'Upcoming lecture',
-    message: 'Lecture tomorrow 9:00 AM — Hall B-204.',
-    type: 'reminder',
-    time: 'Yesterday',
-    read: false,
-  },
-  {
-    id: 'n8',
-    title: 'Meeting reminder',
-    message: 'Faculty curriculum sync in 45 minutes (Teams).',
-    type: 'reminder',
-    time: 'Yesterday',
-    read: true,
-  },
-  {
-    id: 'n9',
-    title: 'Intervention follow-up',
-    message: '3 intervention plans due for review by Friday.',
-    type: 'reminder',
-    time: '2 days ago',
-    read: false,
-  },
-  {
-    id: 'n10',
-    title: 'Report generated',
-    message: 'Semester risk summary PDF is ready to download.',
-    type: 'system',
-    time: '2 days ago',
-    read: true,
-  },
-  {
-    id: 'n11',
-    title: 'Settings updated',
-    message: 'Your notification preferences were saved successfully.',
-    type: 'system',
-    time: '3 days ago',
-    read: true,
-  },
-  {
-    id: 'n12',
-    title: 'New student added',
-    message: '5 students enrolled in INTE 3123 for Semester 2.',
-    type: 'system',
-    time: '4 days ago',
-    read: false,
-  },
-];
+interface NotificationFeedItemDto {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  time: string;
+  read: boolean;
+  route?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private readonly _items = signal<NotificationItem[]>([...MOCK_NOTIFICATIONS]);
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiBaseUrl}/notifications`;
+  private readonly _items = signal<NotificationItem[]>([]);
 
   /** Reactive list for templates (read-only signal). */
   readonly notifications = this._items.asReadonly();
+
+  constructor() {
+    this.refresh();
+  }
+
+  refresh(take = 50): void {
+    this.http.get<NotificationFeedItemDto[]>(this.base, { params: { take } })
+      .pipe(
+        map((rows) =>
+          rows.map((x) => ({
+            id: x.id,
+            title: x.title,
+            message: x.message,
+            type: x.type,
+            time: x.time,
+            read: x.read,
+            route: x.route ?? undefined,
+          }))
+        ),
+        catchError((err) => {
+          console.error('Failed to load notifications.', err);
+          return of(this._items());
+        })
+      )
+      .subscribe((items) => this._items.set(items));
+  }
 
   getNotifications(): NotificationItem[] {
     return [...this._items()];
@@ -116,16 +59,35 @@ export class NotificationService {
   }
 
   markAsRead(id: string): void {
-    this._items.update((list) =>
-      list.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+    this._items.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    this.http.post<void>(`${this.base}/${id}/read`, {}).pipe(catchError(this.pipeError)).subscribe({
+      error: () => this.refresh(),
+    });
   }
 
   markAllAsRead(): void {
     this._items.update((list) => list.map((n) => ({ ...n, read: true })));
+    this.http.post<void>(`${this.base}/mark-all-read`, {}).pipe(catchError(this.pipeError)).subscribe({
+      error: () => this.refresh(),
+    });
   }
 
   clearAll(): void {
     this._items.set([]);
+    this.http.delete<void>(`${this.base}/clear-all`).pipe(catchError(this.pipeError)).subscribe({
+      error: () => this.refresh(),
+    });
+  }
+
+  private pipeError(err: HttpErrorResponse) {
+    const body = err.error;
+    if (body && typeof body === 'object') {
+      const o = body as Record<string, unknown>;
+      const msg = o['message'];
+      if (typeof msg === 'string' && msg.trim()) {
+        return throwError(() => new Error(msg));
+      }
+    }
+    return throwError(() => new Error(err.message || 'Request failed.'));
   }
 }

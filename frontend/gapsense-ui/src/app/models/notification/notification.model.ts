@@ -7,6 +7,7 @@ export interface NotificationItem {
   type: NotificationType;
   time: string;
   read: boolean;
+  route?: string;
 }
 
 export type NotificationFilter = 'all' | NotificationType;

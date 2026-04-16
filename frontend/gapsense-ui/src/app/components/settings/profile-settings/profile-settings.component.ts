@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import type { ProfileSettings } from '../../../models/settings/settings.model';
 import { ToastService } from '../../ui/toast/toast.service';
 import { SettingsService } from '../../../services/settings.service';
+import { finalize } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -20,13 +21,31 @@ export class ProfileSettingsComponent implements OnInit {
     phoneNumber: '',
     department: '',
   };
+  loading = false;
+  saving = false;
 
   ngOnInit(): void {
-    this.profile = { ...this.settings.getSettings().profile };
+    this.loading = true;
+    this.settings
+      .getProfile()
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (profile) => (this.profile = { ...profile }),
+        error: (err: Error) => this.toast.show(err.message || 'Failed to load profile settings.', 'error'),
+      });
   }
 
   save(): void {
-    this.settings.updateProfile(this.profile);
-    this.toast.show('Profile settings saved.', 'success');
+    this.saving = true;
+    this.settings
+      .updateProfile(this.profile)
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: (saved) => {
+          this.profile = { ...saved };
+          this.toast.show('Profile settings saved.', 'success');
+        },
+        error: (err: Error) => this.toast.show(err.message || 'Failed to save profile settings.', 'error'),
+      });
   }
 }

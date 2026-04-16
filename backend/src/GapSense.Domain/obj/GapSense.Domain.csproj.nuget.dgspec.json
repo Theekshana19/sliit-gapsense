@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "H:\\Gap sense\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {}
+    "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {}
   },
   "projects": {
-    "H:\\Gap sense\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {
+    "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "H:\\Gap sense\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
+        "projectUniqueName": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
         "projectName": "GapSense.Domain",
-        "projectPath": "H:\\Gap sense\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
+        "projectPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
         "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-        "outputPath": "H:\\Gap sense\\sliit-gapsense\\backend\\src\\GapSense.Domain\\obj\\",
+        "outputPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",

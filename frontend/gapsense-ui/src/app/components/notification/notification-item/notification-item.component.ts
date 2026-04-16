@@ -1,5 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { Router } from '@angular/router';
 import type { NotificationItem } from '../../../models/notification/notification.model';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -11,6 +12,7 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class NotificationItemComponent {
   private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
 
   @Input({ required: true }) item!: NotificationItem;
   /** Compact row for dropdown; roomier on full page */
@@ -19,6 +21,9 @@ export class NotificationItemComponent {
   onActivate(): void {
     if (!this.item.read) {
       this.notificationService.markAsRead(this.item.id);
+    }
+    if (this.item.route) {
+      this.router.navigateByUrl(this.item.route);
     }
   }
 

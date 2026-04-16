@@ -21,9 +21,15 @@ public sealed class ReadinessResultConfiguration : IEntityTypeConfiguration<Read
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
 
+        builder.HasOne(x => x.SemesterRef)
+            .WithMany()
+            .HasForeignKey(x => x.SemesterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(x => x.StudentId);
         builder.HasIndex(x => x.ModuleCode);
         builder.HasIndex(x => new { x.Batch, x.Semester });
+        builder.HasIndex(x => x.SemesterId);
     }
 }
 

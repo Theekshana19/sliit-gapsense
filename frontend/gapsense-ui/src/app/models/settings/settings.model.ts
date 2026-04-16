@@ -27,3 +27,15 @@ export interface SecuritySettings {
   confirmPassword: string;
   twoFactorEnabled: boolean;
 }
+
+export interface LecturerAcademicOptions {
+  semesterOptions: string[];
+  yearOptions: string[];
+}
+
+export interface LecturerSettingsBundleDto {
+  profile: ProfileSettings;
+  academic: AcademicSettings;
+  notifications: NotificationSettings;
+  security: Omit<SecuritySettings, 'currentPassword' | 'newPassword' | 'confirmPassword'>;
+}
