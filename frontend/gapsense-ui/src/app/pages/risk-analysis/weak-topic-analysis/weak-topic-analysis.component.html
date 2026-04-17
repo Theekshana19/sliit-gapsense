@@ -42,6 +42,9 @@
         [studentLabel]="analysisSvc.selectedStudentLabel()" />
     </section>
   } @else {
-    <p class="text-sm text-slate-600">Select semester, batch, group, student, and module to load the analysis.</p>
+    <p class="text-sm text-slate-600">
+      No analysis loaded yet. Ensure you are signed in, course modules exist, and the student-analytics API is
+      reachable.
+    </p>
   }
 </main>

@@ -183,7 +183,7 @@ export class MonitoringPlansPageComponent {
   async onRemove(id: string): Promise<void> {
     const ok = await this.confirm.ask({
       title: 'Remove plan?',
-      message: 'This removes the intervention plan from the mock store.',
+      message: 'This removes the intervention plan from the local list only.',
       confirmLabel: 'Remove',
       cancelLabel: 'Keep',
     });

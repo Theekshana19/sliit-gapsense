@@ -19,6 +19,13 @@ public class StudentAnalyticsService : IStudentAnalyticsService
 
     private readonly ApplicationDbContext _context;
 
+    /// <summary>Merges legacy <see cref="QuizAttempt"/> rows with readiness <see cref="Submission"/> rows for the same student.</summary>
+    private sealed record UnifiedAttempt(
+        DateTime SubmittedAtUtc,
+        int TotalScorePercent,
+        IReadOnlyList<QuizTopicScoreDto> Topics,
+        string ModuleLabel);
+
     public StudentAnalyticsService(ApplicationDbContext context)
     {
         _context = context;
@@ -257,6 +264,31 @@ public class StudentAnalyticsService : IStudentAnalyticsService
 
         if (sp != null)
         {
+            var submissions = await _context.Submissions
+                .AsNoTracking()
+                .Include(s => s.Quiz)
+                .Where(s => s.StudentId == sp.StudentId)
+                .Where(s => s.Status == "Submitted" || s.Status == "Graded")
+                .OrderByDescending(s => s.SubmittedAt ?? s.CreatedAt)
+                .Take(10)
+                .ToListAsync(cancellationToken);
+
+            foreach (var s in submissions)
+            {
+                var at = s.SubmittedAt ?? s.CreatedAt;
+                var pct = (int)Math.Round(s.Percentage);
+                rows.Add(new StudentAssessmentRowDto
+                {
+                    Id = s.Id.ToString(),
+                    AssessmentName = s.Quiz.Title,
+                    Date = at.ToString("yyyy-MM-dd"),
+                    Score = $"{pct}/100",
+                    Outcome = pct >= 60 ? "ready" : "needs_work",
+                    TrendDirection = "flat",
+                    TrendPercent = "—"
+                });
+            }
+
             var readinessRows = await _context.ReadinessResults
                 .AsNoTracking()
                 .Where(r => r.StudentId == sp.StudentId)
@@ -384,15 +416,10 @@ public class StudentAnalyticsService : IStudentAnalyticsService
     public async Task<ReassessmentComparisonViewDto> GetReassessmentComparisonAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var attempts = await _context.QuizAttempts
-            .AsNoTracking()
-            .Include(a => a.LegacyQuiz)
-            .Where(a => a.UserId == userId)
-            .OrderByDescending(a => a.SubmittedAtUtc)
-            .Take(2)
-            .ToListAsync(cancellationToken);
+        var ascending = await GetUnifiedAttemptsAscendingAsync(userId, cancellationToken);
+        var orderedDesc = ascending.OrderByDescending(a => a.SubmittedAtUtc).ToList();
 
-        if (attempts.Count == 0)
+        if (orderedDesc.Count == 0)
         {
             var emptyScore = new ReassessmentScoreSummaryDto
             {
@@ -421,11 +448,11 @@ public class StudentAnalyticsService : IStudentAnalyticsService
             };
         }
 
-        var latest = attempts[0];
-        var previous = attempts.Count > 1 ? attempts[1] : latest;
+        var latest = orderedDesc[0];
+        var previous = orderedDesc.Count > 1 ? orderedDesc[1] : latest;
 
-        var tLatest = ParseTopics(latest.TopicScoresJson);
-        var tPrev = ParseTopics(previous.TopicScoresJson);
+        var tLatest = latest.Topics;
+        var tPrev = previous.Topics;
         var topicNames = tLatest.Select(t => t.TopicName).Union(tPrev.Select(t => t.TopicName)).Distinct().ToList();
 
         var comparisons = new List<ReassessmentTopicComparisonDto>();
@@ -466,7 +493,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
             Observation = new ReassessmentObservationDto
             {
                 Label = "Observation",
-                Text = attempts.Count < 2
+                Text = orderedDesc.Count < 2
                     ? "Only one attempt on record; comparison uses the same attempt for both columns until you retake."
                     : "Compare your latest attempt with the prior one."
             },
@@ -482,11 +509,7 @@ public class StudentAnalyticsService : IStudentAnalyticsService
     public async Task<RiskTrendsSummaryViewDto> GetRiskTrendsAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var attempts = await _context.QuizAttempts
-            .AsNoTracking()
-            .Where(a => a.UserId == userId)
-            .OrderBy(a => a.SubmittedAtUtc)
-            .ToListAsync(cancellationToken);
+        var attempts = await GetUnifiedAttemptsAscendingAsync(userId, cancellationToken);
 
         var (topics, _, _) = await LoadTopicScoresAsync(userId, null, cancellationToken);
         var weakFreq = topics
@@ -613,25 +636,110 @@ public class StudentAnalyticsService : IStudentAnalyticsService
         };
     }
 
+    private async Task<IReadOnlyList<UnifiedAttempt>> GetUnifiedAttemptsAscendingAsync(Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var merged = new List<UnifiedAttempt>();
+
+        var quizAttempts = await _context.QuizAttempts
+            .AsNoTracking()
+            .Include(a => a.LegacyQuiz)
+            .Where(a => a.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        foreach (var a in quizAttempts)
+        {
+            merged.Add(new UnifiedAttempt(
+                a.SubmittedAtUtc,
+                a.TotalScorePercent,
+                ParseTopics(a.TopicScoresJson),
+                a.LegacyQuiz.ModuleCode));
+        }
+
+        var sp = await _context.StudentProfiles.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+        if (sp != null)
+        {
+            var submissions = await _context.Submissions
+                .AsNoTracking()
+                .Include(s => s.Quiz).ThenInclude(q => q.Module)
+                .Include(s => s.Quiz).ThenInclude(q => q.QuizQuestions)
+                .Include(s => s.Answers).ThenInclude(a => a.Question).ThenInclude(q => q.Topic)
+                .Where(s => s.StudentId == sp.StudentId)
+                .Where(s => s.Status == "Submitted" || s.Status == "Graded")
+                .ToListAsync(cancellationToken);
+
+            foreach (var s in submissions)
+            {
+                var at = s.SubmittedAt ?? s.CreatedAt;
+                var utc = at.Kind == DateTimeKind.Utc ? at : DateTime.SpecifyKind(at, DateTimeKind.Utc);
+                var scorePct = (int)Math.Round(s.Percentage);
+                var topics = BuildTopicScoresFromSubmission(s);
+                var moduleLabel = s.Quiz.Module.ModuleCode;
+                merged.Add(new UnifiedAttempt(utc, scorePct, topics, moduleLabel));
+            }
+        }
+
+        return merged.OrderBy(a => a.SubmittedAtUtc).ToList();
+    }
+
+    private static IReadOnlyList<QuizTopicScoreDto> BuildTopicScoresFromSubmission(Submission s)
+    {
+        var dict = s.Quiz.QuizQuestions.GroupBy(qq => qq.QuestionId).ToDictionary(g => g.Key, g => g.First().Marks);
+        var byTopic = new Dictionary<string, (int earned, int possible)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var ans in s.Answers)
+        {
+            var topic = ans.Question.Topic?.TopicName?.Trim();
+            if (string.IsNullOrWhiteSpace(topic))
+                topic = "General";
+
+            var possible = dict.TryGetValue(ans.QuestionId, out var m) ? m : ans.Question.Marks;
+            if (!byTopic.TryGetValue(topic, out var tup))
+                byTopic[topic] = (0, 0);
+
+            byTopic[topic] = (tup.earned + ans.Marks, tup.possible + possible);
+        }
+
+        if (byTopic.Count == 0 && s.TotalMarks > 0)
+        {
+            var label = s.Quiz.Module?.ModuleCode ?? "Quiz";
+            return new List<QuizTopicScoreDto>
+            {
+                new()
+                {
+                    TopicName = label,
+                    Percent = Math.Clamp((int)Math.Round(s.Percentage), 0, 100)
+                }
+            };
+        }
+
+        return byTopic
+            .Select(kv => new QuizTopicScoreDto
+            {
+                TopicName = kv.Key,
+                Percent = kv.Value.possible > 0
+                    ? Math.Clamp((int)Math.Round(100.0 * kv.Value.earned / kv.Value.possible), 0, 100)
+                    : 0
+            })
+            .ToList();
+    }
+
     private async Task<(List<(string Name, int Percent)> topics, string moduleLabel, int totalScore)> LoadTopicScoresAsync(
         Guid userId, string? moduleCode, CancellationToken cancellationToken)
     {
-        var query = _context.QuizAttempts
-            .AsNoTracking()
-            .Include(a => a.LegacyQuiz)
-            .Where(a => a.UserId == userId);
-
+        var unified = await GetUnifiedAttemptsAscendingAsync(userId, cancellationToken);
+        UnifiedAttempt? pick = null;
         if (!string.IsNullOrWhiteSpace(moduleCode))
-            query = query.Where(a => a.LegacyQuiz.ModuleCode == moduleCode.Trim());
-
-        var attempt = await query
-            .OrderByDescending(a => a.SubmittedAtUtc)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (attempt != null)
         {
-            var topics = ParseTopics(attempt.TopicScoresJson);
-            return (topics.Select(t => (t.TopicName, t.Percent)).ToList(), attempt.LegacyQuiz.ModuleCode, attempt.TotalScorePercent);
+            var code = moduleCode.Trim();
+            pick = unified.LastOrDefault(a =>
+                string.Equals(a.ModuleLabel, code, StringComparison.OrdinalIgnoreCase));
+        }
+
+        pick ??= unified.LastOrDefault();
+        if (pick != null)
+        {
+            return (pick.Topics.Select(t => (t.TopicName, t.Percent)).ToList(), pick.ModuleLabel, pick.TotalScorePercent);
         }
 
         var sp = await _context.StudentProfiles.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);

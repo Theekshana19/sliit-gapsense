@@ -114,26 +114,21 @@ export class RecommendationRuleService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  readonly activeImpactCount = computed(() => {
-    const base = 1200;
-    const n = this._rules().filter((r) => r.status === 'active').length;
-    return base + n * 40;
-  });
+  readonly activeImpactCount = computed(() =>
+    this._rules().filter((r) => r.status === 'active').length
+  );
 
   readonly efficiencyRate = computed(() => {
     const rules = this._rules();
-    if (rules.length === 0) return 94.2;
+    if (rules.length === 0) return 0;
     const active = rules.filter((r) => r.status === 'active').length;
-    return Math.min(99, 88 + (active / rules.length) * 10);
+    return Math.round((active / rules.length) * 1000) / 10;
   });
 
-  readonly criticalGapsCount = computed(() => {
-    const topicsCovered = new Set(
-      this._rules().map((r) => `${r.moduleId}:${r.topic}`)
-    );
-    const mockTotalTopics = 24;
-    return Math.max(0, mockTotalTopics - topicsCovered.size);
-  });
+  /** Rules that are not active (e.g. draft) — a real count from loaded rules only. */
+  readonly criticalGapsCount = computed(() =>
+    this._rules().filter((r) => r.status !== 'active').length
+  );
 
   private get baseUrl(): string {
     return `${API_BASE_URL}/api/recommendation-rules`;

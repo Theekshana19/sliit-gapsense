@@ -49,6 +49,6 @@ export class SecuritySettingsComponent implements OnInit {
 
   logoutAllDevices(): void {
     this.settings.logoutAllDevices();
-    this.toast.show('All other sessions have been signed out (mock).', 'info');
+    this.toast.show('All other sessions have been signed out locally.', 'info');
   }
 }

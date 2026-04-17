@@ -2,73 +2,40 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { StudentAnalyticsApiService } from './student-analytics-api.service';
 import type { PersonalizedLearningPathViewModel } from '../models/risk-analysis/personalized-learning-path.model';
 
-const MOCK_VIEW_MODEL: PersonalizedLearningPathViewModel = {
-  summary: {
-    label: 'Overall Readiness',
-    readinessPercent: 33,
-    nextMilestoneLabel: 'Next Milestone:',
-    nextMilestoneName: 'Requirement Specialist',
-    completedCount: 1,
-    totalCount: 3,
-    helperText: "You've completed 1 out of 3 major topic reviews. Keep going!",
-  },
-  resumeItem: {
-    title: 'Resume Learning',
-    topicName: 'Requirement Planning',
-    continueLabel: 'Continue',
-  },
-  steps: [
-    {
-      id: 'step-1',
-      stepNumber: 1,
-      title: 'Step 1: Risk Analysis',
-      status: 'completed',
-      date: 'March 12, 2024',
-      metadata: [
-        { icon: 'quiz', label: 'Quiz 01 Review' },
-        { icon: 'schedule', label: '45 mins' },
-      ],
-      actionLabel: 'View Performance Summary',
+function emptyLearningPath(): PersonalizedLearningPathViewModel {
+  return {
+    summary: {
+      label: 'Learning path',
+      readinessPercent: 0,
+      nextMilestoneLabel: 'Next milestone',
+      nextMilestoneName: '—',
+      completedCount: 0,
+      totalCount: 0,
+      helperText: 'Complete an assessment to generate your path from real data.',
     },
-    {
-      id: 'step-2',
-      stepNumber: 2,
-      title: 'Step 2: Requirement Planning',
-      status: 'in_progress',
-      badgeLabel: 'Recommended Action',
-      recommendationNote:
-        'Based on your last mock exam, your score in Requirement gathering was below the 60% threshold. Watch this masterclass to improve.',
-      resourcePanel: {
-        icon: 'videocam',
-        title: 'Requirement Masterclass 101',
-        subtext: 'Video Tutorial • 24:12 remaining',
-        actionLabel: 'Resume Video',
+    resumeItem: {
+      title: 'Get started',
+      topicName: 'General',
+      continueLabel: 'Continue',
+    },
+    steps: [
+      {
+        id: '1',
+        stepNumber: 1,
+        title: 'Take a diagnostic quiz',
+        status: 'in_progress',
+        recommendationNote: 'Your path will populate from assessment data.',
       },
+    ],
+    footerActions: {
+      title: 'Need help?',
+      subtitle: 'Contact your module coordinator for interventions.',
+      primaryButtonLabel: 'Export summary',
+      secondaryButtonLabel: 'Retake quiz',
     },
-    {
-      id: 'step-3',
-      stepNumber: 3,
-      title: 'Step 3: Normalization',
-      status: 'locked',
-      metadata: [
-        { icon: 'description', label: 'Supplementary PDF' },
-        { icon: 'assignment', label: '3 Practice Tasks' },
-      ],
-      unlockNote: 'Unlocks after completing Requirement Planning.',
-    },
-  ],
-  footerActions: {
-    title: 'Struggling with the path?',
-    subtitle: 'Recalibrate your learning engine based on a new diagnostic test.',
-    primaryButtonLabel: 'Retake Readiness Test',
-    secondaryButtonLabel: 'Download PDF Path',
-  },
-};
+  };
+}
 
-/**
- * Mock personalized learning path service. Replace with HTTP + DTO mapping
- * when the backend is ready.
- */
 @Injectable({ providedIn: 'root' })
 export class PersonalizedLearningPathService {
   private readonly analyticsApi = inject(StudentAnalyticsApiService);
@@ -81,7 +48,7 @@ export class PersonalizedLearningPathService {
   readonly retakeNotice = this._retakeNotice.asReadonly();
 
   readonly viewModel = computed((): PersonalizedLearningPathViewModel =>
-    this._remote() ?? MOCK_VIEW_MODEL
+    this._remote() ?? emptyLearningPath()
   );
 
   async tryLoadFromApi(): Promise<void> {
@@ -118,10 +85,10 @@ export class PersonalizedLearningPathService {
   }
 
   viewPerformanceSummary(stepId: string): void {
-    // Placeholder: open summary modal/page
+    void stepId;
   }
 
   resumeResource(stepId: string): void {
-    // Placeholder: resume video/resource
+    void stepId;
   }
 }

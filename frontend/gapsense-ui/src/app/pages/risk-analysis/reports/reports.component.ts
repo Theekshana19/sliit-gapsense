@@ -298,7 +298,7 @@ export class RiskReportsPageComponent {
       this.toast.show('Select batch, module, and semester before generating.', 'error');
       return;
     }
-    this.toast.show(`Report queued (${this.format().toUpperCase()}, mock).`, 'success');
+    this.toast.show(`Report queued (${this.format().toUpperCase()}). Export API not connected.`, 'success');
   }
 
   readonly reportTypes: {

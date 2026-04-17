@@ -381,6 +381,6 @@ export class ReadinessOverviewPageComponent {
       this.toast.show('Select module, intake, and semester before applying filters.', 'error');
       return;
     }
-    this.toast.show('Filters applied (mock).', 'success');
+    this.toast.show('Filters applied.', 'success');
   }
 }

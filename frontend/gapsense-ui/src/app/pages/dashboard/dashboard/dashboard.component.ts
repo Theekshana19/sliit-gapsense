@@ -1,10 +1,21 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { catchError, of } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { SidebarComponent } from '../../../components/layout/sidebar/sidebar.component';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
 import { AuthUiService } from '../../../services/auth-ui.service';
 import { ReadinessService } from '../../../services/readiness.service';
+import { OptionalModulesApiService } from '../../../services/optional-modules-api.service';
 import { QuizSchedule } from '../../../models/readiness/quiz.model';
+
+type StaffSnapshot = {
+  moduleCount: number;
+  submissionRecords: number;
+  submissionCompletionRate: number;
+  openInterventions: number;
+  lecturerAssignments: number;
+};
 
 @Component({
   standalone: true,
@@ -76,7 +87,7 @@ import { QuizSchedule } from '../../../models/readiness/quiz.model';
             — see scores and history under
             <a routerLink="/readiness/attempt-history" class="font-semibold text-[#003f87] hover:underline"
               >My quiz attempts</a
-            >.
+            >, and your analytics under <strong>Risk analysis</strong> in the sidebar.
           </section>
         </div>
       } @else {
@@ -87,7 +98,7 @@ import { QuizSchedule } from '../../../models/readiness/quiz.model';
                 Academic dashboard
               </h1>
               <p class="font-medium text-slate-500">
-                Live KPIs and charts are not connected yet. Use the sidebar for readiness, risk, and curriculum tools.
+                Summary figures below are loaded from the live API for your role.
               </p>
             </div>
             <a
@@ -100,11 +111,30 @@ import { QuizSchedule } from '../../../models/readiness/quiz.model';
           </header>
 
           <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h2 class="font-headline text-lg font-bold text-slate-900">No institutional metrics loaded</h2>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              Previous versions of this page showed sample numbers for layout only. When reporting APIs are available,
-              total students, risk counts, and trends can be wired here without changing the navigation structure.
-            </p>
+            <h2 class="font-headline text-lg font-bold text-slate-900">System summary</h2>
+            @if (staffSnapshotLoading()) {
+              <p class="mt-3 text-sm text-slate-500">Loading summary…</p>
+            } @else if (staffSnapshotError()) {
+              <p class="mt-3 text-sm text-red-600">Could not load one or more dashboard metrics.</p>
+            } @else if (staffSnapshot(); as snap) {
+              <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-600">
+                <li><strong>Course modules</strong> in catalogue: {{ snap.moduleCount }}</li>
+                <li><strong>Quiz submission records</strong> (all quizzes): {{ snap.submissionRecords }}</li>
+                <li><strong>Completion rate</strong> reported for those records: {{ snap.submissionCompletionRate }}%</li>
+                <li><strong>Open student interventions</strong> (visible to you): {{ snap.openInterventions }}</li>
+                @if (isLecturer()) {
+                  <li><strong>Your module assignments</strong>: {{ snap.lecturerAssignments }}</li>
+                }
+              </ul>
+              <p class="mt-4 text-xs text-slate-500">
+                Sources: <code>/api/CourseModules</code>, <code>/api/submissions/stats</code>,
+                <code>/api/StudentInterventions</code>@if (isLecturer()) {
+                , <code>/api/LecturerAssignments</code>}
+                .
+              </p>
+            } @else {
+              <p class="mt-3 text-sm text-slate-600">No snapshot loaded.</p>
+            }
             <ul class="mt-6 list-disc space-y-2 pl-5 text-sm text-slate-600">
               <li>Lecturers: question bank, quiz builder, and scheduling live under <strong>Readiness</strong>.</li>
               <li>Admins: configure thresholds and rules from the <strong>Risk analysis</strong> entries.</li>
@@ -118,13 +148,19 @@ import { QuizSchedule } from '../../../models/readiness/quiz.model';
 export class DashboardPageComponent implements OnInit {
   private readonly authUi = inject(AuthUiService);
   private readonly readinessService = inject(ReadinessService);
+  private readonly optionalModules = inject(OptionalModulesApiService);
 
   readonly isStudent = computed(() => this.authUi.currentUser()?.role === 'student');
+  readonly isLecturer = computed(() => this.authUi.currentUser()?.role === 'lecturer');
   readonly userName = computed(() => this.authUi.currentUser()?.fullName ?? 'Student');
 
   readonly studentSchedules = signal<QuizSchedule[]>([]);
   readonly schedulesLoading = signal(false);
   readonly schedulesError = signal(false);
+
+  readonly staffSnapshot = signal<StaffSnapshot | null>(null);
+  readonly staffSnapshotLoading = signal(false);
+  readonly staffSnapshotError = signal(false);
 
   readonly quickLink = computed(() => {
     const r = this.authUi.currentUser()?.role;
@@ -145,18 +181,59 @@ export class DashboardPageComponent implements OnInit {
   });
 
   ngOnInit() {
-    if (this.authUi.currentUser()?.role !== 'student') return;
+    const role = this.authUi.currentUser()?.role;
+    if (role === 'student') {
+      this.schedulesLoading.set(true);
+      this.readinessService.getSchedules().subscribe({
+        next: (list) => {
+          this.studentSchedules.set(list);
+          this.schedulesLoading.set(false);
+        },
+        error: () => {
+          this.schedulesError.set(true);
+          this.schedulesLoading.set(false);
+        },
+      });
+      return;
+    }
 
-    this.schedulesLoading.set(true);
-    this.readinessService.getSchedules().subscribe({
-      next: (list) => {
-        this.studentSchedules.set(list);
-        this.schedulesLoading.set(false);
-      },
-      error: () => {
-        this.schedulesError.set(true);
-        this.schedulesLoading.set(false);
-      },
-    });
+    if (role === 'admin' || role === 'lecturer') {
+      void this.loadStaffSnapshot(role);
+    }
+  }
+
+  private async loadStaffSnapshot(role: 'admin' | 'lecturer'): Promise<void> {
+    this.staffSnapshotLoading.set(true);
+    this.staffSnapshotError.set(false);
+    try {
+      const mods = await this.optionalModules.fetchCourseModules();
+      const stats = await firstValueFrom(
+        this.readinessService.getSubmissionStats().pipe(catchError(() => of(null)))
+      );
+      const interventions = await this.optionalModules.fetchInterventions();
+      const openInterventions = interventions.filter(
+        (i) => (i.status ?? '').toLowerCase() === 'open'
+      ).length;
+
+      let lecturerAssignments = 0;
+      if (role === 'lecturer') {
+        const uid = this.authUi.currentUser()?.userId;
+        if (uid) {
+          lecturerAssignments = (await this.optionalModules.fetchLecturerAssignments(uid)).length;
+        }
+      }
+
+      this.staffSnapshot.set({
+        moduleCount: mods.length,
+        submissionRecords: stats?.totalEnrollments ?? 0,
+        submissionCompletionRate: stats?.totalCompletionRate ?? 0,
+        openInterventions,
+        lecturerAssignments,
+      });
+    } catch {
+      this.staffSnapshotError.set(true);
+    } finally {
+      this.staffSnapshotLoading.set(false);
+    }
   }
 }
