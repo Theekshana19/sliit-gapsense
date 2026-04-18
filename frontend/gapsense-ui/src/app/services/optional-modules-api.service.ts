@@ -106,4 +106,18 @@ export class OptionalModulesApiService {
       return false;
     }
   }
+
+  async patchStudentIntervention(
+    id: string,
+    body: { status?: 'open' | 'closed'; notes?: string | null },
+  ): Promise<StudentInterventionDto | null> {
+    try {
+      const res = await firstValueFrom(
+        this.http.patch<ApiResponse<StudentInterventionDto>>(`${this.base}/api/StudentInterventions/${id}`, body)
+      );
+      return res.success && res.data ? res.data : null;
+    } catch {
+      return null;
+    }
+  }
 }

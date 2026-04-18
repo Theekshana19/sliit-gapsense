@@ -161,4 +161,42 @@ public class OptionalModulesService : IOptionalModulesService
             entity.Status,
             entity.CreatedAtUtc);
     }
+
+    public async Task<StudentInterventionResponse> PatchStudentInterventionAsync(Guid id,
+        PatchStudentInterventionRequest request, Guid userId, string role,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.Status is null && request.Notes is null)
+            throw new ArgumentException("Provide at least one of: status, notes.");
+
+        var entity = await _db.StudentInterventions.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (entity is null)
+            throw new InvalidOperationException("Intervention not found.");
+
+        if (string.Equals(role, "student", StringComparison.OrdinalIgnoreCase) &&
+            entity.StudentUserId != userId)
+            throw new InvalidOperationException("Not allowed.");
+
+        if (request.Status is not null)
+        {
+            var s = request.Status.Trim().ToLowerInvariant();
+            if (s is not ("open" or "closed"))
+                throw new ArgumentException("Status must be open or closed.");
+            entity.Status = s;
+        }
+
+        if (request.Notes is not null)
+            entity.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return new StudentInterventionResponse(
+            entity.Id,
+            entity.StudentUserId,
+            entity.CreatedByUserId,
+            entity.Title,
+            entity.Notes,
+            entity.Status,
+            entity.CreatedAtUtc);
+    }
 }

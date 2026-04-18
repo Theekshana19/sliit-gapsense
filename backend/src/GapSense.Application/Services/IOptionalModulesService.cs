@@ -20,4 +20,7 @@ public interface IOptionalModulesService
 
     Task<StudentInterventionResponse> CreateStudentInterventionAsync(CreateStudentInterventionRequest request,
         Guid createdByUserId, CancellationToken cancellationToken = default);
+
+    Task<StudentInterventionResponse> PatchStudentInterventionAsync(Guid id, PatchStudentInterventionRequest request,
+        Guid userId, string role, CancellationToken cancellationToken = default);
 }

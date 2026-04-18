@@ -57,6 +57,31 @@ public class StudentInterventionsController : ControllerBase
         }
     }
 
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "admin,lecturer")]
+    public async Task<ActionResult<ApiResponse<StudentInterventionResponse>>> Patch(
+        Guid id, [FromBody] PatchStudentInterventionRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryGetUserId(out var userId) || !TryGetRole(out var role))
+            return Unauthorized(ApiResponse<StudentInterventionResponse?>.Fail("Not authenticated."));
+
+        try
+        {
+            var item = await _service.PatchStudentInterventionAsync(id, request, userId, role, cancellationToken);
+            return Ok(ApiResponse<StudentInterventionResponse>.Ok(item, "Intervention updated."));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<StudentInterventionResponse?>.Fail(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                return NotFound(ApiResponse<StudentInterventionResponse?>.Fail(ex.Message));
+            return BadRequest(ApiResponse<StudentInterventionResponse?>.Fail(ex.Message));
+        }
+    }
+
     private bool TryGetUserId(out Guid userId)
     {
         var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

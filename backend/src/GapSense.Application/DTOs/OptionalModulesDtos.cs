@@ -39,3 +39,8 @@ public record CreateStudentInterventionRequest(
     string Title,
     string? Notes,
     string Status);
+
+/// <summary>Partial update. Omit a property (null after binding) to leave that field unchanged.</summary>
+public record PatchStudentInterventionRequest(
+    string? Status,
+    string? Notes);
