@@ -1,23 +1,16 @@
 import { NgClass } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { StatusPillComponent } from '../../../components/ui/status-pill/status-pill.component';
 import { ToastService } from '../../../components/ui/toast/toast.service';
+import type { RiskTrendsSummaryViewModel } from '../../../models/risk-analysis/risk-trends-summary.model';
+import type { WeakTopicAnalysisViewModel } from '../../../models/risk-analysis/weak-topic-analysis.model';
+import type { CourseModuleDto, StudentInterventionDto } from '../../../services/optional-modules-api.service';
+import type { InterventionReportRow } from '../../../services/reports-snapshot.service';
+import { ReportsSnapshotService } from '../../../services/reports-snapshot.service';
 import { controlInvalid } from '../../../validators/form-utils';
 
 type ReportTypeId = 'readiness' | 'module_risk' | 'weak_topic';
-
-interface RecentReportRow {
-  id: string;
-  fileName: string;
-  fileMeta: string;
-  batch: string;
-  generatedBy: string;
-  authorInitial: string;
-  authorBg: string;
-  status: 'COMPLETED' | 'PENDING' | 'FAILED';
-  isPdf: boolean;
-}
 
 @Component({
   standalone: true,
@@ -42,6 +35,12 @@ interface RecentReportRow {
           Recent Exports
         </button>
       </div>
+
+      @if (loadError()) {
+        <p class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          Could not load report data. Check that you are signed in and the API is running.
+        </p>
+      }
 
       <div class="grid gap-8 xl:grid-cols-[1fr_340px]">
         <!-- Main column -->
@@ -79,30 +78,25 @@ interface RecentReportRow {
             [formGroup]="paramsForm"
           >
             <h2 class="text-lg font-bold text-[#1a2b4b]">2. Refine Parameters</h2>
+            <p class="mt-2 text-xs text-slate-500">
+              Module list from <code>/api/CourseModules</code>. Analytics use <code>/api/student-analytics</code> for your
+              account; intervention rows are from <code>/api/StudentInterventions</code>.
+            </p>
             <div class="mt-6 grid gap-6 md:grid-cols-3">
               <label class="block">
                 <span class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Batch Selection</span>
                 <select
                   formControlName="batch"
-                  class="w-full cursor-pointer rounded-xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 shadow-inner focus:border-[#003f87] focus:outline-none focus:ring-2 focus:ring-[#003f87]/20"
-                  [ngClass]="
-                    invalid(paramsForm.get('batch'))
-                      ? 'border-rose-500 ring-1 ring-rose-400/50'
-                      : 'border-slate-200'
-                  "
+                  class="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 shadow-inner focus:border-[#003f87] focus:outline-none focus:ring-2 focus:ring-[#003f87]/20"
                 >
-                  <option value="" disabled>Select batch</option>
-                  <option value="bsc-cs-2023">BSc CS - Intake 2023</option>
-                  <option value="bsc-it-2023">BSc IT - Intake 2023</option>
+                  <option value="all">All cohorts</option>
                 </select>
-                @if (invalid(paramsForm.get('batch'))) {
-                  <span class="mt-1 block text-xs text-rose-600">Required.</span>
-                }
               </label>
               <label class="block">
                 <span class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Module Code</span>
                 <select
                   formControlName="moduleCode"
+                  (change)="onModuleFilterChange()"
                   class="w-full cursor-pointer rounded-xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 shadow-inner focus:border-[#003f87] focus:outline-none focus:ring-2 focus:ring-[#003f87]/20"
                   [ngClass]="
                     invalid(paramsForm.get('moduleCode'))
@@ -111,31 +105,22 @@ interface RecentReportRow {
                   "
                 >
                   <option value="" disabled>Select module</option>
-                  <option value="it1010">IT1010 - Intro to Programming</option>
-                  <option value="it2020">IT2020 - Data Structures</option>
+                  @for (m of modules(); track m.id) {
+                    <option [value]="m.code">{{ m.code }} — {{ m.title }}</option>
+                  }
                 </select>
                 @if (invalid(paramsForm.get('moduleCode'))) {
-                  <span class="mt-1 block text-xs text-rose-600">Required.</span>
+                  <span class="mt-1 block text-xs text-rose-600">Required for export.</span>
                 }
               </label>
               <label class="block">
                 <span class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Semester</span>
                 <select
                   formControlName="semester"
-                  class="w-full cursor-pointer rounded-xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 shadow-inner focus:border-[#003f87] focus:outline-none focus:ring-2 focus:ring-[#003f87]/20"
-                  [ngClass]="
-                    invalid(paramsForm.get('semester'))
-                      ? 'border-rose-500 ring-1 ring-rose-400/50'
-                      : 'border-slate-200'
-                  "
+                  class="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 shadow-inner focus:border-[#003f87] focus:outline-none focus:ring-2 focus:ring-[#003f87]/20"
                 >
-                  <option value="" disabled>Select semester</option>
-                  <option value="y1s1">Year 01 - Semester 01</option>
-                  <option value="y1s2">Year 01 - Semester 02</option>
+                  <option value="all">All semesters</option>
                 </select>
-                @if (invalid(paramsForm.get('semester'))) {
-                  <span class="mt-1 block text-xs text-rose-600">Required.</span>
-                }
               </label>
             </div>
           </section>
@@ -188,7 +173,8 @@ interface RecentReportRow {
             <div class="mt-6 flex gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
               <span class="material-symbols-outlined shrink-0 text-slate-400">info</span>
               <p class="text-xs leading-relaxed text-slate-600">
-                Reports are generated in real-time based on the most recent sync from LMS.
+                Live data from StudentInterventions and student-analytics (scoped to the signed-in user for analytics
+                endpoints).
               </p>
             </div>
           </div>
@@ -197,16 +183,16 @@ interface RecentReportRow {
             <h4 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Export Stats</h4>
             <div class="mt-4 flex items-end justify-between gap-4">
               <div>
-                <p class="text-xs font-semibold text-slate-500">Last Month Exports</p>
-                <p class="mt-1 font-headline text-4xl font-extrabold text-[#1a2b4b]">124</p>
+                <p class="text-xs font-semibold text-slate-500">Interventions in view</p>
+                <p class="mt-1 font-headline text-4xl font-extrabold text-[#1a2b4b]">{{ interventionCount() }}</p>
               </div>
               <span class="material-symbols-outlined text-6xl text-sky-200/80">cloud</span>
             </div>
             <div class="mt-6 border-t border-slate-200/80 pt-4">
-              <p class="text-xs font-semibold text-slate-500">Most Exported</p>
+              <p class="text-xs font-semibold text-slate-500">Risk snapshot (analytics)</p>
               <span
                 class="mt-2 inline-flex rounded-full bg-[#003f87] px-3 py-1 text-xs font-bold text-white shadow-sm"
-                >Student Risk</span
+                >{{ riskHighlight() }}</span
               >
             </div>
           </div>
@@ -216,90 +202,107 @@ interface RecentReportRow {
       <!-- Recent table -->
       <section class="overflow-hidden rounded-2xl bg-white shadow-md shadow-slate-200/50 ring-1 ring-slate-100">
         <div class="flex flex-col gap-3 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="font-headline text-xl font-bold text-[#1a2b4b]">Recent Academic Reports</h2>
+          <h2 class="font-headline text-xl font-bold text-[#1a2b4b]">Intervention snapshot</h2>
           <button type="button" class="text-sm font-semibold text-[#003f87] hover:underline">View All History</button>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm">
-            <thead class="border-b border-slate-100 bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              <tr>
-                <th class="px-6 py-4">Report Name</th>
-                <th class="px-6 py-4">Batch</th>
-                <th class="px-6 py-4">Generated By</th>
-                <th class="px-6 py-4">Status</th>
-                <th class="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (row of recentRows; track row.id) {
-                <tr class="transition-colors hover:bg-slate-50/50">
-                  <td class="px-6 py-4">
-                    <div class="flex items-start gap-3">
-                      <span class="material-symbols-outlined mt-0.5 text-[22px] text-[#003f87]">{{
-                        row.isPdf ? 'picture_as_pdf' : 'table_chart'
-                      }}</span>
-                      <div>
-                        <p class="font-semibold text-[#003f87]">{{ row.fileName }}</p>
-                        <p class="mt-0.5 text-xs text-slate-500">{{ row.fileMeta }}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 text-slate-700">{{ row.batch }}</td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <div
-                        class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-                        [style.background]="row.authorBg"
-                      >
-                        {{ row.authorInitial }}
-                      </div>
-                      <span class="font-medium text-slate-800">{{ row.generatedBy }}</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <app-status-pill [label]="row.status" tone="info" />
-                  </td>
-                  <td class="px-6 py-4 text-right">
-                    <button
-                      type="button"
-                      class="inline-flex rounded-lg p-2 text-[#003f87] transition hover:bg-sky-50"
-                      aria-label="Download"
-                    >
-                      <span class="material-symbols-outlined text-[22px]">download</span>
-                    </button>
-                  </td>
+        @if (loading()) {
+          <p class="px-6 py-10 text-center text-sm text-slate-500">Loading…</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+              <thead class="border-b border-slate-100 bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th class="px-6 py-4">Report Name</th>
+                  <th class="px-6 py-4">Module</th>
+                  <th class="px-6 py-4">Student</th>
+                  <th class="px-6 py-4">Status</th>
+                  <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (row of tableRows(); track row.id) {
+                  <tr class="transition-colors hover:bg-slate-50/50">
+                    <td class="px-6 py-4">
+                      <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined mt-0.5 text-[22px] text-[#003f87]">table_chart</span>
+                        <div>
+                          <p class="font-semibold text-[#003f87]">{{ row.title }}</p>
+                          <p class="mt-0.5 text-xs text-slate-500">{{ row.meta }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-700">{{ row.moduleLabel }}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-2">
+                        <div
+                          class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+                          style="background: #003f87"
+                        >
+                          {{ row.studentId.charAt(0).toUpperCase() }}
+                        </div>
+                        <span class="font-mono text-xs font-medium text-slate-800">{{ row.studentId }}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <app-status-pill [label]="row.statusLabel" tone="info" />
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button
+                        type="button"
+                        class="inline-flex rounded-lg p-2 text-[#003f87] transition hover:bg-sky-50"
+                        aria-label="Download"
+                        (click)="downloadRowCsv(row)"
+                      >
+                        <span class="material-symbols-outlined text-[22px]">download</span>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">No interventions returned for your role.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </section>
     </div>
   `,
 })
-export class RiskReportsPageComponent {
+export class RiskReportsPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
+  private readonly snapshotSvc = inject(ReportsSnapshotService);
 
   readonly invalid = controlInvalid;
 
   readonly paramsForm = this.fb.nonNullable.group({
-    batch: ['', [Validators.required]],
+    batch: ['all'],
     moduleCode: ['', [Validators.required]],
-    semester: ['', [Validators.required]],
+    semester: ['all'],
   });
 
   readonly selectedType = signal<ReportTypeId>('readiness');
-  readonly format = signal<'pdf' | 'csv'>('pdf');
+  readonly format = signal<'pdf' | 'csv'>('csv');
 
-  generateReport(): void {
-    this.paramsForm.markAllAsTouched();
-    if (this.paramsForm.invalid) {
-      this.toast.show('Select batch, module, and semester before generating.', 'error');
-      return;
-    }
-    this.toast.show(`Report queued (${this.format().toUpperCase()}). Export API not connected.`, 'success');
-  }
+  readonly loading = signal(true);
+  readonly loadError = signal(false);
+  readonly modules = signal<CourseModuleDto[]>([]);
+  readonly interventions = signal<StudentInterventionDto[]>([]);
+  readonly weakTopics = signal<WeakTopicAnalysisViewModel | null>(null);
+  readonly riskTrends = signal<RiskTrendsSummaryViewModel | null>(null);
+
+  readonly tableRows = computed(() =>
+    this.snapshotSvc.interventionTableRows(this.interventions(), this.modules()),
+  );
+
+  readonly interventionCount = computed(() => this.interventions().length);
+
+  readonly riskHighlight = computed(() => {
+    const m = this.riskTrends()?.summaryMetrics?.[0];
+    return m ? `${m.title}: ${m.value}` : 'No analytics summary';
+  });
 
   readonly reportTypes: {
     id: ReportTypeId;
@@ -331,28 +334,58 @@ export class RiskReportsPageComponent {
     },
   ];
 
-  readonly recentRows: RecentReportRow[] = [
-    {
-      id: '1',
-      fileName: 'ModuleRisk_IT1010_23.pdf',
-      fileMeta: 'Oct 12, 2023 • 2.4 MB',
-      batch: 'BSc CS - 2023 Intake',
-      generatedBy: 'Prof. Gamage',
-      authorInitial: 'G',
-      authorBg: '#003f87',
-      status: 'COMPLETED',
-      isPdf: true,
-    },
-    {
-      id: '2',
-      fileName: 'WeakTopics_DataStructures.csv',
-      fileMeta: 'Oct 10, 2023 • 840 KB',
-      batch: 'BSc IT - 2023 Intake',
-      generatedBy: 'Admin_S01',
-      authorInitial: 'A',
-      authorBg: '#64748b',
-      status: 'COMPLETED',
-      isPdf: false,
-    },
-  ];
+  async ngOnInit(): Promise<void> {
+    await this.reloadSnapshot();
+  }
+
+  async onModuleFilterChange(): Promise<void> {
+    await this.reloadSnapshot();
+  }
+
+  private async reloadSnapshot(): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set(false);
+    const code = this.paramsForm.controls.moduleCode.value?.trim();
+    const moduleFilter = code || undefined;
+    try {
+      const snap = await this.snapshotSvc.loadSnapshot(moduleFilter);
+      this.modules.set(snap.modules);
+      this.interventions.set(snap.interventions);
+      this.weakTopics.set(snap.weakTopics);
+      this.riskTrends.set(snap.riskTrends);
+    } catch {
+      this.loadError.set(true);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  generateReport(): void {
+    this.paramsForm.markAllAsTouched();
+    if (this.paramsForm.invalid) {
+      this.toast.show('Select a module before generating.', 'error');
+      return;
+    }
+    const moduleCode = this.paramsForm.controls.moduleCode.value.trim();
+    if (this.format() === 'pdf') {
+      this.toast.show('PDF export is not available. Choose CSV.', 'info');
+      return;
+    }
+    let csv = this.snapshotSvc.buildInterventionsCsv(this.interventions(), this.modules());
+    const weak = this.weakTopics();
+    csv = this.snapshotSvc.appendWeakTopicSummaryCsv(csv, weak, moduleCode);
+    const fname = `gapsense-${this.selectedType()}-${moduleCode}-${new Date().toISOString().slice(0, 10)}.csv`;
+    this.snapshotSvc.downloadCsv(fname, csv);
+    this.toast.show('CSV downloaded.', 'success');
+  }
+
+  downloadRowCsv(row: InterventionReportRow): void {
+    const dto = this.interventions().find((i) => i.id === row.id);
+    if (!dto) {
+      return;
+    }
+    const csv = this.snapshotSvc.buildInterventionsCsv([dto], this.modules());
+    this.snapshotSvc.downloadCsv(`intervention-${row.id}.csv`, csv);
+    this.toast.show('Row CSV downloaded.', 'success');
+  }
 }
