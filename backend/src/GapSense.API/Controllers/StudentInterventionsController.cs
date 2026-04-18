@@ -82,6 +82,31 @@ public class StudentInterventionsController : ControllerBase
         }
     }
 
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "admin,lecturer")]
+    public async Task<ActionResult<ApiResponse<object?>>> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        if (!TryGetUserId(out var userId) || !TryGetRole(out var role))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail("Not authenticated."));
+        }
+
+        try
+        {
+            await _service.DeleteStudentInterventionAsync(id, userId, role, cancellationToken);
+            return Ok(ApiResponse<object?>.Ok(null, "Intervention removed."));
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(ApiResponse<object?>.Fail(ex.Message));
+            }
+
+            return BadRequest(ApiResponse<object?>.Fail(ex.Message));
+        }
+    }
+
     private bool TryGetUserId(out Guid userId)
     {
         var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

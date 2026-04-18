@@ -28,6 +28,25 @@ interface ModuleInfo {
   moduleName: string;
 }
 
+/** Staff batch readiness overview (GET /api/readiness/batch-overview). */
+export interface BatchReadinessLedgerRow {
+  id: string;
+  studentId: string;
+  name: string;
+  avatarUrl: string;
+  module: string;
+  score: number;
+  risk: 'high' | 'medium' | 'low';
+  status: 'intervention' | 'monitoring' | 'on_track';
+}
+
+export interface BatchReadinessOverview {
+  totalStudents: number;
+  highRiskCount: number;
+  batchReadinessScore: number;
+  ledgerRows: BatchReadinessLedgerRow[];
+}
+
 // topic info from curriculum API
 interface TopicInfo {
   id: string;
@@ -55,6 +74,7 @@ export class ReadinessService {
     let params = new HttpParams();
     if (filter?.search) params = params.set('search', filter.search);
     if (filter?.module) params = params.set('module', filter.module);
+    if (filter?.moduleId) params = params.set('moduleId', filter.moduleId);
     if (filter?.topic) params = params.set('topic', filter.topic);
     if (filter?.difficulty) params = params.set('difficulty', filter.difficulty);
     if (filter?.status) params = params.set('status', filter.status);
@@ -62,6 +82,27 @@ export class ReadinessService {
     return this.http
       .get<ApiResponse<Question[]>>(`${this.apiUrl}/questions`, { params })
       .pipe(map((res) => ReadinessService.normalizeQuestionList(res?.data)));
+  }
+
+  /** Admin/lecturer: cohort summary from latest graded/submitted attempts per student. */
+  getBatchReadinessOverview(params: { moduleCode?: string; intake?: string }): Observable<BatchReadinessOverview> {
+    let hp = new HttpParams();
+    if (params.moduleCode?.trim()) {
+      hp = hp.set('moduleCode', params.moduleCode.trim());
+    }
+    if (params.intake?.trim()) {
+      hp = hp.set('intake', params.intake.trim());
+    }
+    return this.http
+      .get<ApiResponse<BatchReadinessOverview>>(`${this.apiUrl}/readiness/batch-overview`, { params: hp })
+      .pipe(
+        map((res) => {
+          if (!res?.success || res.data == null) {
+            throw new Error(res?.message || 'Could not load batch overview');
+          }
+          return res.data;
+        }),
+      );
   }
 
   // get a single question by id
@@ -148,9 +189,14 @@ export class ReadinessService {
 
   // delete a question
   deleteQuestion(id: string): Observable<boolean> {
-    return this.http
-      .delete<ApiResponse<boolean>>(`${this.apiUrl}/questions/${id}`)
-      .pipe(map((res) => res.data));
+    return this.http.delete<ApiResponse<boolean>>(`${this.apiUrl}/questions/${id}`).pipe(
+      map((res) => {
+        if (!res?.success) {
+          throw new Error(res?.message || 'Could not delete question');
+        }
+        return !!res.data;
+      }),
+    );
   }
 
   // get modules from curriculum API for dropdowns (returns real data from backend)

@@ -127,15 +127,19 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Apply pending EF migrations automatically in non-production so local/staging DBs
+// stay in sync (e.g. UserNotifications table) and avoid 500s from missing tables.
+if (!app.Environment.IsProduction())
 {
-    // Production: run migrations explicitly (CI, dotnet ef, or hosted job)—do not rely on this block.
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Database.Migrate();
     }
+}
 
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
 }

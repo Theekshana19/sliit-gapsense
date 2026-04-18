@@ -52,10 +52,21 @@ export class StudentInterventionPlansService {
     return this.api.fetchCourseModules();
   }
 
+  /** Distinct student user ids from visible interventions (for intervention form picker). */
+  async loadRecentStudentUserIds(): Promise<string[]> {
+    const rows = await this.api.fetchInterventions();
+    const ids = [...new Set(rows.map((r) => r.studentUserId).filter((id) => !!id?.trim()))];
+    return ids.slice(0, 80);
+  }
+
   async loadPlans(): Promise<InterventionPlan[]> {
     const [rows, modules] = await Promise.all([this.api.fetchInterventions(), this.api.fetchCourseModules()]);
     const byCode = new Map(modules.map((m) => [m.code.toUpperCase(), m]));
     return rows.map((r) => this.mapDtoToPlan(r, byCode));
+  }
+
+  async deletePlan(id: string): Promise<boolean> {
+    return this.api.deleteStudentIntervention(id);
   }
 
   async createFromWizard(payload: CreateInterventionWizardPayload): Promise<boolean> {

@@ -80,15 +80,19 @@ public class QuizSchedulesController : ControllerBase
         if (quiz == null)
             return BadRequest(ApiResponseDto<QuizScheduleDto>.ErrorResponse("Quiz not found"));
 
-        // end date must be after start date
-        if (dto.EndDate <= dto.StartDate)
-            return BadRequest(ApiResponseDto<QuizScheduleDto>.ErrorResponse("End date must be after start date"));
+        var startDay = dto.StartDate.Date;
+        var endDay = dto.EndDate.Date;
+        if (endDay < startDay)
+        {
+            return BadRequest(ApiResponseDto<QuizScheduleDto>.ErrorResponse(
+                "End date cannot be before the start date."));
+        }
 
         var schedule = new QuizSchedule
         {
             QuizId = dto.QuizId,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
+            StartDate = startDay,
+            EndDate = endDay,
             MaxAttempts = dto.MaxAttempts,
             ResultVisibility = dto.ResultVisibility,
             Status = dto.Status,
@@ -130,11 +134,16 @@ public class QuizSchedulesController : ControllerBase
         if (schedule == null)
             return NotFound(ApiResponseDto<QuizScheduleDto>.ErrorResponse("Schedule not found"));
 
-        if (dto.EndDate <= dto.StartDate)
-            return BadRequest(ApiResponseDto<QuizScheduleDto>.ErrorResponse("End date must be after start date"));
+        var startDay = dto.StartDate.Date;
+        var endDay = dto.EndDate.Date;
+        if (endDay < startDay)
+        {
+            return BadRequest(ApiResponseDto<QuizScheduleDto>.ErrorResponse(
+                "End date cannot be before the start date."));
+        }
 
-        schedule.StartDate = dto.StartDate;
-        schedule.EndDate = dto.EndDate;
+        schedule.StartDate = startDay;
+        schedule.EndDate = endDay;
         schedule.MaxAttempts = dto.MaxAttempts;
         schedule.ResultVisibility = dto.ResultVisibility;
         schedule.Status = dto.Status;

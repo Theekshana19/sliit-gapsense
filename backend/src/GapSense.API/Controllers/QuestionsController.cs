@@ -27,6 +27,7 @@ public class QuestionsController : ControllerBase
     public async Task<ActionResult<ApiResponseDto<List<QuestionDto>>>> GetQuestions(
         [FromQuery] string? search,
         [FromQuery] string? module,
+        [FromQuery] Guid? moduleId,
         [FromQuery] string? topic,
         [FromQuery] string? difficulty,
         [FromQuery] string? status)
@@ -36,6 +37,11 @@ public class QuestionsController : ControllerBase
             .Include(q => q.Module)
             .Include(q => q.Topic)
             .AsQueryable();
+
+        if (moduleId.HasValue)
+        {
+            query = query.Where(q => q.ModuleId == moduleId.Value);
+        }
 
         // apply filters
         if (!string.IsNullOrEmpty(search))

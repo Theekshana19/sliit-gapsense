@@ -131,11 +131,30 @@ export class QuestionBankComponent implements OnInit {
   onDeleteConfirmed() {
     const question = this.questionToDelete();
     if (question) {
-      this.readinessService.deleteQuestion(question.id).subscribe(() => {
-        this.toastService.success('Question deleted successfully');
-        this.showDeleteDialog.set(false);
-        this.questionToDelete.set(null);
-        this.loadQuestions();
+      this.readinessService.deleteQuestion(question.id).subscribe({
+        next: () => {
+          this.toastService.success('Question deleted successfully');
+          this.showDeleteDialog.set(false);
+          this.questionToDelete.set(null);
+          this.loadQuestions();
+        },
+        error: (err: unknown) => {
+          let msg = 'Could not delete question.';
+          if (err && typeof err === 'object') {
+            const e = err as { message?: string; error?: unknown };
+            if (typeof e.message === 'string' && e.message.trim()) {
+              msg = e.message;
+            } else if (e.error && typeof e.error === 'object' && e.error !== null) {
+              const body = e.error as { message?: string };
+              if (typeof body.message === 'string' && body.message.trim()) {
+                msg = body.message;
+              }
+            }
+          }
+          this.toastService.error(msg);
+          this.showDeleteDialog.set(false);
+          this.questionToDelete.set(null);
+        },
       });
     }
   }

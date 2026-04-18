@@ -2,7 +2,7 @@ import { Component, input, output, signal, computed, OnInit, inject } from '@ang
 import { FormsModule } from '@angular/forms';
 import { ReadinessService } from '../../../services/readiness.service';
 import { ToastService } from '../../../services/toast.service';
-import { Question } from '../../../models/readiness/question.model';
+import { Question, QuestionFilter } from '../../../models/readiness/question.model';
 import { Quiz, QuizStatus } from '../../../models/readiness/quiz.model';
 import { PillBadgeComponent } from '../../ui/pill-badge/pill-badge.component';
 
@@ -111,16 +111,6 @@ export class QuizFormComponent implements OnInit {
       },
     });
 
-    this.readinessService.getQuestions().subscribe({
-      next: (questions) => {
-        const active = questions.filter((q) => q.status === 'Active');
-        queueMicrotask(() => this.availableQuestions.set(active));
-      },
-      error: () => {
-        this.toastService.error('Could not load questions. Check the API and try again.');
-      },
-    });
-
     // if editing, fill the form
     const q = this.quiz();
     if (q) {
@@ -135,6 +125,7 @@ export class QuizFormComponent implements OnInit {
       // mark existing questions as selected
       const ids = new Set(q.questions.map((qq) => qq.questionId));
       this.selectedQuestionIds.set(ids);
+      void this.loadQuestionsForModule();
     }
   }
 
@@ -199,9 +190,39 @@ export class QuizFormComponent implements OnInit {
 
     // valid — move to next step and reset submitted flag
     if (this.currentStep() < 3) {
+      if (this.currentStep() === 1) {
+        void this.loadQuestionsForModule();
+      }
       this.stepSubmitted.set(false);
       this.currentStep.update((s) => s + 1);
     }
+  }
+
+  private loadQuestionsForModule(): void {
+    const id = this.moduleId().trim();
+    const code = this.moduleCode().trim();
+    const filter: QuestionFilter = {
+      status: 'Active',
+    };
+    if (id) {
+      filter.moduleId = id;
+    } else if (code) {
+      filter.module = code;
+    }
+    this.readinessService.getQuestions(filter).subscribe({
+      next: (questions) => {
+        const active = questions.filter((q) => q.status === 'Active');
+        queueMicrotask(() => {
+          this.availableQuestions.set(active);
+          const valid = new Set(active.map((q) => q.id));
+          const nextSel = new Set([...this.selectedQuestionIds()].filter((x) => valid.has(x)));
+          this.selectedQuestionIds.set(nextSel);
+        });
+      },
+      error: () => {
+        this.toastService.error('Could not load questions for this module. Check the API and try again.');
+      },
+    });
   }
 
   /** Save Draft: same payload as create, status Draft (only after all steps are valid) */
@@ -222,6 +243,9 @@ export class QuizFormComponent implements OnInit {
 
   // go to a specific step
   goToStep(step: number) {
+    if (step === 2 && this.moduleId()) {
+      this.loadQuestionsForModule();
+    }
     this.currentStep.set(step);
   }
 

@@ -206,6 +206,25 @@ public class OptionalModulesService : IOptionalModulesService
             entity.CreatedAtUtc);
     }
 
+    public async Task DeleteStudentInterventionAsync(Guid id, Guid userId, string role,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await _db.StudentInterventions.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (entity is null)
+        {
+            throw new InvalidOperationException("Intervention not found.");
+        }
+
+        if (string.Equals(role, "lecturer", StringComparison.OrdinalIgnoreCase) &&
+            entity.CreatedByUserId != userId)
+        {
+            throw new InvalidOperationException("Lecturers may only delete interventions they created.");
+        }
+
+        _db.StudentInterventions.Remove(entity);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task TryNotifyInterventionCreatedAsync(Guid studentUserId, string title,
         CancellationToken cancellationToken)
     {

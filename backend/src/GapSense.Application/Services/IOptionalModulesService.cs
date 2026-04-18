@@ -23,4 +23,6 @@ public interface IOptionalModulesService
 
     Task<StudentInterventionResponse> PatchStudentInterventionAsync(Guid id, PatchStudentInterventionRequest request,
         Guid userId, string role, CancellationToken cancellationToken = default);
+
+    Task DeleteStudentInterventionAsync(Guid id, Guid userId, string role, CancellationToken cancellationToken = default);
 }

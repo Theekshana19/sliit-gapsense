@@ -77,21 +77,43 @@ type PlanMode = 'draft' | 'publish';
 
                   <div class="flex flex-col gap-1.5">
                     <label class="text-sm font-semibold text-slate-700" for="studentUserId">Student user id (GUID)</label>
+                    @if (recentStudentIds().length) {
+                      <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-600" for="recentStudentPick">Recent students (this module list)</label>
+                        <select
+                          id="recentStudentPick"
+                          class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-mono text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
+                          (change)="applyRecentStudent($event)"
+                        >
+                          <option value="">Select to fill the field below…</option>
+                          @for (id of recentStudentIds(); track id) {
+                            <option [value]="id">{{ id }}</option>
+                          }
+                        </select>
+                      </div>
+                    }
                     <input
                       id="studentUserId"
                       type="text"
                       formControlName="studentUserId"
+                      list="recent-student-ids"
                       autocomplete="off"
-                      placeholder="00000000-0000-0000-0000-000000000000"
+                      placeholder="Paste the student account GUID"
                       class="w-full rounded-xl border bg-white px-4 py-3 font-mono text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
                       [class.border-rose-500]="showError('studentUserId')"
                       [class.border-slate-200]="!showError('studentUserId')"
                     />
+                    <datalist id="recent-student-ids">
+                      @for (id of recentStudentIds(); track id) {
+                        <option [value]="id"></option>
+                      }
+                    </datalist>
                     @if (showError('studentUserId')) {
                       <p class="text-xs font-medium text-rose-600">Enter the student’s account id (GUID).</p>
                     }
                     <p class="text-xs text-slate-500">
-                      There is no student search API yet—copy the id from user management or analytics when available.
+                      Use a real account id (version 1–5 UUID). Students you have already created interventions for appear above; otherwise
+                      paste an id from staff or analytics tools.
                     </p>
                   </div>
 
@@ -294,6 +316,7 @@ export class InterventionPlanPageComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly courseModules = signal<CourseModuleDto[]>([]);
+  readonly recentStudentIds = signal<string[]>([]);
 
   mode: PlanMode = 'publish';
 
@@ -319,7 +342,30 @@ export class InterventionPlanPageComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.courseModules.set(await this.plansSvc.loadCourseModules());
+    try {
+      const [modules, recent] = await Promise.all([
+        this.plansSvc.loadCourseModules(),
+        this.plansSvc.loadRecentStudentUserIds(),
+      ]);
+      this.courseModules.set(modules);
+      this.recentStudentIds.set(recent);
+    } catch {
+      try {
+        this.courseModules.set(await this.plansSvc.loadCourseModules());
+      } catch {
+        this.courseModules.set([]);
+      }
+      this.recentStudentIds.set([]);
+    }
+  }
+
+  applyRecentStudent(ev: Event): void {
+    const el = ev.target as HTMLSelectElement;
+    const v = el.value?.trim() ?? '';
+    el.value = '';
+    if (v) {
+      this.form.controls.studentUserId.setValue(v);
+    }
   }
 
   showError(name: keyof typeof this.form.controls): boolean {

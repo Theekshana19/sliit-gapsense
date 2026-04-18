@@ -120,4 +120,15 @@ export class OptionalModulesApiService {
       return null;
     }
   }
+
+  async deleteStudentIntervention(id: string): Promise<boolean> {
+    try {
+      const res = await firstValueFrom(
+        this.http.delete<ApiResponse<unknown>>(`${this.base}/api/StudentInterventions/${id}`),
+      );
+      return !!res.success;
+    } catch {
+      return false;
+    }
+  }
 }

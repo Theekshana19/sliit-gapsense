@@ -41,6 +41,8 @@ export interface QuestionFilter {
   search?: string;
   topic?: string;
   module?: string;
+  /** Curriculum module GUID — preferred for quiz builder filtering. */
+  moduleId?: string;
   difficulty?: DifficultyLevel | '';
   status?: QuestionStatus | '';
 }

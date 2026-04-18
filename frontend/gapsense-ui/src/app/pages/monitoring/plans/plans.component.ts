@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ConfirmPromptDialogComponent } from '../../../components/ui/confirm-dialog/confirm-prompt-dialog';
 import { ToastService } from '../../../components/ui/toast/toast.service';
 import type { InterventionPlan } from '../../../models/monitoring/monitoring.model';
 import { StudentInterventionPlansService } from '../../../services/student-intervention-plans.service';
@@ -10,7 +11,7 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
 @Component({
   standalone: true,
   selector: 'app-monitoring-plans-page',
-  imports: [RouterLink, StatusPillComponent, ReactiveFormsModule],
+  imports: [RouterLink, StatusPillComponent, ReactiveFormsModule, ConfirmPromptDialogComponent],
   template: `
     <div class="mx-auto w-full max-w-7xl space-y-6 pb-8">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -68,7 +69,7 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
                     <td class="px-4 py-4 text-slate-700">{{ plan.dueDate }}</td>
                     <td class="px-4 py-4"><app-status-pill [label]="statusLabel(plan)" [tone]="statusTone(plan)" /></td>
                     <td class="px-4 py-4">
-                      <button type="button" class="text-sm font-semibold text-slate-500" (click)="onRemoveHint()">
+                      <button type="button" class="text-sm font-semibold text-rose-600" (click)="requestRemove(plan)">
                         Remove…
                       </button>
                     </td>
@@ -106,6 +107,18 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
           </p>
         </div>
       </div>
+
+      <app-confirm-prompt
+        [isOpen]="removePlanId() !== null"
+        title="Remove intervention"
+        message="This permanently deletes the intervention record. Continue?"
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        icon="delete"
+        [danger]="true"
+        (confirmed)="confirmRemove()"
+        (cancelled)="cancelRemove()"
+      />
     </div>
   `,
 })
@@ -123,6 +136,7 @@ export class MonitoringPlansPageComponent implements OnInit {
   readonly plans = signal<InterventionPlan[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal(false);
+  readonly removePlanId = signal<string | null>(null);
 
   readonly openCount = computed(() => this.plans().filter((p) => (p.apiStatus ?? 'open') === 'open').length);
   readonly closedCount = computed(() => this.plans().filter((p) => p.apiStatus === 'closed').length);
@@ -209,7 +223,26 @@ export class MonitoringPlansPageComponent implements OnInit {
     return map[type] ?? type;
   }
 
-  onRemoveHint(): void {
-    this.toast.show('Removing interventions is not supported by the API yet.', 'info');
+  requestRemove(plan: InterventionPlan): void {
+    this.removePlanId.set(plan.id);
+  }
+
+  cancelRemove(): void {
+    this.removePlanId.set(null);
+  }
+
+  async confirmRemove(): Promise<void> {
+    const id = this.removePlanId();
+    this.removePlanId.set(null);
+    if (!id) {
+      return;
+    }
+    const ok = await this.plansSvc.deletePlan(id);
+    if (ok) {
+      this.toast.show('Intervention removed.', 'success');
+      await this.reload();
+    } else {
+      this.toast.show('Could not remove intervention.', 'error');
+    }
   }
 }
