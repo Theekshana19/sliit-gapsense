@@ -77,6 +77,12 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     roles: ['admin'],
   },
   {
+    label: 'Create New Assignment',
+    routerLink: '/curriculum/lecturer-assignment/create',
+    icon: 'person_add',
+    roles: ['admin'],
+  },
+  {
     label: 'Intervention planning',
     routerLink: '/monitoring/plans',
     icon: 'health_and_safety',

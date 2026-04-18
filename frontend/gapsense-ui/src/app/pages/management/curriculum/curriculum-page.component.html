@@ -66,7 +66,7 @@
       </div>
     </section>
 
-    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+    <section id="assign-module-section" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
       <h2 class="text-lg font-bold text-slate-900 mb-4">My module assignments</h2>
       <ul class="divide-y divide-slate-100 mb-6 max-h-48 overflow-y-auto">
         @for (a of assignments(); track a.id) {
@@ -80,7 +80,14 @@
         }
       </ul>
       <div class="border-t border-slate-100 pt-4 space-y-3">
-        <p class="text-sm font-semibold text-slate-700">Assign module to {{ isAdmin() ? 'selected lecturer (API)' : 'me' }}</p>
+        <p class="text-sm font-semibold text-slate-700">Assign module to {{ isAdmin() ? 'a lecturer' : 'me' }}</p>
+        @if (isAdmin()) {
+          <input
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            [(ngModel)]="assignLecturerUserId"
+            placeholder="Lecturer user id (GUID) — leave empty to assign to yourself"
+          />
+        }
         <select
           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
           [(ngModel)]="selectedModuleForAssign">

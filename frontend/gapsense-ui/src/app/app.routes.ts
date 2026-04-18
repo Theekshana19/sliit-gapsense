@@ -238,6 +238,11 @@ export const routes: Routes = [
           import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
       },
       {
+        path: 'lecturer-assignment/create',
+        loadComponent: () =>
+          import('./pages/management/curriculum/curriculum-page.component').then((m) => m.CurriculumPageComponent),
+      },
+      {
         path: 'module-management',
         loadComponent: () =>
           import('./pages/curriculum/module-management/module-management').then((m) => m.ModuleManagementComponent),

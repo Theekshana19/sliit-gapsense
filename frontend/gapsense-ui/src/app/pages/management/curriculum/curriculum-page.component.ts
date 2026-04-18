@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TopBarComponent } from '../../../components/layout/top-bar/top-bar.component';
 import { SidebarComponent } from '../../../components/layout/sidebar/sidebar.component';
 import { AppFooterComponent } from '../../../components/layout/app-footer/app-footer.component';
@@ -21,6 +22,7 @@ import { AuthUiService } from '../../../services/auth-ui.service';
 })
 export class CurriculumPageComponent implements OnInit {
   private readonly api = inject(OptionalModulesApiService);
+  private readonly router = inject(Router);
   protected readonly authUi = inject(AuthUiService);
 
   protected readonly modules = signal<CourseModuleDto[]>([]);
@@ -34,6 +36,8 @@ export class CurriculumPageComponent implements OnInit {
   protected newModuleSortOrder = 100;
 
   protected selectedModuleForAssign = '';
+  /** When admin assigns a module, optional target lecturer (user id GUID). Empty = assign to self. */
+  protected assignLecturerUserId = '';
 
   protected interventionStudentId = '';
   protected interventionTitle = '';
@@ -41,6 +45,11 @@ export class CurriculumPageComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.refresh();
+    if (this.router.url.includes('/lecturer-assignment/create')) {
+      requestAnimationFrame(() =>
+        document.getElementById('assign-module-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      );
+    }
   }
 
   protected async refresh(): Promise<void> {
@@ -74,7 +83,24 @@ export class CurriculumPageComponent implements OnInit {
 
   protected async assignSelectedModule(): Promise<void> {
     if (!this.selectedModuleForAssign) return;
-    const ok = await this.api.assignModule({ courseModuleId: this.selectedModuleForAssign });
+    const lecturerGuid =
+      this.isAdmin() && this.assignLecturerUserId.trim()
+        ? this.assignLecturerUserId.trim()
+        : undefined;
+    if (this.isAdmin() && this.assignLecturerUserId.trim()) {
+      const guidOk =
+        /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+          this.assignLecturerUserId.trim(),
+        );
+      if (!guidOk) {
+        this.notice.set('Enter a valid lecturer user id (GUID) or leave blank to assign to yourself.');
+        return;
+      }
+    }
+    const ok = await this.api.assignModule({
+      courseModuleId: this.selectedModuleForAssign,
+      lecturerUserId: lecturerGuid ?? null,
+    });
     this.notice.set(ok ? 'Module assigned.' : 'Assignment failed.');
     if (ok) await this.refresh();
   }
