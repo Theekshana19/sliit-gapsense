@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NotificationItemComponent } from '../../components/notification/notification-item/notification-item.component';
 import type { NotificationFilter } from '../../models/notification/notification.model';
 import { NotificationService } from '../../services/notification.service';
@@ -10,7 +10,7 @@ import { NotificationService } from '../../services/notification.service';
   imports: [NotificationItemComponent, NgClass],
   templateUrl: './notifications-page.component.html',
 })
-export class NotificationsPageComponent {
+export class NotificationsPageComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
 
   readonly filter = signal<NotificationFilter>('all');
@@ -34,15 +34,19 @@ export class NotificationsPageComponent {
 
   readonly hasAny = computed(() => this.notificationService.notifications().length > 0);
 
+  async ngOnInit(): Promise<void> {
+    await this.notificationService.refresh();
+  }
+
   setFilter(f: NotificationFilter): void {
     this.filter.set(f);
   }
 
   markAllRead(): void {
-    this.notificationService.markAllAsRead();
+    void this.notificationService.markAllAsRead();
   }
 
   clearAll(): void {
-    this.notificationService.clearAll();
+    void this.notificationService.clearAll();
   }
 }

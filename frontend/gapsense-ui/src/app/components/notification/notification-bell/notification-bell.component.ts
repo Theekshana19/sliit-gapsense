@@ -4,6 +4,7 @@ import {
   HostListener,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { NotificationDropdownComponent } from '../notification-dropdown/notification-dropdown.component';
@@ -38,7 +39,11 @@ export class NotificationBellComponent {
 
   toggle(event: MouseEvent): void {
     event.stopPropagation();
-    this.open.update((v) => !v);
+    const next = !this.open();
+    this.open.set(next);
+    if (next) {
+      void this.notificationService.refresh();
+    }
   }
 
   close(): void {

@@ -19,7 +19,7 @@ export class NotificationDropdownComponent {
   readonly hasAny = computed(() => this.notificationService.notifications().length > 0);
 
   markAllRead(): void {
-    this.notificationService.markAllAsRead();
+    void this.notificationService.markAllAsRead();
   }
 
   dismiss(): void {

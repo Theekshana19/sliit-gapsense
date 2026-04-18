@@ -34,6 +34,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<StudentIntervention> StudentInterventions => Set<StudentIntervention>();
 
+    public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+
     public DbSet<Module> Modules => Set<Module>();
 
     public DbSet<Topic> Topics => Set<Topic>();

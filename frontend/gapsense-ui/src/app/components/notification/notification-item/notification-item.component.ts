@@ -18,7 +18,7 @@ export class NotificationItemComponent {
 
   onActivate(): void {
     if (!this.item.read) {
-      this.notificationService.markAsRead(this.item.id);
+      void this.notificationService.markAsRead(this.item.id);
     }
   }
 

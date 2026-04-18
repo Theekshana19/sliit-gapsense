@@ -103,6 +103,7 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>();
 builder.Services.AddScoped<IStudentAnalyticsService, StudentAnalyticsService>();
 builder.Services.AddScoped<IOptionalModulesService, OptionalModulesService>();
+builder.Services.AddScoped<INotificationService, UserNotificationService>();
 
 // Auth module
 builder.Services.AddScoped<IAuthService, AuthService>();

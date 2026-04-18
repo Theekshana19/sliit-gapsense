@@ -9,10 +9,12 @@ namespace GapSense.Infrastructure.Services;
 public class OptionalModulesService : IOptionalModulesService
 {
     private readonly ApplicationDbContext _db;
+    private readonly INotificationService _notifications;
 
-    public OptionalModulesService(ApplicationDbContext db)
+    public OptionalModulesService(ApplicationDbContext db, INotificationService notifications)
     {
         _db = db;
+        _notifications = notifications;
     }
 
     public async Task<IReadOnlyList<CourseModuleResponse>> GetCourseModulesAsync(
@@ -152,6 +154,8 @@ public class OptionalModulesService : IOptionalModulesService
         _db.StudentInterventions.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
+        await TryNotifyInterventionCreatedAsync(entity.StudentUserId, entity.Title, cancellationToken);
+
         return new StudentInterventionResponse(
             entity.Id,
             entity.StudentUserId,
@@ -190,6 +194,8 @@ public class OptionalModulesService : IOptionalModulesService
 
         await _db.SaveChangesAsync(cancellationToken);
 
+        await TryNotifyInterventionUpdatedAsync(entity.StudentUserId, entity.Status, cancellationToken);
+
         return new StudentInterventionResponse(
             entity.Id,
             entity.StudentUserId,
@@ -198,5 +204,41 @@ public class OptionalModulesService : IOptionalModulesService
             entity.Notes,
             entity.Status,
             entity.CreatedAtUtc);
+    }
+
+    private async Task TryNotifyInterventionCreatedAsync(Guid studentUserId, string title,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _notifications.CreateAsync(
+                studentUserId,
+                "New intervention",
+                $"An intervention was recorded: {title}.",
+                "academic",
+                cancellationToken);
+        }
+        catch
+        {
+            /* Do not fail intervention save if notification insert fails. */
+        }
+    }
+
+    private async Task TryNotifyInterventionUpdatedAsync(Guid studentUserId, string status,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _notifications.CreateAsync(
+                studentUserId,
+                "Intervention updated",
+                $"Your intervention status is now {status}.",
+                "system",
+                cancellationToken);
+        }
+        catch
+        {
+            /* Do not fail patch if notification insert fails. */
+        }
     }
 }
