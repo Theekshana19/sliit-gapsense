@@ -1,6 +1,9 @@
 bin/
 obj/
 .vs/
+
+# Machine-specific connection strings (copy from appsettings.Local.json.example)
+src/GapSense.API/appsettings.Local.json
 *.user
 *.suo
 *.cache
