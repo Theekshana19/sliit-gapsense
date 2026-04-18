@@ -7,10 +7,64 @@ export interface SidebarNavItem {
   readonly roles: readonly AuthRole[];
 }
 
+/** Tharindu-style staff hub order (after dashboard) for admin + lecturer sidebars. */
+const STAFF_HUB_ORDER: readonly string[] = [
+  '/readiness/overview',
+  '/risk-analysis/heatmap',
+  '/monitoring/plans',
+  '/monitoring/intervention-plan',
+  '/monitoring/follow-ups',
+  '/risk-analysis/reports',
+  '/notifications',
+  '/settings',
+];
+
+function staffNavRank(routerLink: string): number {
+  if (routerLink === '/dashboard') {
+    return 0;
+  }
+  const hubIdx = STAFF_HUB_ORDER.indexOf(routerLink);
+  if (hubIdx >= 0) {
+    return 10 + hubIdx;
+  }
+  return 1000 + STAFF_HUB_ORDER.length;
+}
+
 /** Single source of truth for sidebar labels + paths + visibility by role. */
 export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
   // —— Admin ——
   { label: 'Dashboard', routerLink: '/dashboard', icon: 'dashboard', roles: ['admin'] },
+  {
+    label: 'Batch overview',
+    routerLink: '/readiness/overview',
+    icon: 'groups',
+    roles: ['admin', 'lecturer'],
+  },
+  {
+    label: 'High-risk monitoring',
+    routerLink: '/risk-analysis/heatmap',
+    icon: 'crisis_alert',
+    roles: ['admin', 'lecturer'],
+  },
+  {
+    label: 'Intervention planning',
+    routerLink: '/monitoring/plans',
+    icon: 'health_and_safety',
+    roles: ['admin', 'lecturer'],
+  },
+  {
+    label: 'New intervention',
+    routerLink: '/monitoring/intervention-plan',
+    icon: 'add_circle',
+    roles: ['admin', 'lecturer'],
+  },
+  {
+    label: 'Follow-ups',
+    routerLink: '/monitoring/follow-ups',
+    icon: 'campaign',
+    roles: ['admin', 'lecturer'],
+  },
+  { label: 'Reports and export', routerLink: '/risk-analysis/reports', icon: 'description', roles: ['admin'] },
   { label: 'Module Management', routerLink: '/curriculum/module-management', icon: 'view_module', roles: ['admin'] },
   { label: 'Add edit module', routerLink: '/curriculum/modules/new', icon: 'add_box', roles: ['admin'] },
   {
@@ -63,13 +117,6 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     icon: 'rule',
     roles: ['admin'],
   },
-  { label: 'Reports and Export', routerLink: '/risk-analysis/reports', icon: 'description', roles: ['admin'] },
-  {
-    label: 'Notification Center Page',
-    routerLink: '/notifications',
-    icon: 'notifications',
-    roles: ['admin'],
-  },
   {
     label: 'Lecturer Module Assignment',
     routerLink: '/curriculum/lecturer-assignment',
@@ -80,18 +127,6 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     label: 'Create New Assignment',
     routerLink: '/curriculum/lecturer-assignment/create',
     icon: 'person_add',
-    roles: ['admin'],
-  },
-  {
-    label: 'Intervention planning',
-    routerLink: '/monitoring/plans',
-    icon: 'health_and_safety',
-    roles: ['admin'],
-  },
-  {
-    label: 'High-risk monitoring',
-    routerLink: '/risk-analysis/heatmap',
-    icon: 'crisis_alert',
     roles: ['admin'],
   },
 
@@ -136,30 +171,6 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     label: 'Student Readiness Profile',
     routerLink: '/student-profile',
     icon: 'person',
-    roles: ['lecturer'],
-  },
-  {
-    label: 'High-risk monitoring',
-    routerLink: '/risk-analysis/heatmap',
-    icon: 'crisis_alert',
-    roles: ['lecturer'],
-  },
-  {
-    label: 'Intervention planning',
-    routerLink: '/monitoring/plans',
-    icon: 'health_and_safety',
-    roles: ['lecturer'],
-  },
-  {
-    label: 'Follow-ups',
-    routerLink: '/monitoring/follow-ups',
-    icon: 'campaign',
-    roles: ['lecturer'],
-  },
-  {
-    label: 'Notifications',
-    routerLink: '/notifications',
-    icon: 'notifications',
     roles: ['lecturer'],
   },
 
@@ -218,11 +229,30 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     label: 'Notifications',
     routerLink: '/notifications',
     icon: 'notifications',
-    roles: ['student'],
+    roles: ['admin', 'lecturer', 'student'],
+  },
+  {
+    label: 'Settings',
+    routerLink: '/settings',
+    icon: 'settings',
+    roles: ['admin', 'lecturer', 'student'],
   },
 ];
 
 export function sidebarItemsForRole(role: AuthRole | null): SidebarNavItem[] {
-  if (!role) return [];
-  return SIDEBAR_NAV_ITEMS.filter((item) => item.roles.includes(role));
+  if (!role) {
+    return [];
+  }
+  const items = SIDEBAR_NAV_ITEMS.filter((item) => item.roles.includes(role));
+  if (role === 'admin' || role === 'lecturer') {
+    return [...items].sort((a, b) => {
+      const ra = staffNavRank(a.routerLink);
+      const rb = staffNavRank(b.routerLink);
+      if (ra !== rb) {
+        return ra - rb;
+      }
+      return SIDEBAR_NAV_ITEMS.indexOf(a) - SIDEBAR_NAV_ITEMS.indexOf(b);
+    });
+  }
+  return items;
 }

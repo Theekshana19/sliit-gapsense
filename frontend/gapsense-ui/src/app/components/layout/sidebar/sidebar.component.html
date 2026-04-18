@@ -10,14 +10,14 @@
     @for (item of navItems(); track item.routerLink + item.label) {
       <a
         [routerLink]="item.routerLink"
-        routerLinkActive="bg-blue-50 text-blue-800 rounded-lg mx-2"
+        routerLinkActive="router-link-active"
         [routerLinkActiveOptions]="
           item.routerLink === '/dashboard' ? { exact: true } : { exact: false }
         "
-        class="mx-2 flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-blue-50/50 hover:text-blue-600"
+        class="sidebar-nav-link mx-2 flex items-center gap-3 border-l-4 border-transparent px-3 py-3 text-sm font-semibold text-slate-600 transition-all duration-200 hover:border-slate-200 hover:bg-blue-50/40 hover:text-blue-700"
       >
-        <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
-        {{ item.label }}
+        <span class="sidebar-nav-icon material-symbols-outlined text-[22px] leading-none">{{ item.icon }}</span>
+        <span class="min-w-0 flex-1 leading-snug">{{ item.label }}</span>
       </a>
     }
   </nav>
@@ -25,10 +25,10 @@
   <div class="mt-auto shrink-0 border-t border-slate-200/50 px-4 pt-4">
     <a
       routerLink="/profile"
-      routerLinkActive="bg-blue-50 text-blue-800 rounded-lg"
-      class="mb-1 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 transition-all hover:bg-blue-50/50 hover:text-blue-600"
+      routerLinkActive="router-link-active"
+      class="sidebar-nav-link mb-1 flex items-center gap-3 border-l-4 border-transparent px-3 py-3 text-sm font-semibold text-slate-600 transition-all duration-200 hover:border-slate-200 hover:bg-blue-50/40 hover:text-blue-700"
     >
-      <span class="material-symbols-outlined text-xl">manage_accounts</span>
+      <span class="sidebar-nav-icon material-symbols-outlined text-[22px] leading-none">manage_accounts</span>
       Profile
     </a>
     <button

@@ -32,16 +32,21 @@ type StaffSnapshot = {
               Hello, {{ userName() }}
             </h1>
             <p class="font-medium text-slate-500">
-              Readiness quizzes your lecturer has opened for today’s date window appear below. There is no separate
-              notification feed yet—use this dashboard or
+              Readiness quizzes your lecturer has opened for today’s date window appear below. Use
+              <a routerLink="/notifications" class="font-semibold text-[#003f87] underline-offset-2 hover:underline"
+                >Notifications</a
+              >
+              in the sidebar or top bar for alerts, and
               <a routerLink="/readiness/available-quizzes" class="font-semibold text-[#003f87] underline-offset-2 hover:underline"
                 >Readiness quizzes</a
               >
-              in the sidebar.
+              for the full list.
             </p>
           </header>
 
-          <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section
+            class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-md shadow-slate-200/50 ring-1 ring-slate-100"
+          >
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h2 class="font-headline text-lg font-bold text-slate-900">Open readiness quizzes</h2>
               <a
@@ -110,8 +115,10 @@ type StaffSnapshot = {
             </a>
           </header>
 
-          <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h2 class="font-headline text-lg font-bold text-slate-900">System summary</h2>
+          <div
+            class="rounded-2xl border border-slate-200/80 bg-white p-8 shadow-md shadow-slate-200/50 ring-1 ring-slate-100"
+          >
+            <h2 class="font-headline text-lg font-bold text-[#1a2b4b]">System summary</h2>
             @if (staffSnapshotLoading()) {
               <p class="mt-3 text-sm text-slate-500">Loading summary…</p>
             } @else if (staffSnapshotError()) {

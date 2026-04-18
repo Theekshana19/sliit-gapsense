@@ -1,3 +1,21 @@
 :host {
   display: block;
 }
+
+/* Active route: left rail + filled icon (Material Symbols FILL axis is loaded in index.html). */
+:host a.sidebar-nav-link.router-link-active {
+  border-left-color: rgb(29 78 216);
+  background-color: rgb(239 246 255);
+  color: rgb(30 64 175);
+  border-radius: 0.5rem;
+  font-weight: 700;
+}
+
+:host a.sidebar-nav-link.router-link-active .sidebar-nav-icon {
+  color: rgb(29 78 216);
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 600,
+    'GRAD' 0,
+    'opsz' 24;
+}

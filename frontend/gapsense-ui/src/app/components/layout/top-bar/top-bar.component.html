@@ -51,9 +51,16 @@
         type="text"
       />
     </div>
-    <button class="rounded-full p-2 transition-colors hover:bg-slate-50" type="button">
-      <span class="material-symbols-outlined text-slate-600">notifications</span>
-    </button>
+    @if (authUi.hasToken()) {
+      <a
+        routerLink="/notifications"
+        routerLinkActive="bg-blue-100"
+        class="inline-flex rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100"
+        aria-label="Open notifications"
+      >
+        <span class="material-symbols-outlined text-[22px] leading-none">notifications</span>
+      </a>
+    }
     @if (!authUi.hasToken()) {
       <a
         routerLink="/auth/login"
