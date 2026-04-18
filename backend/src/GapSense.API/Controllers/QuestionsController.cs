@@ -209,11 +209,16 @@ public class QuestionsController : ControllerBase
         if (question == null)
             return NotFound(ApiResponseDto<bool>.ErrorResponse("Question not found"));
 
-        // check if question is used in any quiz
-        var usedInQuiz = await _db.QuizQuestions.AnyAsync(qq => qq.QuestionId == id);
-        if (usedInQuiz)
+        // student submissions keep a permanent FK to the question — never delete those rows silently
+        var referencedBySubmissions = await _db.SubmissionAnswers.AnyAsync(sa => sa.QuestionId == id);
+        if (referencedBySubmissions)
             return BadRequest(ApiResponseDto<bool>.ErrorResponse(
-                "Cannot delete this question because it is used in a quiz. Remove it from the quiz first."));
+                "Cannot delete this question because at least one student quiz submission references it."));
+
+        // quiz linkage is editorial only — remove from quizzes, then delete the question
+        var quizLinks = await _db.QuizQuestions.Where(qq => qq.QuestionId == id).ToListAsync();
+        if (quizLinks.Count > 0)
+            _db.QuizQuestions.RemoveRange(quizLinks);
 
         _db.Questions.Remove(question);
         await _db.SaveChangesAsync();

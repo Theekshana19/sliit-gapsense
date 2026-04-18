@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, catchError, map, throwError } from 'rxjs';
 
 import { Question, QuestionFilter } from '../models/readiness/question.model';
 import { Quiz, QuizSchedule } from '../models/readiness/quiz.model';
@@ -196,7 +196,30 @@ export class ReadinessService {
         }
         return !!res.data;
       }),
+      catchError((err: unknown) =>
+        throwError(() => new Error(ReadinessService.messageFromHttp(err, 'Could not delete question'))),
+      ),
     );
+  }
+
+  /** Reads `message` from ASP.NET `ApiResponseDto` JSON on error responses. */
+  private static messageFromHttp(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      const body = err.error;
+      if (body && typeof body === 'object' && 'message' in body) {
+        const m = (body as { message?: unknown }).message;
+        if (typeof m === 'string' && m.trim()) {
+          return m;
+        }
+      }
+      if (typeof err.message === 'string' && err.message.trim()) {
+        return err.message;
+      }
+    }
+    if (err instanceof Error && err.message.trim()) {
+      return err.message;
+    }
+    return fallback;
   }
 
   // get modules from curriculum API for dropdowns (returns real data from backend)
