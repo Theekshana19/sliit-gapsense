@@ -191,7 +191,9 @@
               <!-- question details -->
               <td class="py-3 px-4">
                 <p class="text-sm font-medium text-on-surface">{{ question.title }}</p>
-                <p class="text-[11px] text-on-surface-variant mt-0.5">{{ question.questionType }} · {{ question.topic }}</p>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">
+                  {{ question.questionType }} · {{ question.topic || '—' }} · {{ question.status }}
+                </p>
               </td>
 
               <!-- difficulty badge -->
@@ -202,6 +204,13 @@
               <!-- marks -->
               <td class="py-3 px-4 text-right">
                 <span class="text-sm font-semibold text-on-surface">{{ question.marks }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="py-10 px-4 text-center text-sm text-on-surface-variant">
+                No questions for this module (excluding archived). Add or activate questions in the question bank, then refresh
+                step 2.
               </td>
             </tr>
           }

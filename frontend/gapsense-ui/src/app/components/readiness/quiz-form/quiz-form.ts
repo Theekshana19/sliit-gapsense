@@ -201,9 +201,10 @@ export class QuizFormComponent implements OnInit {
   private loadQuestionsForModule(): void {
     const id = this.moduleId().trim();
     const code = this.moduleCode().trim();
-    const filter: QuestionFilter = {
-      status: 'Active',
-    };
+    // Do not filter by status on the API: new questions default to Draft in the DB, so Active-only
+    // returned an empty list in the builder. Exclude archived here; published quizzes can still be
+    // validated server-side if needed.
+    const filter: QuestionFilter = {};
     if (id) {
       filter.moduleId = id;
     } else if (code) {
@@ -211,10 +212,15 @@ export class QuizFormComponent implements OnInit {
     }
     this.readinessService.getQuestions(filter).subscribe({
       next: (questions) => {
-        const active = questions.filter((q) => q.status === 'Active');
+        const usable = questions
+          .filter((q) => q.status !== 'Archived')
+          .sort((a, b) => {
+            const rank = (s: string) => (s === 'Active' ? 0 : s === 'Draft' ? 1 : 2);
+            return rank(a.status) - rank(b.status) || a.title.localeCompare(b.title);
+          });
         queueMicrotask(() => {
-          this.availableQuestions.set(active);
-          const valid = new Set(active.map((q) => q.id));
+          this.availableQuestions.set(usable);
+          const valid = new Set(usable.map((q) => q.id));
           const nextSel = new Set([...this.selectedQuestionIds()].filter((x) => valid.has(x)));
           this.selectedQuestionIds.set(nextSel);
         });
