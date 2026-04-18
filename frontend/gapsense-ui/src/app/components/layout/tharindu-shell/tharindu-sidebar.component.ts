@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { SessionService } from '../../../services/session.service';
 import { ShellSearchService } from '../../../services/shell-search.service';
 
 interface SidebarLink {
@@ -11,13 +12,23 @@ interface SidebarLink {
   riskIcon?: boolean;
 }
 
-const MAIN_LINKS: SidebarLink[] = [
+/** Admin + lecturer: monitoring and risk-analysis shell (routes guarded accordingly). */
+const STAFF_MAIN_LINKS: SidebarLink[] = [
   { path: '/dashboard', label: 'Dashboard', icon: 'dashboard', exact: true },
   { path: '/readiness/overview', label: 'Batch Overview', icon: 'groups' },
   { path: '/risk-analysis/heatmap', label: 'High-Risk Students', icon: 'warning', riskIcon: true },
   { path: '/monitoring/plans', label: 'Interventions', icon: 'auto_fix_high' },
   { path: '/monitoring/follow-ups', label: 'Follow-ups', icon: 'campaign' },
   { path: '/risk-analysis/reports', label: 'Reports', icon: 'description' },
+];
+
+/** Student: only routes this role may use (staff links removed to avoid dead-end redirects). */
+const STUDENT_MAIN_LINKS: SidebarLink[] = [
+  { path: '/dashboard', label: 'Dashboard', icon: 'dashboard', exact: true },
+  { path: '/readiness-results', label: 'Readiness Result', icon: 'fact_check' },
+  { path: '/readiness/available-quizzes', label: 'Readiness quizzes', icon: 'quiz' },
+  { path: '/notifications', label: 'Notifications', icon: 'notifications' },
+  { path: '/risk-trends', label: 'Risk Trends', icon: 'trending_up' },
 ];
 
 const CTA_LINK: SidebarLink = {
@@ -120,19 +131,29 @@ const CTA_LINK: SidebarLink = {
 })
 export class TharinduShellSidebarComponent {
   private readonly auth = inject(AuthService);
+  private readonly session = inject(SessionService);
   readonly shellSearch = inject(ShellSearchService);
 
   readonly ctaLink = CTA_LINK;
 
+  private mainLinksForRole(): SidebarLink[] {
+    const role = this.session.user()?.role;
+    return role === 'student' ? STUDENT_MAIN_LINKS : STAFF_MAIN_LINKS;
+  }
+
   readonly filteredMainLinks = computed(() => {
+    const base = this.mainLinksForRole();
     const q = this.shellSearch.query().trim().toLowerCase();
     if (!q) {
-      return MAIN_LINKS;
+      return base;
     }
-    return MAIN_LINKS.filter((item) => linkMatches(item, q));
+    return base.filter((item) => linkMatches(item, q));
   });
 
   readonly showCta = computed(() => {
+    if (this.session.user()?.role === 'student') {
+      return false;
+    }
     const q = this.shellSearch.query().trim().toLowerCase();
     if (!q) {
       return true;

@@ -95,12 +95,10 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
           @if (session.user(); as u) {
             @if (isDashboardLayout()) {
               <div class="flex items-center gap-3">
-                @if (showRegistrarLabel()) {
-                  <div class="hidden text-right leading-tight xl:block">
-                    <p class="text-sm font-semibold text-slate-900">{{ u.name }}</p>
-                    <p class="text-xs text-slate-500">Academic Registrar</p>
-                  </div>
-                }
+                <div class="hidden text-right leading-tight xl:block">
+                  <p class="text-sm font-semibold text-slate-900">{{ u.name }}</p>
+                  <p class="text-xs text-slate-500">{{ roleSubtitle(u.role) }}</p>
+                </div>
                 <div class="relative">
                   <div
                     class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#d7e2ff] ring-2 ring-white"
@@ -117,16 +115,12 @@ import { SHELL_SEARCH_MAX_LENGTH } from '../../../validators/form-utils';
               <div class="ml-1 flex items-center gap-3 pl-1">
                 <div class="hidden text-right leading-tight sm:block">
                   <p class="text-sm font-bold text-[#003f87]">{{ u.name }}</p>
-                  <p class="text-xs text-slate-500">Academic Registrar</p>
+                  <p class="text-xs text-slate-500">{{ roleSubtitle(u.role) }}</p>
                 </div>
-                <div class="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-slate-100">
-                  <img
-                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=96&h=96&fit=crop&crop=faces"
-                    [alt]="u.name"
-                    class="h-full w-full object-cover"
-                    width="36"
-                    height="36"
-                  />
+                <div
+                  class="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#d7e2ff] ring-2 ring-slate-100"
+                >
+                  <span class="text-sm font-bold text-[#004491]">{{ u.name.slice(0, 1) }}</span>
                 </div>
               </div>
             }
@@ -149,7 +143,16 @@ export class TharinduShellTopbarComponent {
     return path === '/dashboard';
   }
 
-  showRegistrarLabel(): boolean {
-    return this.router.url.includes('/heatmap');
+  roleSubtitle(role: string): string {
+    switch (role) {
+      case 'admin':
+        return 'Administrator';
+      case 'lecturer':
+        return 'Lecturer';
+      case 'student':
+        return 'Student';
+      default:
+        return 'Signed in';
+    }
   }
 }

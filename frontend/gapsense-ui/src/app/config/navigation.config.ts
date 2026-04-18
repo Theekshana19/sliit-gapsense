@@ -14,7 +14,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
   { label: 'Module Management', routerLink: '/curriculum/module-management', icon: 'view_module', roles: ['admin'] },
   { label: 'Add edit module', routerLink: '/curriculum/modules/new', icon: 'add_box', roles: ['admin'] },
   {
-    label: 'Topic Managemnet',
+    label: 'Topic Management',
     routerLink: '/curriculum/module-management',
     icon: 'topic',
     roles: ['admin'],
@@ -97,7 +97,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
 
   // —— Lecturer ——
   { label: 'Dashboard', routerLink: '/dashboard', icon: 'dashboard', roles: ['lecturer'] },
-  { label: 'Question_Bank 1', routerLink: '/readiness/question-bank', icon: 'quiz', roles: ['lecturer'] },
+  { label: 'Question Bank', routerLink: '/readiness/question-bank', icon: 'quiz', roles: ['lecturer'] },
   {
     label: 'Add edit questions page',
     routerLink: '/readiness/questions/new',
@@ -105,7 +105,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     roles: ['lecturer'],
   },
   { label: 'Quiz Builder', routerLink: '/readiness/quiz-builder', icon: 'construction', roles: ['lecturer'] },
-  { label: 'quiz scedulling', routerLink: '/readiness/quiz-scheduling', icon: 'schedule', roles: ['lecturer'] },
+  { label: 'Quiz scheduling', routerLink: '/readiness/quiz-scheduling', icon: 'schedule', roles: ['lecturer'] },
   {
     label: 'Student Assessment',
     routerLink: '/readiness/submission-tracking',
@@ -131,7 +131,7 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     icon: 'analytics',
     roles: ['lecturer'],
   },
-  { label: 'recommendation page', routerLink: '/recommendations', icon: 'lightbulb', roles: ['lecturer'] },
+  { label: 'Recommendations', routerLink: '/recommendations', icon: 'lightbulb', roles: ['lecturer'] },
   {
     label: 'Student Readiness Profile',
     routerLink: '/student-profile',
@@ -148,6 +148,18 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     label: 'Intervention planning',
     routerLink: '/monitoring/plans',
     icon: 'health_and_safety',
+    roles: ['lecturer'],
+  },
+  {
+    label: 'Follow-ups',
+    routerLink: '/monitoring/follow-ups',
+    icon: 'campaign',
+    roles: ['lecturer'],
+  },
+  {
+    label: 'Notifications',
+    routerLink: '/notifications',
+    icon: 'notifications',
     roles: ['lecturer'],
   },
 
@@ -185,9 +197,27 @@ export const SIDEBAR_NAV_ITEMS: readonly SidebarNavItem[] = [
     roles: ['student'],
   },
   {
-    label: 'Reassesment comparison',
+    label: 'Reassessment comparison',
     routerLink: '/reassessment-comparison',
     icon: 'compare_arrows',
+    roles: ['student'],
+  },
+  {
+    label: 'Weak Topic Analysis',
+    routerLink: '/weak-topic-analysis',
+    icon: 'analytics',
+    roles: ['student'],
+  },
+  {
+    label: 'Risk Trends & Summary',
+    routerLink: '/risk-trends',
+    icon: 'trending_up',
+    roles: ['student'],
+  },
+  {
+    label: 'Notifications',
+    routerLink: '/notifications',
+    icon: 'notifications',
     roles: ['student'],
   },
 ];
