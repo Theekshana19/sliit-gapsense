@@ -35,13 +35,13 @@ import { RouterLink } from '@angular/router';
         </div>
       </header>
 
-      <!-- KPI Grid — minimal monochrome: black icons & values, grey labels; red badge text only on -4.2% -->
+      <!-- KPI Grid — mostly monochrome; Total Students school icon red; red badge text on -4.2% -->
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div
           class="flex min-h-[168px] flex-col justify-between rounded-2xl bg-white p-6 shadow-[0_1px_4px_rgb(0_0_0_/_0.06)] transition-shadow hover:shadow-[0_4px_12px_rgb(0_0_0_/_0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
-            <span class="material-symbols-outlined text-[28px] leading-none text-on-surface" data-icon="school"
+            <span class="material-symbols-outlined text-[28px] leading-none text-red-600" data-icon="school"
               >school</span
             >
             <span class="shrink-0 text-right text-xs font-bold text-on-surface">+12% vs LY</span>
