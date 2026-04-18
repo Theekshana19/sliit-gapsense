@@ -1,10 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ConfirmService } from '../../../components/ui/confirm-dialog/confirm.service';
 import { ToastService } from '../../../components/ui/toast/toast.service';
-import { InterventionPlan } from '../../../models/monitoring/monitoring.model';
-import { MonitoringService } from '../../../services/monitoring.service';
+import type { InterventionPlan } from '../../../models/monitoring/monitoring.model';
+import { StudentInterventionPlansService } from '../../../services/student-intervention-plans.service';
 import { TABLE_FILTER_MAX_LENGTH } from '../../../validators/form-utils';
 import { StatusPillComponent } from '../../../components/ui/status-pill/status-pill.component';
 
@@ -40,72 +39,79 @@ import { StatusPillComponent } from '../../../components/ui/status-pill/status-p
           </div>
         </div>
         <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <tr>
-                <th class="px-4 py-3">Module</th>
-                <th class="px-4 py-3">Batch</th>
-                <th class="px-4 py-3">Risk Group</th>
-                <th class="px-4 py-3">Weak Topic</th>
-                <th class="px-4 py-3">Type</th>
-                <th class="px-4 py-3">Date</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (plan of filteredPlans; track plan.id) {
+          @if (loading()) {
+            <p class="px-5 py-10 text-center text-sm text-slate-500">Loading interventions…</p>
+          } @else if (loadError()) {
+            <p class="px-5 py-10 text-center text-sm text-red-600">Could not load interventions. Check that you are signed in and the API is running.</p>
+          } @else {
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                  <td class="px-4 py-4 font-medium text-slate-900">{{ plan.courseCode }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.studentRef }}</td>
-                  <td class="px-4 py-4"><app-status-pill [label]="riskLabel(plan)" [tone]="riskTone(plan)" /></td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.title }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ interventionTypeLabel(plan.interventionType) }}</td>
-                  <td class="px-4 py-4 text-slate-700">{{ plan.dueDate }}</td>
-                  <td class="px-4 py-4"><app-status-pill [label]="statusLabel(plan)" [tone]="statusTone(plan)" /></td>
-                  <td class="px-4 py-4">
-                    <button type="button" class="text-sm font-semibold text-rose-600" (click)="onRemove(plan.id)">Delete</button>
-                  </td>
+                  <th class="px-4 py-3">Module</th>
+                  <th class="px-4 py-3">Student</th>
+                  <th class="px-4 py-3">Risk Group</th>
+                  <th class="px-4 py-3">Weak Topic</th>
+                  <th class="px-4 py-3">Type</th>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3">Actions</th>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="8" class="px-4 py-10 text-center text-sm text-slate-500">
-                    @if (filterQuery().trim()) {
-                      No interventions match “{{ filterQuery().trim() }}”. Try another module, batch, or keyword.
-                    } @else {
-                      No intervention plans yet.
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (plan of filteredPlans; track plan.id) {
+                  <tr>
+                    <td class="px-4 py-4 font-medium text-slate-900">{{ plan.courseCode }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.studentRef }}</td>
+                    <td class="px-4 py-4"><app-status-pill [label]="riskLabel(plan)" [tone]="riskTone(plan)" /></td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.title }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ interventionTypeLabel(plan.interventionType) }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ plan.dueDate }}</td>
+                    <td class="px-4 py-4"><app-status-pill [label]="statusLabel(plan)" [tone]="statusTone(plan)" /></td>
+                    <td class="px-4 py-4">
+                      <button type="button" class="text-sm font-semibold text-slate-500" (click)="onRemoveHint()">
+                        Remove…
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="px-4 py-10 text-center text-sm text-slate-500">
+                      @if (filterQuery().trim()) {
+                        No interventions match “{{ filterQuery().trim() }}”. Try another module, student id, or keyword.
+                      } @else {
+                        No intervention plans yet.
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
         </div>
       </div>
 
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Intervention Success</p>
-          <p class="mt-2 text-4xl font-bold text-slate-900">78.4%</p>
-          <p class="mt-3 text-sm text-slate-600">Average improvement rate for students who completed a scheduled intervention module this semester.</p>
-          <div class="mt-4 h-3 w-full rounded-full bg-slate-100"><div class="h-3 rounded-full bg-indigo-700" style="width: 78.4%"></div></div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Open interventions</p>
+          <p class="mt-2 text-4xl font-bold text-slate-900">{{ openCount() }}</p>
+          <p class="mt-3 text-sm text-slate-600">
+            Rows with server status “open” in the list above (same source as <code>/api/StudentInterventions</code>).
+          </p>
         </div>
         <div class="rounded-2xl border-l-4 border-rose-600 bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pending Actions</p>
-          <p class="mt-2 text-4xl font-bold text-rose-700">12 Required</p>
-          <ul class="mt-4 space-y-2 text-sm text-slate-700">
-            <li>5 High-Risk plans require lecturer assignment</li>
-            <li>7 Follow-ups past their scheduled review date</li>
-          </ul>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Closed interventions</p>
+          <p class="mt-2 text-4xl font-bold text-rose-700">{{ closedCount() }}</p>
+          <p class="mt-3 text-sm text-slate-600">
+            Rows with server status “closed”. Counts update when the list reloads from the server.
+          </p>
         </div>
       </div>
     </div>
   `,
 })
-export class MonitoringPlansPageComponent {
+export class MonitoringPlansPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly monitoring = inject(MonitoringService);
-  private readonly confirm = inject(ConfirmService);
+  private readonly plansSvc = inject(StudentInterventionPlansService);
   private readonly toast = inject(ToastService);
 
   readonly filterMax = TABLE_FILTER_MAX_LENGTH;
@@ -114,7 +120,29 @@ export class MonitoringPlansPageComponent {
     q: ['', [Validators.maxLength(TABLE_FILTER_MAX_LENGTH)]],
   });
 
-  plans: InterventionPlan[] = this.monitoring.list();
+  readonly plans = signal<InterventionPlan[]>([]);
+  readonly loading = signal(true);
+  readonly loadError = signal(false);
+
+  readonly openCount = computed(() => this.plans().filter((p) => (p.apiStatus ?? 'open') === 'open').length);
+  readonly closedCount = computed(() => this.plans().filter((p) => p.apiStatus === 'closed').length);
+
+  async ngOnInit(): Promise<void> {
+    await this.reload();
+  }
+
+  private async reload(): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set(false);
+    try {
+      this.plans.set(await this.plansSvc.loadPlans());
+    } catch {
+      this.loadError.set(true);
+      this.plans.set([]);
+    } finally {
+      this.loading.set(false);
+    }
+  }
 
   filterQuery(): string {
     return this.filterForm.controls.q.value;
@@ -122,10 +150,11 @@ export class MonitoringPlansPageComponent {
 
   get filteredPlans(): InterventionPlan[] {
     const q = this.filterQuery().trim().toLowerCase();
+    const list = this.plans();
     if (!q) {
-      return this.plans;
+      return list;
     }
-    return this.plans.filter((plan) => this.planMatchesQuery(plan, q));
+    return list.filter((plan) => this.planMatchesQuery(plan, q));
   }
 
   private planMatchesQuery(plan: InterventionPlan, q: string): boolean {
@@ -180,16 +209,7 @@ export class MonitoringPlansPageComponent {
     return map[type] ?? type;
   }
 
-  async onRemove(id: string): Promise<void> {
-    const ok = await this.confirm.ask({
-      title: 'Remove plan?',
-      message: 'This removes the intervention plan from the local list only.',
-      confirmLabel: 'Remove',
-      cancelLabel: 'Keep',
-    });
-    if (!ok) return;
-    this.monitoring.remove(id);
-    this.plans = this.monitoring.list();
-    this.toast.show('Plan removed.', 'info');
+  onRemoveHint(): void {
+    this.toast.show('Removing interventions is not supported by the API yet.', 'info');
   }
 }

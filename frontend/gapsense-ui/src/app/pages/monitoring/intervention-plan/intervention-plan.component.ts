@@ -1,15 +1,19 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../../components/ui/toast/toast.service';
+import type { CourseModuleDto } from '../../../services/optional-modules-api.service';
 import {
   InterventionStatus,
   InterventionType,
   RiskGroup,
 } from '../../../models/monitoring/monitoring.model';
-import { MonitoringService } from '../../../services/monitoring.service';
+import { StudentInterventionPlansService } from '../../../services/student-intervention-plans.service';
 import { controlInvalid } from '../../../validators/form-utils';
 import { futureOrTodayDateValidator } from '../../../validators/forms.validators';
+
+const USER_GUID_PATTERN =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
 type PlanMode = 'draft' | 'publish';
 
@@ -62,9 +66,9 @@ type PlanMode = 'draft' | 'publish';
                       [class.border-slate-200]="!showError('courseCode')"
                     >
                       <option value="" disabled>Select Module</option>
-                      <option value="IT1010">Introduction to Programming (IT1010)</option>
-                      <option value="IT2020">Data Structures (IT2020)</option>
-                      <option value="IT3010">Software Engineering (IT3010)</option>
+                      @for (m of courseModules(); track m.id) {
+                        <option [value]="m.code">{{ m.title }} ({{ m.code }})</option>
+                      }
                     </select>
                     @if (showError('courseCode')) {
                       <p class="text-xs font-medium text-rose-600">Select a module.</p>
@@ -72,22 +76,23 @@ type PlanMode = 'draft' | 'publish';
                   </div>
 
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-semibold text-slate-700" for="studentRef">Batch / Intake</label>
-                    <select
-                      id="studentRef"
-                      formControlName="studentRef"
-                      class="w-full appearance-none rounded-xl border bg-white px-4 py-3 text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
-                      [class.border-rose-500]="showError('studentRef')"
-                      [class.border-slate-200]="!showError('studentRef')"
-                    >
-                      <option value="" disabled>Select Batch</option>
-                      <option value="Y1S1-2024">Year 1 Semester 1 (2024)</option>
-                      <option value="Y2S2-2023">Year 2 Semester 2 (2023)</option>
-                      <option value="Y3S1-2022">Year 3 Semester 1 (2022)</option>
-                    </select>
-                    @if (showError('studentRef')) {
-                      <p class="text-xs font-medium text-rose-600">Select a batch.</p>
+                    <label class="text-sm font-semibold text-slate-700" for="studentUserId">Student user id (GUID)</label>
+                    <input
+                      id="studentUserId"
+                      type="text"
+                      formControlName="studentUserId"
+                      autocomplete="off"
+                      placeholder="00000000-0000-0000-0000-000000000000"
+                      class="w-full rounded-xl border bg-white px-4 py-3 font-mono text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
+                      [class.border-rose-500]="showError('studentUserId')"
+                      [class.border-slate-200]="!showError('studentUserId')"
+                    />
+                    @if (showError('studentUserId')) {
+                      <p class="text-xs font-medium text-rose-600">Enter the student’s account id (GUID).</p>
                     }
+                    <p class="text-xs text-slate-500">
+                      There is no student search API yet—copy the id from user management or analytics when available.
+                    </p>
                   </div>
 
                   <div class="flex flex-col gap-1.5">
@@ -282,11 +287,13 @@ type PlanMode = 'draft' | 'publish';
     </div>
   `,
 })
-export class InterventionPlanPageComponent {
+export class InterventionPlanPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly monitoring = inject(MonitoringService);
+  private readonly plansSvc = inject(StudentInterventionPlansService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+
+  readonly courseModules = signal<CourseModuleDto[]>([]);
 
   mode: PlanMode = 'publish';
 
@@ -298,7 +305,7 @@ export class InterventionPlanPageComponent {
 
   readonly form = this.fb.nonNullable.group({
     courseCode: ['', [Validators.required]],
-    studentRef: ['', [Validators.required]],
+    studentUserId: ['', [Validators.required, Validators.pattern(USER_GUID_PATTERN)]],
     riskGroup: this.fb.nonNullable.control<RiskGroup>('high', { validators: [Validators.required] }),
     title: [''],
     interventionType: ['', [Validators.required]],
@@ -309,6 +316,10 @@ export class InterventionPlanPageComponent {
 
   constructor() {
     this.applyPublishValidators();
+  }
+
+  async ngOnInit(): Promise<void> {
+    this.courseModules.set(await this.plansSvc.loadCourseModules());
   }
 
   showError(name: keyof typeof this.form.controls): boolean {
@@ -334,10 +345,13 @@ export class InterventionPlanPageComponent {
     if (c.errors['pastDate']) {
       return 'Choose today or a future date.';
     }
+    if (c.errors['pattern']) {
+      return 'Enter a valid GUID.';
+    }
     return 'Invalid value.';
   }
 
-  saveDraft(): void {
+  async saveDraft(): Promise<void> {
     this.mode = 'draft';
     this.applyDraftValidators();
     this.form.markAllAsTouched();
@@ -347,14 +361,20 @@ export class InterventionPlanPageComponent {
       this.mode = 'publish';
       return;
     }
-    this.persistPlan();
-    this.toast.show('Draft saved locally.', 'success');
+    const ok = await this.persistPlan();
+    if (!ok) {
+      this.toast.show('Could not save draft to the server.', 'error');
+      this.applyPublishValidators();
+      this.mode = 'publish';
+      return;
+    }
+    this.toast.show('Draft saved.', 'success');
     this.applyPublishValidators();
     this.mode = 'publish';
     void this.router.navigateByUrl('/monitoring/plans');
   }
 
-  submitPublish(): void {
+  async submitPublish(): Promise<void> {
     this.mode = 'publish';
     this.applyPublishValidators();
     this.form.markAllAsTouched();
@@ -362,26 +382,31 @@ export class InterventionPlanPageComponent {
       this.toast.show('Complete required fields and notes before publishing.', 'error');
       return;
     }
-    this.persistPlan();
+    const ok = await this.persistPlan();
+    if (!ok) {
+      this.toast.show('Could not save intervention. Check student id and try again.', 'error');
+      return;
+    }
     this.toast.show('Intervention plan saved.', 'success');
     void this.router.navigateByUrl('/monitoring/plans');
   }
 
-  private persistPlan(): void {
+  private async persistPlan(): Promise<boolean> {
     const v = this.form.getRawValue();
     const titleTrim = v.title.trim();
     const title = titleTrim || (this.mode === 'draft' ? 'Untitled draft' : titleTrim);
     const actionsTrim = v.actions.trim();
-    const actions = actionsTrim || (this.mode === 'draft' ? '—' : actionsTrim);
-    this.monitoring.add({
-      title,
-      studentRef: v.studentRef.trim(),
-      courseCode: v.courseCode.trim().toUpperCase(),
-      dueDate: v.dueDate,
-      actions,
-      status: v.status,
+    const administrativeNotes = actionsTrim || (this.mode === 'draft' ? '—' : actionsTrim);
+    return this.plansSvc.createFromWizard({
+      moduleCode: v.courseCode.trim(),
+      studentUserId: v.studentUserId.trim(),
       riskGroup: v.riskGroup,
+      title,
       interventionType: v.interventionType as InterventionType,
+      dueDate: v.dueDate,
+      uiStatus: v.status,
+      administrativeNotes,
+      isDraft: this.mode === 'draft',
     });
   }
 

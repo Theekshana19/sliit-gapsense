@@ -21,4 +21,6 @@ export interface InterventionPlan {
   status: InterventionStatus;
   riskGroup: RiskGroup;
   interventionType: InterventionType;
+  /** When loaded from StudentInterventions API (open | closed). */
+  apiStatus?: 'open' | 'closed';
 }
