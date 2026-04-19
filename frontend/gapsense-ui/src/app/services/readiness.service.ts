@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { Question, QuestionFilter } from '../models/readiness/question.model';
 import { Quiz, QuizSchedule } from '../models/readiness/quiz.model';
@@ -12,6 +12,7 @@ import {
 } from '../models/readiness/submission.model';
 import { Resource } from '../models/readiness/resource.model';
 import { API_BASE_URL } from '../config/api.config';
+import { CurriculumService } from './curriculum.service';
 
 // API response wrapper - matches the backend ApiResponseDto
 interface ApiResponse<T> {
@@ -64,6 +65,7 @@ interface TopicInfo {
 })
 export class ReadinessService {
   private http = inject(HttpClient);
+  private readonly curriculum = inject(CurriculumService);
 
   private readonly apiUrl = `${API_BASE_URL}/api`;
 
@@ -226,10 +228,19 @@ export class ReadinessService {
     return fallback;
   }
 
-  // get modules from curriculum API for dropdowns (returns real data from backend)
+  // get modules from curriculum API for dropdowns (same source as Module Management)
   getModuleList(): Observable<ModuleInfo[]> {
-    return this.http.get<ApiResponse<ModuleInfo[]>>(`${this.apiUrl}/modules`).pipe(
-      map((res) => ReadinessService.normalizeModuleList(res?.data))
+    return this.curriculum.getModules(undefined).pipe(
+      map((modules) =>
+        (modules ?? [])
+          .map((m) => ({
+            id: String(m.id ?? '').trim(),
+            moduleCode: String(m.moduleCode ?? '').trim(),
+            moduleName: String(m.moduleName ?? '').trim(),
+          }))
+          .filter((m) => m.id.length > 0),
+      ),
+      catchError(() => of([])),
     );
   }
 
@@ -252,20 +263,6 @@ export class ReadinessService {
         return { ...q, id, questionId, topicId };
       })
       .filter((q) => q.id.length > 0);
-  }
-
-  /** Ensures stable `id` strings (camelCase or PascalCase JSON) and drops invalid rows. */
-  private static normalizeModuleList(data: unknown): ModuleInfo[] {
-    if (!Array.isArray(data)) {
-      return [];
-    }
-    return data
-      .map((row: Record<string, unknown>) => ({
-        id: String(row['id'] ?? row['Id'] ?? ''),
-        moduleCode: String(row['moduleCode'] ?? row['ModuleCode'] ?? ''),
-        moduleName: String(row['moduleName'] ?? row['ModuleName'] ?? ''),
-      }))
-      .filter((m) => m.id.length > 0);
   }
 
   // get topics from curriculum API for dropdowns

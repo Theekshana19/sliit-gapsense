@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 
 import { Module, ModuleFilter, ModuleStats } from '../models/curriculum/module.model';
 import { Topic, TopicWeightEntry, TopicStats } from '../models/curriculum/topic.model';
@@ -47,9 +47,26 @@ export class CurriculumService {
     if (filter?.semester) params = params.set('semester', filter.semester);
     if (filter?.status) params = params.set('status', filter.status);
 
-    return this.http
-      .get<ApiResponse<Module[]>>(`${this.apiUrl}/modules`, { params })
-      .pipe(map((res) => res.data));
+    return this.http.get<unknown>(`${this.apiUrl}/modules`, { params }).pipe(
+      map((body) => CurriculumService.unwrapModuleList(body)),
+      catchError(() => of([])),
+    );
+  }
+
+  /** Accepts ApiResponseDto JSON (camel or Pascal `data`) or a raw array. */
+  private static unwrapModuleList(body: unknown): Module[] {
+    if (Array.isArray(body)) {
+      return body as Module[];
+    }
+    if (!body || typeof body !== 'object') {
+      return [];
+    }
+    const o = body as Record<string, unknown>;
+    if (o['success'] === false) {
+      return [];
+    }
+    const raw = o['data'] ?? o['Data'];
+    return Array.isArray(raw) ? (raw as Module[]) : [];
   }
 
   // get single module by id
