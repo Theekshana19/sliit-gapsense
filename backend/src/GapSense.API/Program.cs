@@ -14,10 +14,17 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+// Helpful when Visual Studio's external console closes on crash — errors still appear here briefly.
+Console.WriteLine($"[{DateTime.UtcNow:O}] GapSense.API starting…");
+
 var builder = WebApplication.CreateBuilder(args);
+
+Console.WriteLine($"Content root: {builder.Environment.ContentRootPath}");
 
 // Optional per-machine overrides (gitignored): copy appsettings.Local.json.example → appsettings.Local.json
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
 
 builder.Services.Configure<FormOptions>(o =>
 {
@@ -130,14 +137,38 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var defaultConnection = app.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(defaultConnection))
+{
+    Console.Error.WriteLine(
+        "ERROR: ConnectionStrings:DefaultConnection is empty. Set it in appsettings.Development.json " +
+        "or copy appsettings.Local.json.example to appsettings.Local.json (include Initial Catalog=GapSenseDb).");
+    throw new InvalidOperationException("Database connection string is not configured.");
+}
+
 // Apply pending EF migrations automatically in non-production so local/staging DBs
 // stay in sync (e.g. UserNotifications table) and avoid 500s from missing tables.
 if (!app.Environment.IsProduction())
 {
-    using (var scope = app.Services.CreateScope())
+    Console.WriteLine("Applying EF Core migrations…");
+    try
     {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+        }
+
+        Console.WriteLine("Migrations completed.");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine("========================================");
+        Console.Error.WriteLine("DATABASE MIGRATION FAILED");
+        Console.Error.WriteLine(ex);
+        Console.Error.WriteLine("========================================");
+        Console.Error.WriteLine("Check SQL Server is running, the database exists, and the connection string uses Initial Catalog=…");
+        throw;
     }
 }
 
@@ -147,11 +178,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// If the dev profile only binds HTTP (e.g. http://localhost:5292), HTTPS redirection can confuse browsers / VS.
+var urlsEnv = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? string.Empty;
+if (urlsEnv.Contains("https://", StringComparison.OrdinalIgnoreCase))
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    Console.WriteLine("GapSense API is listening. Swagger UI is available in Development at /swagger");
+});
 
 app.Run();
