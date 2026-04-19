@@ -73,6 +73,10 @@ type PlanMode = 'draft' | 'publish';
                     @if (showError('courseCode')) {
                       <p class="text-xs font-medium text-rose-600">Select a module.</p>
                     }
+                    <p class="text-xs text-slate-500 mt-1">
+                      Modules include those created in <strong>Module Management</strong> (curriculum catalogue) plus any
+                      separate course-module entries.
+                    </p>
                   </div>
 
                   <div class="flex flex-col gap-1.5">

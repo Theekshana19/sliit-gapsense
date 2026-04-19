@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { CourseModuleDto, StudentInterventionDto } from './optional-modules-api.service';
 import { OptionalModulesApiService } from './optional-modules-api.service';
+import { StudentInterventionPlansService } from './student-intervention-plans.service';
 import type { InterventionType, RiskGroup } from '../models/monitoring/monitoring.model';
 
 const NOTES_SCHEMA_VERSION = 1;
@@ -64,9 +65,13 @@ const PLACEHOLDER_AVATAR =
 @Injectable({ providedIn: 'root' })
 export class FollowUpInterventionsService {
   private readonly api = inject(OptionalModulesApiService);
+  private readonly interventionPlans = inject(StudentInterventionPlansService);
 
   async loadAll(): Promise<{ rows: FollowUpRow[]; dtos: StudentInterventionDto[] }> {
-    const [dtos, modules] = await Promise.all([this.api.fetchInterventions(), this.api.fetchCourseModules()]);
+    const [dtos, modules] = await Promise.all([
+      this.api.fetchInterventions(),
+      this.interventionPlans.loadCourseModules(),
+    ]);
     const byCode = new Map(modules.map((m) => [m.code.toUpperCase(), m]));
     return { rows: dtos.map((dto) => this.mapDto(dto, byCode)), dtos };
   }

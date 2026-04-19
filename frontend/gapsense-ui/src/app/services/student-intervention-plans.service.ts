@@ -1,6 +1,8 @@
 import { inject, Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import type { CourseModuleDto, StudentInterventionDto } from './optional-modules-api.service';
 import { OptionalModulesApiService } from './optional-modules-api.service';
+import { CurriculumService } from './curriculum.service';
 import type {
   InterventionPlan,
   InterventionStatus,
@@ -47,9 +49,45 @@ export interface CreateInterventionWizardPayload {
 @Injectable({ providedIn: 'root' })
 export class StudentInterventionPlansService {
   private readonly api = inject(OptionalModulesApiService);
+  private readonly curriculum = inject(CurriculumService);
 
+  /**
+   * Modules shown in lecturer intervention UI: optional catalogue rows (`CourseModules`)
+   * plus curriculum modules from Module Management (`/api/modules`), merged by code.
+   */
   async loadCourseModules(): Promise<CourseModuleDto[]> {
-    return this.api.fetchCourseModules();
+    const [courseRows, curriculumRows] = await Promise.all([
+      this.api.fetchCourseModules().catch(() => [] as CourseModuleDto[]),
+      firstValueFrom(this.curriculum.getModules(undefined)).catch(() => []),
+    ]);
+
+    const fromCurriculum: CourseModuleDto[] = curriculumRows
+      .map((m, i) => {
+        const code = (m.moduleCode ?? '').trim();
+        return {
+          id: m.id,
+          code,
+          title: (m.moduleName ?? '').trim() || code || 'Module',
+          description: m.description?.trim() || null,
+          sortOrder: i,
+        };
+      })
+      .filter((x) => x.code.length > 0);
+
+    const byCode = new Map<string, CourseModuleDto>();
+    for (const c of courseRows) {
+      const code = (c.code ?? '').trim();
+      if (!code) continue;
+      byCode.set(code.toUpperCase(), { ...c, code });
+    }
+    for (const c of fromCurriculum) {
+      const key = c.code.toUpperCase();
+      if (!byCode.has(key)) {
+        byCode.set(key, c);
+      }
+    }
+
+    return [...byCode.values()].sort((a, b) => a.code.localeCompare(b.code, undefined, { sensitivity: 'base' }));
   }
 
   /** Distinct student user ids from visible interventions (for intervention form picker). */
@@ -60,7 +98,7 @@ export class StudentInterventionPlansService {
   }
 
   async loadPlans(): Promise<InterventionPlan[]> {
-    const [rows, modules] = await Promise.all([this.api.fetchInterventions(), this.api.fetchCourseModules()]);
+    const [rows, modules] = await Promise.all([this.api.fetchInterventions(), this.loadCourseModules()]);
     const byCode = new Map(modules.map((m) => [m.code.toUpperCase(), m]));
     return rows.map((r) => this.mapDtoToPlan(r, byCode));
   }
