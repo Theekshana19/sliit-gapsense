@@ -4236,11 +4236,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Infrastructure\\GapSense.Infrastructure.csproj",
+      "projectUniqueName": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Infrastructure\\GapSense.Infrastructure.csproj",
       "projectName": "GapSense.Infrastructure",
-      "projectPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Infrastructure\\GapSense.Infrastructure.csproj",
+      "projectPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Infrastructure\\GapSense.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Infrastructure\\obj\\",
+      "outputPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -4257,11 +4257,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Application\\GapSense.Application.csproj": {
-              "projectPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Application\\GapSense.Application.csproj"
+            "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Application\\GapSense.Application.csproj": {
+              "projectPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Application\\GapSense.Application.csproj"
             },
-            "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {
-              "projectPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj"
+            "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj": {
+              "projectPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj"
             }
           }
         }

@@ -39,6 +39,9 @@ builder.Services.AddGapSense(builder.Configuration);
 
 var app = builder.Build();
 
+// Run first so controller and downstream middleware exceptions are returned as JSON (not blank 500s).
+app.UseMiddleware<GapSense.API.Middlewares.ExceptionHandlingMiddleware>();
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GapSenseDbContext>();
@@ -69,7 +72,6 @@ else
 {
     app.UseCors("Frontend");
 }
-app.UseMiddleware<GapSense.API.Middlewares.ExceptionHandlingMiddleware>();
 // Default off: Angular dev-server proxies http://localhost:5120. With ASPNETCORE_ENVIRONMENT=Production,
 // UseHttpsRedirection breaks that flow (307 → HTTPS / cert issues). Set "EnableHttpsRedirection": true when TLS terminates in Kestrel.
 if (app.Configuration.GetValue("EnableHttpsRedirection", false))

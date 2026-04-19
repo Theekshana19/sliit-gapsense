@@ -26,8 +26,14 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
         {
             _logger.LogError(ex, "Unhandled exception");
 
+            if (context.Response.HasStarted)
+            {
+                throw;
+            }
+
             var (statusCode, message) = MapException(ex);
 
+            context.Response.Clear();
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { success = false, message });

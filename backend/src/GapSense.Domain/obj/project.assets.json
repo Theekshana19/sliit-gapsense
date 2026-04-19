@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
+      "projectUniqueName": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
       "projectName": "GapSense.Domain",
-      "projectPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
+      "projectPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Domain\\GapSense.Domain.csproj",
       "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.Domain\\obj\\",
+      "outputPath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",

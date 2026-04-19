@@ -57,3 +57,42 @@ H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Infrast
 H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Thin.ttf
 H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ThinItalic.ttf
 H:\Gap sense\sliit-gapsense 2026-4-6\sliit-gapsense\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\OFL.txt
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Black.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-BlackItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Bold.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-BoldItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ExtraBold.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ExtraBoldItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ExtraLight.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ExtraLightItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Italic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Light.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-LightItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Medium.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-MediumItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Regular.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-SemiBold.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-SemiBoldItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-Thin.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\Lato-ThinItalic.ttf
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\LatoFont\OFL.txt
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Infrastructure.deps.json
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Infrastructure.runtimeconfig.json
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Infrastructure.dll
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Infrastructure.pdb
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Application.dll
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Domain.dll
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Application.pdb
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\bin\Debug\net8.0\GapSense.Domain.pdb
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.csproj.AssemblyReference.cache
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.AssemblyInfoInputs.cache
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.AssemblyInfo.cs
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.csproj.CoreCompileInputs.cache
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.sourcelink.json
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.3F16AE8D.Up2Date
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.dll
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\refint\GapSense.Infrastructure.dll
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.pdb
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\GapSense.Infrastructure.genruntimeconfig.cache
+H:\gapsense-testing tharindu\gapsense-github\backend\src\GapSense.Infrastructure\obj\Debug\net8.0\ref\GapSense.Infrastructure.dll

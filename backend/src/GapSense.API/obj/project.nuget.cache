@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "t2QtdTaKBpU=",
+  "dgSpecHash": "A6+vI1UEem4=",
   "success": true,
-  "projectFilePath": "H:\\Gap sense\\sliit-gapsense 2026-4-6\\sliit-gapsense\\backend\\src\\GapSense.API\\GapSense.API.csproj",
+  "projectFilePath": "H:\\gapsense-testing tharindu\\gapsense-github\\backend\\src\\GapSense.API\\GapSense.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\PC\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
