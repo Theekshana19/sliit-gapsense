@@ -303,9 +303,35 @@ export class AuthUiService {
 
   private extractApiError(err: unknown): string | null {
     const e = err as HttpErrorResponse;
-    const payload = e?.error as Partial<ApiResponse<unknown>> | undefined;
-    if (payload?.message) return payload.message;
-    if (typeof e?.message === 'string') return e.message;
+    if (e?.status === 0) {
+      return 'Cannot reach the server. Check that GapSense.API is running and that the URL in api.config.ts matches your API (e.g. http://localhost:5292).';
+    }
+
+    const body = e?.error;
+    if (body && typeof body === 'object') {
+      const o = body as Record<string, unknown>;
+
+      if (typeof o['message'] === 'string' && o['message'].trim()) {
+        return o['message'];
+      }
+
+      if (typeof o['title'] === 'string' && typeof o['detail'] === 'string' && o['detail'].trim()) {
+        return o['detail'].trim();
+      }
+      if (typeof o['detail'] === 'string' && o['detail'].trim()) {
+        return o['detail'].trim();
+      }
+
+      const errs = o['errors'];
+      if (errs && typeof errs === 'object' && errs !== null) {
+        const first = Object.values(errs as Record<string, unknown>)
+          .flatMap((v) => (Array.isArray(v) ? v : [v]))
+          .find((x): x is string => typeof x === 'string' && x.trim().length > 0);
+        if (first) return first;
+      }
+    }
+
+    if (typeof e?.message === 'string' && e.message.trim()) return e.message;
     return null;
   }
 }

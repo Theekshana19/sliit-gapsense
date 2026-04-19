@@ -76,7 +76,7 @@
     <p class="text-xs font-semibold text-red-600">Passwords do not match.</p>
   }
 
-  <app-auth-button type="submit" label="Initialize Admin Account" [showArrow]="true" [disabled]="form.invalid" />
+  <app-auth-button type="submit" label="Initialize Admin Account" [showArrow]="true" [disabled]="!canSubmit()" />
 
   <p class="text-center text-sm text-slate-600">
     Already have an administrative account?

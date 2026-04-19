@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, merge, startWith } from 'rxjs';
 import { AuthUiService } from '../../../services/auth-ui.service';
 import { AuthInputComponent } from '../../ui/auth-input/auth-input.component';
 import { AuthPasswordInputComponent } from '../../ui/auth-password-input/auth-password-input.component';
@@ -28,6 +30,14 @@ export class LoginFormComponent {
     password: ['', [Validators.required, Validators.minLength(8)]],
     rememberMe: [false],
   });
+
+  protected readonly canSubmit = toSignal(
+    merge(this.form.statusChanges, this.form.valueChanges).pipe(
+      startWith(null),
+      map(() => this.form.valid),
+    ),
+    { initialValue: this.form.valid },
+  );
 
   protected onSubmit(): void {
     this.form.markAllAsTouched();

@@ -79,7 +79,7 @@
 
   <div class="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
     <div class="sm:flex-1 w-full">
-      <app-auth-button type="submit" label="Complete Registration" [showArrow]="true" [disabled]="form.invalid" />
+      <app-auth-button type="submit" label="Complete Registration" [showArrow]="true" [disabled]="!canSubmit()" />
     </div>
     <a routerLink="/auth/signup" class="text-sm font-semibold text-slate-600 hover:text-blue-800">Go Back</a>
   </div>

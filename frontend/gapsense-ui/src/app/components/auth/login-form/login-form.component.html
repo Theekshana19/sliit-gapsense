@@ -28,7 +28,7 @@
   <app-auth-button
     type="submit"
     label="Login to Portal"
-    [disabled]="form.invalid"
+    [disabled]="!canSubmit()"
     [showArrow]="false" />
 
 </form>

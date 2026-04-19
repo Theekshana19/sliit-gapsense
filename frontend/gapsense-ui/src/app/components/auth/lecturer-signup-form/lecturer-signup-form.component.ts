@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs';
+import { map, merge, startWith } from 'rxjs';
 import { AuthUiService } from '../../../services/auth-ui.service';
 import { passwordsMatchValidator } from '../../../utils/auth-validators.util';
 import {
@@ -47,6 +47,14 @@ export class LecturerSignupFormComponent {
       confirmPassword: ['', Validators.required],
     },
     { validators: passwordsMatchValidator }
+  );
+
+  protected readonly canSubmit = toSignal(
+    merge(this.form.statusChanges, this.form.valueChanges).pipe(
+      startWith(null),
+      map(() => this.form.valid),
+    ),
+    { initialValue: this.form.valid },
   );
 
   protected readonly strengthSegments = toSignal(
