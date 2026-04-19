@@ -263,7 +263,9 @@ END
 ");
 
             migrationBuilder.Sql(@"
-IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'LecturerModuleAssignments' AND i.name = N'IX_LecturerModuleAssignments_CourseModuleId')
+-- LecturerModuleAssignments is created in a later migration (20260429120000_AddOptionalProductModules).
+IF OBJECT_ID(N'[LecturerModuleAssignments]', N'U') IS NOT NULL
+   AND NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'LecturerModuleAssignments' AND i.name = N'IX_LecturerModuleAssignments_CourseModuleId')
     CREATE INDEX [IX_LecturerModuleAssignments_CourseModuleId] ON [LecturerModuleAssignments] ([CourseModuleId]);
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id WHERE t.name = N'Modules' AND i.name = N'IX_Modules_ModuleCode')
@@ -387,9 +389,10 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes i INNER JOIN sys.tables t ON i.object_i
             migrationBuilder.DropTable(
                 name: "Modules");
 
-            migrationBuilder.DropIndex(
-                name: "IX_LecturerModuleAssignments_CourseModuleId",
-                table: "LecturerModuleAssignments");
+            migrationBuilder.Sql(@"
+IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_LecturerModuleAssignments_CourseModuleId' AND object_id = OBJECT_ID(N'[LecturerModuleAssignments]'))
+    DROP INDEX [IX_LecturerModuleAssignments_CourseModuleId] ON [LecturerModuleAssignments];
+");
         }
     }
 }
