@@ -178,20 +178,22 @@
         }
       </div>
 
-      <!-- topic input -->
+      <!-- topic dropdown (from curriculum API for the selected module) -->
       <div class="mb-4">
         <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">
           Topic
         </label>
-        <input
-          type="text"
-          [value]="topic()"
-          (input)="topic.set($any($event.target).value)"
-          placeholder="Enter topic..."
+        <select
+          [value]="topicId()"
+          (change)="onTopicSelect($any($event.target).value)"
           class="w-full py-2.5 px-3 bg-surface-container-low rounded-lg text-sm text-on-surface
-                 placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2
-                 focus:ring-primary/20 transition-all"
-        />
+                 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        >
+          <option value="">No specific topic</option>
+          @for (t of topicOptions(); track t.id) {
+            <option [value]="t.id">{{ t.topicName }}</option>
+          }
+        </select>
       </div>
 
       <!-- question type dropdown -->

@@ -33,6 +33,8 @@ export class QuestionFormComponent implements OnInit {
   questionType = signal<QuestionType>('MCQ');
   difficulty = signal<DifficultyLevel>('Easy');
   topic = signal('');
+  /** Selected curriculum topic GUID, or empty when not linked to a topic. */
+  topicId = signal('');
   module = signal('');
   moduleCode = signal('');
   moduleId = signal(''); // GUID - this is what the backend needs
@@ -53,7 +55,7 @@ export class QuestionFormComponent implements OnInit {
 
   // available modules and topics for dropdowns (real data from API)
   moduleList = signal<{ id: string; moduleCode: string; moduleName: string }[]>([]);
-  topics: string[] = [];
+  topicOptions = signal<{ id: string; topicName: string }[]>([]);
 
   // status toggle - true means Active, false means Draft
   isActive = signal(false);
@@ -136,6 +138,9 @@ export class QuestionFormComponent implements OnInit {
             const found = mods.find((m) => m.moduleCode === q.moduleCode);
             if (found) {
               this.moduleId.set(found.id);
+              this.module.set(found.moduleName);
+              this.moduleCode.set(found.moduleCode);
+              this.loadTopicsForModule(found.id, q);
             }
           }
         });
@@ -144,8 +149,6 @@ export class QuestionFormComponent implements OnInit {
         console.error('Failed to load modules for dropdown');
       },
     });
-
-    this.topics = this.readinessService.getTopics();
 
     if (q) {
       this.title.set(q.title);
@@ -175,6 +178,43 @@ export class QuestionFormComponent implements OnInit {
       this.module.set(mod.moduleName);
       this.moduleCode.set(mod.moduleCode);
     }
+    this.topicId.set('');
+    this.topic.set('');
+    this.loadTopicsForModule(id, null);
+  }
+
+  onTopicSelect(id: string) {
+    this.topicId.set(id);
+    const row = this.topicOptions().find((o) => o.id === id);
+    this.topic.set(row?.topicName ?? '');
+  }
+
+  private loadTopicsForModule(moduleId: string, q: Question | null): void {
+    if (!moduleId) {
+      this.topicOptions.set([]);
+      return;
+    }
+    this.readinessService.getTopicList(moduleId).subscribe({
+      next: (rows) => {
+        const opts = rows.map((r) => ({ id: r.id, topicName: r.topicName }));
+        this.topicOptions.set(opts);
+        if (!q) return;
+        const tid = q.topicId ? String(q.topicId) : '';
+        if (tid && opts.some((o) => o.id === tid)) {
+          this.topicId.set(tid);
+          this.topic.set(opts.find((o) => o.id === tid)?.topicName ?? '');
+          return;
+        }
+        if (q.topic) {
+          const byName = opts.find((o) => o.topicName === q.topic);
+          if (byName) {
+            this.topicId.set(byName.id);
+            this.topic.set(byName.topicName);
+          }
+        }
+      },
+      error: () => this.topicOptions.set([]),
+    });
   }
 
   // set the correct answer when user clicks on a radio button
@@ -235,6 +275,7 @@ export class QuestionFormComponent implements OnInit {
       questionType: this.questionType(),
       difficulty: this.difficulty(),
       topic: this.topic(),
+      topicId: this.topicId().trim() || undefined,
       module: this.module(),
       moduleCode: this.moduleCode(),
       moduleId: this.moduleId(), // GUID - backend needs this

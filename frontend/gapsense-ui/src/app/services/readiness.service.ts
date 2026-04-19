@@ -107,13 +107,17 @@ export class ReadinessService {
 
   // get a single question by id
   getQuestionById(id: string): Observable<Question | undefined> {
-    return this.http
-      .get<ApiResponse<Question>>(`${this.apiUrl}/questions/${id}`)
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<Question>>(`${this.apiUrl}/questions/${id}`).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return undefined;
+        const normalized = ReadinessService.normalizeQuestionList([res.data]);
+        return normalized[0];
+      }),
+    );
   }
 
   // create a new question - moduleId must be a GUID from getModuleList()
-  createQuestion(question: Partial<Question> & { moduleId?: string; topicId?: string }): Observable<Question> {
+  createQuestion(question: Partial<Question> & { moduleId?: string }): Observable<Question> {
     const trimmedOptions =
       question.options
         ?.filter((o) => (o.optionText || '').trim().length > 0)
@@ -130,7 +134,7 @@ export class ReadinessService {
       questionType: question.questionType,
       difficulty: question.difficulty,
       moduleId: question.moduleId || '', // GUID from modules API
-      topicId: question.topicId || null,
+      topicId: question.topicId?.trim() ? question.topicId.trim() : null,
       explanation: question.explanation ?? '',
       marks: question.marks,
       status: question.status,
@@ -151,7 +155,7 @@ export class ReadinessService {
   }
 
   // update a question
-  updateQuestion(id: string, updates: Partial<Question> & { topicId?: string | null }): Observable<Question> {
+  updateQuestion(id: string, updates: Partial<Question>): Observable<Question> {
     const trimmedOptions =
       updates.options
         ?.filter((o) => (o.optionText || '').trim().length > 0)
@@ -167,7 +171,7 @@ export class ReadinessService {
       questionText: updates.questionText,
       questionType: updates.questionType,
       difficulty: updates.difficulty,
-      topicId: updates.topicId || null,
+      topicId: updates.topicId?.trim() ? updates.topicId.trim() : null,
       explanation: updates.explanation ?? '',
       marks: updates.marks,
       status: updates.status,
@@ -240,7 +244,12 @@ export class ReadinessService {
         const q = row as Question;
         const id = String(r['id'] ?? r['Id'] ?? q.id ?? '');
         const questionId = String(r['questionId'] ?? r['QuestionId'] ?? q.questionId ?? '');
-        return { ...q, id, questionId };
+        const rawTopicId = r['topicId'] ?? r['TopicId'];
+        const topicId =
+          rawTopicId === null || rawTopicId === undefined || rawTopicId === ''
+            ? (q.topicId ?? null)
+            : String(rawTopicId);
+        return { ...q, id, questionId, topicId };
       })
       .filter((q) => q.id.length > 0);
   }
@@ -264,37 +273,22 @@ export class ReadinessService {
     let params = new HttpParams();
     if (moduleId) params = params.set('moduleId', moduleId);
 
-    return this.http
-      .get<ApiResponse<TopicInfo[]>>(`${this.apiUrl}/topics`, { params })
-      .pipe(map((res) => res.data));
+    return this.http.get<ApiResponse<TopicInfo[]>>(`${this.apiUrl}/topics`, { params }).pipe(
+      map((res) => ReadinessService.normalizeTopicList(res?.data)),
+    );
   }
 
-  // static module name list for simple dropdowns (backwards compatible)
-  getModules(): string[] {
-    return [
-      'Data Structures & Algorithms',
-      'Object Oriented Programming',
-      'Web Application Development',
-      'Database Management Systems',
-      'Software Engineering',
-    ];
-  }
-
-  // static topic name list for simple dropdowns (backwards compatible)
-  getTopics(): string[] {
-    return [
-      'Asymptotic Analysis',
-      'Linear Data Structures',
-      'Trees & Binary Trees',
-      'Graph Algorithms',
-      'Sorting Algorithms',
-      'Recursion',
-      'Hashing',
-      'OOP Fundamentals',
-      'Inheritance & Polymorphism',
-      'Database Design',
-      'Database Queries',
-    ];
+  private static normalizeTopicList(data: unknown): TopicInfo[] {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map((row: Record<string, unknown>) => ({
+        id: String(row['id'] ?? row['Id'] ?? ''),
+        topicName: String(row['topicName'] ?? row['TopicName'] ?? ''),
+        moduleId: String(row['moduleId'] ?? row['ModuleId'] ?? ''),
+      }))
+      .filter((t) => t.id.length > 0 && t.topicName.length > 0);
   }
 
   // ---------- QUIZ METHODS ----------
@@ -426,9 +420,19 @@ export class ReadinessService {
     let params = new HttpParams();
     if (quizId) params = params.set('quizId', quizId);
 
-    return this.http
-      .get<ApiResponse<SubmissionStats>>(`${this.apiUrl}/submissions/stats`, { params })
-      .pipe(map((res) => res.data));
+    const empty: SubmissionStats = {
+      totalEnrollments: 0,
+      totalCompletionRate: 0,
+      inProgressCount: 0,
+      pendingReminders: 0,
+    };
+
+    return this.http.get<ApiResponse<SubmissionStats>>(`${this.apiUrl}/submissions/stats`, { params }).pipe(
+      map((res) => {
+        if (!res?.success || res.data == null) return empty;
+        return res.data;
+      }),
+    );
   }
 
   // submit a quiz (student answers) — identity must match profile StudentId for attempt history

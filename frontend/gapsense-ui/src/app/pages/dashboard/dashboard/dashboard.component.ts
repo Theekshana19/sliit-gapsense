@@ -100,7 +100,7 @@ type StaffSnapshot = {
           <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 class="mb-2 font-headline text-3xl font-extrabold tracking-tight text-[#003f87]">
-                Academic dashboard
+                Hello, {{ userName() }}
               </h1>
               <p class="font-medium text-slate-500">
                 Summary figures below are loaded from the live API for your role.
@@ -159,7 +159,12 @@ export class DashboardPageComponent implements OnInit {
 
   readonly isStudent = computed(() => this.authUi.currentUser()?.role === 'student');
   readonly isLecturer = computed(() => this.authUi.currentUser()?.role === 'lecturer');
-  readonly userName = computed(() => this.authUi.currentUser()?.fullName ?? 'Student');
+  readonly userName = computed(() => {
+    const u = this.authUi.currentUser();
+    if (!u) return 'there';
+    if (u.role === 'student') return u.fullName ?? 'Student';
+    return u.fullName ?? 'there';
+  });
 
   readonly studentSchedules = signal<QuizSchedule[]>([]);
   readonly schedulesLoading = signal(false);
@@ -172,18 +177,21 @@ export class DashboardPageComponent implements OnInit {
   readonly quickLink = computed(() => {
     const r = this.authUi.currentUser()?.role;
     if (r === 'admin') return '/risk-thresholds';
+    if (r === 'lecturer') return '/readiness/overview';
     return '/readiness-results';
   });
 
   readonly quickLinkLabel = computed(() => {
     const r = this.authUi.currentUser()?.role;
     if (r === 'admin') return 'Risk thresholds';
+    if (r === 'lecturer') return 'Readiness overview';
     return 'Readiness results';
   });
 
   readonly quickLinkIcon = computed(() => {
     const r = this.authUi.currentUser()?.role;
     if (r === 'admin') return 'tune';
+    if (r === 'lecturer') return 'analytics';
     return 'fact_check';
   });
 

@@ -10,6 +10,7 @@ public class QuestionDto
     public string QuestionType { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
     public string Topic { get; set; } = string.Empty;
+    public Guid? TopicId { get; set; }
     public string Module { get; set; } = string.Empty;
     public string ModuleCode { get; set; } = string.Empty;
     public List<QuestionOptionDto> Options { get; set; } = new();

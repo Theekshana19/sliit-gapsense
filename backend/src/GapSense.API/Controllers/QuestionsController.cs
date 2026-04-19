@@ -240,6 +240,7 @@ public class QuestionsController : ControllerBase
             QuestionType = q.QuestionType,
             Difficulty = q.Difficulty,
             Topic = q.Topic?.TopicName ?? "",
+            TopicId = q.TopicId,
             Module = q.Module.ModuleName,
             ModuleCode = q.Module.ModuleCode,
             Options = q.Options.Select(o => new QuestionOptionDto

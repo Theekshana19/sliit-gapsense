@@ -40,9 +40,10 @@ export class QuestionBankComponent implements OnInit {
   filterDifficulty = signal<DifficultyLevel | ''>('');
   filterStatus = signal<QuestionStatus | ''>('');
 
-  // dropdown options
-  modules: string[] = [];
-  topics: string[] = [];
+  /** Module filter options from `/api/modules` (value = module name for question filter API). */
+  moduleFilterOptions: { value: string; label: string }[] = [];
+  /** Distinct topic names from `/api/topics`. */
+  topicFilterOptions: string[] = [];
 
   // pagination
   currentPage = signal(1);
@@ -53,8 +54,28 @@ export class QuestionBankComponent implements OnInit {
   questionToDelete = signal<Question | null>(null);
 
   ngOnInit() {
-    this.modules = this.readinessService.getModules();
-    this.topics = this.readinessService.getTopics();
+    this.readinessService.getModuleList().subscribe({
+      next: (mods) => {
+        this.moduleFilterOptions = mods.map((m) => ({
+          value: m.moduleName,
+          label: `${m.moduleCode} — ${m.moduleName}`,
+        }));
+      },
+      error: () => {
+        this.moduleFilterOptions = [];
+      },
+    });
+    this.readinessService.getTopicList().subscribe({
+      next: (rows) => {
+        const names = [...new Set(rows.map((r) => r.topicName).filter(Boolean))].sort((a, b) =>
+          a.localeCompare(b),
+        );
+        this.topicFilterOptions = names;
+      },
+      error: () => {
+        this.topicFilterOptions = [];
+      },
+    });
     this.loadQuestions();
   }
 

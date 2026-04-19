@@ -25,6 +25,8 @@ export interface Question {
   questionType: QuestionType;
   difficulty: DifficultyLevel;
   topic: string;
+  /** Curriculum topic GUID when linked to a topic row; omit or null for uncategorized. */
+  topicId?: string | null;
   module: string;
   moduleCode: string; // like "IT2040"
   options: QuestionOption[];

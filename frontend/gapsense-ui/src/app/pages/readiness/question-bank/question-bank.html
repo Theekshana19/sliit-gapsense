@@ -28,8 +28,8 @@
                  focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="">All Modules</option>
-          @for (mod of modules; track mod) {
-            <option [value]="mod">{{ mod }}</option>
+          @for (mod of moduleFilterOptions; track mod.value) {
+            <option [value]="mod.value">{{ mod.label }}</option>
           }
         </select>
 
@@ -41,7 +41,7 @@
                  focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="">All Topics</option>
-          @for (topic of topics; track topic) {
+          @for (topic of topicFilterOptions; track topic) {
             <option [value]="topic">{{ topic }}</option>
           }
         </select>

@@ -31,13 +31,32 @@ export class ResourceFormComponent implements OnInit {
   topic = signal('');
   module = signal('');
 
-  // dropdown options
-  modules: string[] = [];
-  topics: string[] = [];
+  /** Module rows from `/api/modules` (stored value = module name, matching resource DTOs). */
+  moduleOptions: { value: string; label: string }[] = [];
+  topicOptions: string[] = [];
 
   ngOnInit() {
-    this.modules = this.readinessService.getModules();
-    this.topics = this.readinessService.getTopics();
+    this.readinessService.getModuleList().subscribe({
+      next: (mods) => {
+        this.moduleOptions = mods.map((m) => ({
+          value: m.moduleName,
+          label: `${m.moduleCode} — ${m.moduleName}`,
+        }));
+      },
+      error: () => {
+        this.moduleOptions = [];
+      },
+    });
+    this.readinessService.getTopicList().subscribe({
+      next: (rows) => {
+        this.topicOptions = [...new Set(rows.map((r) => r.topicName).filter(Boolean))].sort((a, b) =>
+          a.localeCompare(b),
+        );
+      },
+      error: () => {
+        this.topicOptions = [];
+      },
+    });
 
     // if editing, fill the form with existing data
     const r = this.resource();

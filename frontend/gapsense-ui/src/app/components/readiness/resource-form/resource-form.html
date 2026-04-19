@@ -85,8 +85,8 @@
                focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
       >
         <option value="">Select module</option>
-        @for (mod of modules; track mod) {
-          <option [value]="mod">{{ mod }}</option>
+        @for (mod of moduleOptions; track mod.value) {
+          <option [value]="mod.value">{{ mod.label }}</option>
         }
       </select>
     </div>
@@ -102,7 +102,7 @@
                focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
       >
         <option value="">Select topic</option>
-        @for (t of topics; track t) {
+        @for (t of topicOptions; track t) {
           <option [value]="t">{{ t }}</option>
         }
       </select>
