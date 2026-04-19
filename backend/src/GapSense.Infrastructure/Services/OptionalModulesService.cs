@@ -154,7 +154,10 @@ public class OptionalModulesService : IOptionalModulesService
         _db.StudentInterventions.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
-        await TryNotifyInterventionCreatedAsync(entity.StudentUserId, entity.Title, cancellationToken);
+        if (entity.StudentUserId != Guid.Empty)
+        {
+            await TryNotifyInterventionCreatedAsync(entity.StudentUserId, entity.Title, cancellationToken);
+        }
 
         return new StudentInterventionResponse(
             entity.Id,

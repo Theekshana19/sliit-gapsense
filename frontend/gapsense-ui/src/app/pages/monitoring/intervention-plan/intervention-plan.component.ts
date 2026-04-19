@@ -12,8 +12,8 @@ import { StudentInterventionPlansService } from '../../../services/student-inter
 import { controlInvalid } from '../../../validators/form-utils';
 import { futureOrTodayDateValidator } from '../../../validators/forms.validators';
 
-const USER_GUID_PATTERN =
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
+/** Used when no specific student is targeted (UI no longer collects a student GUID). */
+const COHORT_INTERVENTION_STUDENT_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
 
 type PlanMode = 'draft' | 'publish';
 
@@ -76,48 +76,6 @@ type PlanMode = 'draft' | 'publish';
                     <p class="text-xs text-slate-500 mt-1">
                       Modules include those created in <strong>Module Management</strong> (curriculum catalogue) plus any
                       separate course-module entries.
-                    </p>
-                  </div>
-
-                  <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-semibold text-slate-700" for="studentUserId">Student user id (GUID)</label>
-                    @if (recentStudentIds().length) {
-                      <div class="flex flex-col gap-1">
-                        <label class="text-xs font-medium text-slate-600" for="recentStudentPick">Recent students (this module list)</label>
-                        <select
-                          id="recentStudentPick"
-                          class="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-mono text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
-                          (change)="applyRecentStudent($event)"
-                        >
-                          <option value="">Select to fill the field below…</option>
-                          @for (id of recentStudentIds(); track id) {
-                            <option [value]="id">{{ id }}</option>
-                          }
-                        </select>
-                      </div>
-                    }
-                    <input
-                      id="studentUserId"
-                      type="text"
-                      formControlName="studentUserId"
-                      list="recent-student-ids"
-                      autocomplete="off"
-                      placeholder="Paste the student account GUID"
-                      class="w-full rounded-xl border bg-white px-4 py-3 font-mono text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0047AB]/35"
-                      [class.border-rose-500]="showError('studentUserId')"
-                      [class.border-slate-200]="!showError('studentUserId')"
-                    />
-                    <datalist id="recent-student-ids">
-                      @for (id of recentStudentIds(); track id) {
-                        <option [value]="id"></option>
-                      }
-                    </datalist>
-                    @if (showError('studentUserId')) {
-                      <p class="text-xs font-medium text-rose-600">Enter the student’s account id (GUID).</p>
-                    }
-                    <p class="text-xs text-slate-500">
-                      Use a real account id (version 1–5 UUID). Students you have already created interventions for appear above; otherwise
-                      paste an id from staff or analytics tools.
                     </p>
                   </div>
 
@@ -320,7 +278,6 @@ export class InterventionPlanPageComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly courseModules = signal<CourseModuleDto[]>([]);
-  readonly recentStudentIds = signal<string[]>([]);
 
   mode: PlanMode = 'publish';
 
@@ -332,7 +289,6 @@ export class InterventionPlanPageComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     courseCode: ['', [Validators.required]],
-    studentUserId: ['', [Validators.required, Validators.pattern(USER_GUID_PATTERN)]],
     riskGroup: this.fb.nonNullable.control<RiskGroup>('high', { validators: [Validators.required] }),
     title: [''],
     interventionType: ['', [Validators.required]],
@@ -347,28 +303,9 @@ export class InterventionPlanPageComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      const [modules, recent] = await Promise.all([
-        this.plansSvc.loadCourseModules(),
-        this.plansSvc.loadRecentStudentUserIds(),
-      ]);
-      this.courseModules.set(modules);
-      this.recentStudentIds.set(recent);
+      this.courseModules.set(await this.plansSvc.loadCourseModules());
     } catch {
-      try {
-        this.courseModules.set(await this.plansSvc.loadCourseModules());
-      } catch {
-        this.courseModules.set([]);
-      }
-      this.recentStudentIds.set([]);
-    }
-  }
-
-  applyRecentStudent(ev: Event): void {
-    const el = ev.target as HTMLSelectElement;
-    const v = el.value?.trim() ?? '';
-    el.value = '';
-    if (v) {
-      this.form.controls.studentUserId.setValue(v);
+      this.courseModules.set([]);
     }
   }
 
@@ -434,7 +371,7 @@ export class InterventionPlanPageComponent implements OnInit {
     }
     const ok = await this.persistPlan();
     if (!ok) {
-      this.toast.show('Could not save intervention. Check student id and try again.', 'error');
+      this.toast.show('Could not save intervention. Check required fields and try again.', 'error');
       return;
     }
     this.toast.show('Intervention plan saved.', 'success');
@@ -449,7 +386,7 @@ export class InterventionPlanPageComponent implements OnInit {
     const administrativeNotes = actionsTrim || (this.mode === 'draft' ? '—' : actionsTrim);
     return this.plansSvc.createFromWizard({
       moduleCode: v.courseCode.trim(),
-      studentUserId: v.studentUserId.trim(),
+      studentUserId: COHORT_INTERVENTION_STUDENT_PLACEHOLDER,
       riskGroup: v.riskGroup,
       title,
       interventionType: v.interventionType as InterventionType,
